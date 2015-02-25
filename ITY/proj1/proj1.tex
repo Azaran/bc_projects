@@ -1,0 +1,47 @@
+\documentclass[11pt,a4paper,twocolumn]{article}
+\usepackage[left=2cm,text={17cm,24cm},top=2.5cm]{geometry}
+\usepackage[latin2]{inputenc}
+\usepackage[czech]{babel}
+\usepackage{times}
+\usepackage{blindtext}
+\providecommand{\myuv}[1]{\quotedblbase #1\textquotedblleft}
+\renewcommand*\labelenumi{\theenumi}
+\begin{document}
+\title{Typografie a publikování \\ 1. projekt}
+\author{Vojtìch Veèeøa \\ xvecer18@stud.fit.vutbr.cz}
+\date{}
+\maketitle
+\section{Hladká sazba}
+
+\noindent Hladká sazba je sazba z~jednoho stupnì, druhu a øezu písma sázená na stanovenou ¹íøku odstavce. Skládá se z~odstavcù, které obvykle zaèínají­zará¾kou, ale mohou být sázeny i~bez zará¾ky - rozhodující­je celková grafická úprava. Odstavce jsou ukonèeny východovou øádkou. Vìty nesmìjí zaèínat èíslicí. 
+
+\indent Barevné zvýraznìní, podtrhávání­slov èi rùzné velikosti písma vybraných slov se zde také nepou¾ívá. Hladká sazba je urèena pøedev¹ím pro del¹í­ texty, jako je napøíklad beletrie. Poru¹ení­ konzistence sazby pùsobí v textu ru¹ivì a unavuje ètenáøùv zrak. 
+
+\section{Smí¹ená sazba}
+
+\noindent Smí¹ená sazba má o nìco volnìj¹í­ pravidla, jak hladká sazba. Nejèastìji se klasická hladká sazba doplòuje o~dal¹í øezy písma pro zvýraznìní­ dùle¾itých pojmù. Existuje \myuv{pravidlo}:
+
+\bigskip
+\begingroup
+\leftskip3ex
+\rightskip\leftskip
+{\scshape\indentÈím více druhù, øezù, velikostí, barev písma a~jiných efektù pou¾ijeme, tím profesionálnìji bude  dokument vypadat. Ètenáø tím bude v¾dy nad¹en!
+}\par
+\endgroup
+\bigskip
+
+\indent Tímto pravidlem se \underline{nikdy} nesmíte øídit. Pøíli¹ èasté zvýrazòování textových elementù a~zmìny\Huge V\huge E\LARGE L\Large I\large K\normalsize O\small S\footnotesize T\tiny I \normalsize písma \large jsou \Large známkou \Huge amatérismu \normalsize autora a~pùsobí­ \textbf{\itshape velmi} \textit{ru¹ivì}. Dobøe navr¾ený dokument nemá obsahovat více ne¾ 4 øezy èi druhy písma.\texttt{ Dobøe navr¾ený dokument je decentní, ne chaotický. }
+
+\indent Dùle¾itým znakem správnì vysázeného dokumentu je konzistentní pou¾ívání­rùzných druhùzvýraznìní. To napøíklad mù¾e znamenat, ¾e \textbf{tuèný øez} písma bude vyhrazen pouze pro klíèová slova, \textsl{sklonìný øez} pouze pro doposud neznámé pojmy a~nebude se to míchat. Sklonìný øez nepùsobí­tak ru¹ivì a~pou¾ívá se èastìji. V~\LaTeX u jej sázíme radìji pøíkazem \verb|\emph{text}| ne¾ \verb|\textit{text}|.
+
+\indent Smí¹ená sazba se nejèastìji pou¾ívá pro sazbu vìdeckých èlánkù a~technických zpráv. U~del¹ích dokumentù vìdeckého èi technického charakteru je zvykem upozornit ètenáøe na význam rùzných typù zvýraznìní­v~úvodní­ kapitole. 
+
+\section{Èeské odli¹nosti}
+
+\noindent Èeská sazba se oproti okolní­mu svìtu v~nìkterých aspektech mírnì li¹í. Jednou z~odli¹ností je sazba uvozovek. Uvozovky se v èe¹tinì pou¾ívají­ pøevá¾nì pro zobrazení­ pøímé øeèi. V~men¹í míøe se pou¾ívají­také pro zvýraznìní­pøezdívek a ironie. V èe¹tinì se pou¾ívá tento typ \myuv{uvozovek} namísto anglických "uvozovek". 
+
+\indent Ve smí¹ené sazbì se øez uvozovek øídí­øezem první­ho uvozovaného slova. Pokud je uvozována celá vìta, sází­ se koncová teèka pøed uvozovku, pokud se uvozuje slovo nebo èást vìty, sází se teèka za uvozovku. 
+
+\indent Druhou odli¹ností je pravidlo pro sázení koncù øádkù. V~èeské sazbì by øádek nemìl konèit osamocenou jednopísmennou pøedlo¾kou nebo spojkou (spojkou \myuv{a} konèit mù¾e pøi sazbì do 25 liter). Abychom \LaTeX u zabránili v~sázení­osamocených pøedlo¾ek, vkládáme mezi pøedlo¾ku a~slovo nezlomitelnou mezeru znakem \~\, (vlnka, tilda). Pro automatické doplnìní vlnek slou¾í­volnì ¹iøitelný program vlna od pana Ol¹áka.\footnote{Viz ftp://math.feld.cvut.cz/pub/olsak/vlna} 
+\end{document}
+
