@@ -50,6 +50,8 @@ void drawLine (int x1, int y1, int x2, int y2) {
 	int dx = (x2-x1);
 	int dy = (y2-y1);
 	int sig=0;
+	
+	// pokud roste rychleji v y nez v x prohod souradnice
 	if (abs(dy)>abs(dx))
 	{
 	  swap(x1,y1);
@@ -57,11 +59,16 @@ void drawLine (int x1, int y1, int x2, int y2) {
 	  swap(dx,dy);
 	  sig=1; // priznak prohozeni souradnic
 	}
-	if (x1 > x2)
+	
+	// swap x a y pokud je pocatecni koncovy a naopak
+	if (x1 > x2 || y1 > y2)
+	{
 	  swap(x1,x2);
-	if (y1 > y2)
 	  swap(y1,y2);
-	if (dx == dy && dy == 0)
+	} 
+
+	// vypis tecku pokud se jedna pouze o jeden bod a ne usecku
+	if (x1 == x2 && y1 == y2)
 	{
 	  putPixel( x1, y1, COLOR_GREEN);
 	  return;
@@ -71,7 +78,7 @@ void drawLine (int x1, int y1, int x2, int y2) {
 	int k = (dy << FRAC_BITS) / dx;
 	for (int x = x1; x <= x2; x++)
 	{
-		if (sig == 1) 
+		if (sig == 1) // roste rychleji v y nez v x musime prohodit souradnice zpet
 		  putPixel( y >> FRAC_BITS, x, COLOR_GREEN);
 		else
 		  putPixel( x, y >> FRAC_BITS, COLOR_GREEN);
@@ -83,14 +90,14 @@ void drawLine (int x1, int y1, int x2, int y2) {
 // Ukol za 1b
 ////////////////////////////////////////////////////////////////////////////////
 void put8PixelsOfCircle(int x, int y, int s1, int s2, S_RGBA color) {
-	putPixel(s1+x, s2+y, COLOR_GREEN);
-	putPixel(s1+y, s2+x, COLOR_GREEN);
-	putPixel(s1+y, s2-x, COLOR_GREEN);
-	putPixel(s1+x, s2-y, COLOR_GREEN);
-	putPixel(s1-x, s2-y, COLOR_GREEN);
-	putPixel(s1-y, s2-x, COLOR_GREEN);
-	putPixel(s1-y, s2+x, COLOR_GREEN);
-	putPixel(s1-x,s2+y, COLOR_GREEN);
+putPixel(s1+x, s2+y, color);
+	putPixel(s1+y, s2+x, color);
+	putPixel(s1+y, s2-x, color);
+	putPixel(s1+x, s2-y, color);
+	putPixel(s1-x, s2-y, color);
+	putPixel(s1-y, s2-x, color);
+	putPixel(s1-y, s2+x, color);
+	putPixel(s1-x, s2+y, color);
 }
 
 void drawCircle (int s1, int s2, int R)
