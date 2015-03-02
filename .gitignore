@@ -1,0 +1,25 @@
+## Swap files
+*.swp
+
+## out, in , err files
+*.out
+*.in
+*.err
+
+## txt
+*.txt
+
+## LaTeX additional files
+*.dvi
+*.aux
+*.log
+
+
+## VS files
+*.sln
+*.vcxproj
+*.filters
+*.user
+
+## objects
+*.o
