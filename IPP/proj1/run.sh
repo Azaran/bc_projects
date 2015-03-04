@@ -53,3 +53,7 @@ ABSOL_PATH="/home/xvecer18/Documents/Sem4_projects/IPP/proj1/"
 # echo "STDIN & STDOUT: return = $?"
 ############################################################################
 
+## nacteni XML souboru a zpracovani
+ $INTERPRET $SRCNAME --input=./file01.in --output=./file01_xml_array.out
+ echo "XML input, output into file: return = $?"
+
