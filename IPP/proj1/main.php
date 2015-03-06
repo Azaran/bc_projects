@@ -95,13 +95,28 @@ $coltypes = array (
 
 
 $xml = simplexml_load_string($read_in_f);
+//print_r($xml);
+//
+////////// vypis jednotlivych urovni XML ////////////////
+// TODO: prevest na rekurzivni funkci a vytvorit strukturu pro ukladani dat
+foreach ($xml->children()as $children)
+{
+  echo $children->getName()."\n";
+  foreach ($children->children()as $childs)
+  {   #   print_r($children);
+    echo "\t".$childs->getName()."\n";
+    foreach ($childs->children() as $child)
+      echo "\t\t".$child->getName()." => ".$child->__toString()."\n";
+  }
+}
 
-fwrite($out_f, print_r($xml, TRUE));
-
+/////////////////////////////////////////////////////////
+//fwrite($out_f, print_r($xml, TRUE));
+/*
 $create = "CREATE TABLE $tablename(";
 $prk = "\n\t\t\tprk_$tablename_id INT PRIMARY KEY";
-$row = ",\n\t\t\t$colname $coltype
-
+$row = ",\n\t\t\t$colname $coltype";
+ */
 
 
 
