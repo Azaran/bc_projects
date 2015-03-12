@@ -43,9 +43,9 @@ generovaný množinou $V$ s~operací konkatenace.
 Prvek identity ve volném monoidu $V^*$ značíme symbolem $\varepsilon$.
 Nechť $V^+ =V^*-\{\varepsilon\}$. Algebraicky je tedy $V^+$ volná pologrupa generovaná množinou
 $V$ s~operací konkatenace. Konečnou neprázdnou množinu $V$ nazvěme abeceda.
-Pro $w \in V^*$ označuje $|w|$ délku řetězce $w$ Pro $W \subseteq V$ označuje occur($w, W$) počet
-výskytů symbolů z~$W$ v~řetězci $w$ a sym($w, i$) určuje $i$-tý symbol řetězce $w$; například
-sym($abcd, 3$) $= c$.
+Pro $w \in V^*$ označuje $|w|$ délku řetězce $w$ Pro $W \subseteq V$ označuje $\mathrm{occur}(w,
+W)$ počet výskytů symbolů z~$W$ v~řetězci $w$ a $\mathrm{sym}(w, i)$ určuje $i$-tý symbol řetězce
+$w$; například $\mathrm{sym}(abcd, 3) = c$.
 
 \indent Nyní zkusíme sazbu definic a vět s~využitím balíku \texttt{amsthm}.
 \begin{defn} 
@@ -124,7 +124,7 @@ $$\lim_{x\to \infty} \frac{\sin{x}^2+\cos{x}^2}{4} = y$$
 
 \indent V~této větě vidíme, jak vypadá implicitní vysázení limity $\lim_{n\to \infty}f(n)$
 v~normálním odstavci textu. Podobně je to i s~dalšími symboly jako $\sum_1^n$ či
-$\bigcup_{A\in B}$. V~případě vzorce $\lim\limits _{x\to 0} \frac{\sin{x}}{x}\!=\!1$ jsme si vynutili méně úspornou
+$\bigcup_{A\in \mathcal{B}}$. V~případě vzorce $\lim\limits _{x\to 0} \frac{\sin{x}}{x}\!=\!1$ jsme si vynutili méně úspornou
 sazbu příkazem \verb|\limits|.
 
 \begin{eqnarray}
