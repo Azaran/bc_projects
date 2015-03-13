@@ -33,6 +33,25 @@ $longopts = array (
 
 ################ function declaration ##################
 
+function searchStruct($data, $indent)
+{
+  $indent.="\t";
+  for ($data->rewind();$data->valid(); $data->next())
+  {
+    //echo $data->current()."\t";
+    if ($data->hasChildren())
+    {
+      #echo "Volame rekurzi > > >".$data->key()."\n";
+      searchStruct($data->current(),$indent);
+    }
+      echo $indent.$data->key()."\n";
+     /* for ($i = 0; $i < strlen($string=$element->__toString()); $i++)
+      {
+	echo ord($string[$i]).", "; // odchaleni skrytych znaku pomoci prevodu do ASCII
+      } */ 
+  }
+  return 0; 
+}
 function reterr($err)   // vrat a zapis do stderr
 {
   fwrite(STDERR, $GLOBALS["err_num"][$err]);
@@ -47,17 +66,15 @@ function fileWrite($text_out)
   return(0);
 }
 
-
 ################# main function #########################
-
 ///////// overeni parametru a otevreni souboru ////////////////////
 
 $opts = getopt($shortopts, $longopts);
-if (isset($opts["help"])){ // volame help?
+if (isset($opts["help"]))  // volame help?
+{ 
   echo $help."\n";
   reterr(0);
 }
-
 if (isset($opts["b"]) && isset($opts["etc"])) // -g a --etc=n nemohou byt zaroven
   reterr(12);
 
@@ -72,14 +89,12 @@ else
 
 if (isset($opts["output"]))
   $out_f = @fopen($opts["output"], "w") or reterr(3); // overeni vystupniho souboru
-//    echo "output= \\$opts[output]\\\n";
 //    fwrite($out_f, $read_in_f);  // pouze pro testovaci ucely
 else 
   $out_f = STDOUT;
 
 if (isset($opts["header"]))
   fileWrite($opts["header"]);
-// echo "header= \\$opts[header]\\\n";
 
 ////////////////////////////////////////////////////////////////////
 /////////// parsovani XML souboru //////////////////////////////////
@@ -92,94 +107,26 @@ $coltypes = array (
   "NTEXT"	// textovy obsah obsahuje textovy retezec <tag>texttovy retezec</tag>
 );
 
-
-
-//$xml = simplexml_load_string($read_in_f);
-//print_r($xml);
-//
-////////// vypis jednotlivych urovni XML ////////////////
-// TODO: prevest na rekurzivni funkci a vytvorit strukturu pro ukladani dat
-/*foreach ($xml->children() as $children)
-{
-  echo $children->getName()."\n";
-  foreach ($children->children()as $childs)
-  {   #   print_r($children);
-    echo "\t".$childs->getName()." => ".$childs->__toString()."\n";
-    foreach ($childs->children() as $child)
-      echo "\t\t".$child->getName()." => ".$child->__toString()."\n";
-  }
-}
- */
- 
 /////////////////////////////////////////////////////////
 /////////////////// PouyitiIiteratoru \\\\\\\\\\\\\\\\\\
 
 $xml = new SimpleXMLIterator ($read_in_f);
-//print_r($xml);
-
-
 $xml->rewind();
-/*foreach ($xml->children() as $children)
-{
- $children->rewind(); 
-  echo $children->key()."\n";
-  
-  foreach ($children->children()as $childs)
-  {
-    $childs->rewind();
-    echo $childs->key()."\n";   
-    foreach ($childs->children() as $child)
-    {
-      $child->rewind();
-      echo $child->current()."\n";
-    }
-  }
-}*/
-
-function searchStruct($data, $indent)
-{
-  //$data->rewind();
-  //echo $data->key();
-  $indent.="\t";
-  for ($data->rewind();$data->valid(); $data->next())
-  {
-    //echo $data->current()."\t";
-    if ($data->hasChildren())
-    {
-      #echo "Volame rekurzi > > >".$data->key()."\n";
-      searchStruct($data->current(),$indent);
-    }
-      echo $indent.$data->key()."\n";
-     /* for ($i = 0; $i < strlen($string=$element->__toString()); $i++)
-      {
-	echo ord($string[$i]).", "; // odchaleni skrytych znaku pomosic prevodu do ASCII
-      } */ 
-    
-  }
-  return 0; 
-}
 
 searchStruct($xml,"");
 
+
+
+
 //fwrite($out_f, print_r($xml, TRUE));
-/*
+
 $create = "CREATE TABLE $tablename(";
 $prk = "\n\t\t\tprk_$tablename_id INT PRIMARY KEY";
 $row = ",\n\t\t\t$colname $coltype";
- */
-
-
-
-
-
-
-
-
 
 /////////////////////////////////////////////////////////////////////
 /////////// validni zruseni zdroju //////////////////////////////////
 //fclose($out_f);
-//print_r($opts);
 var_dump($opts);
 
 reterr(0); // uspesny konec programu
