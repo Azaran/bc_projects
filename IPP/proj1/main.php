@@ -1,4 +1,6 @@
 <?php
+require 'ddl.php';
+require 'parse.php';
 ################# variable declaration ##################
 $help = <<<EOF
 ./src/xtd.php
@@ -30,25 +32,37 @@ $longopts = array (
   "header::",
   "etc::",
 );
-
+$tablist = new Elemlist;
+$ddl = new DDL;
 ################ function declaration ##################
 
-function searchStruct($data, $indent)
+function searchStruct($data, $tabname, $indent)
 {
+  global $tablist,$ddl;
   $indent.="\t";
   for ($data->rewind();$data->valid(); $data->next())
   {
     //echo $data->current()."\t";
     if ($data->hasChildren())
     {
-      #echo "Volame rekurzi > > >".$data->key()."\n";
-      searchStruct($data->current(),$indent);
+      // echo "Volame rekurzi > > >".$data->key()."\n";
+      searchStruct($data->current(),$data->key(),$indent);
     }
-      echo $indent.$data->key()."\n";
-     /* for ($i = 0; $i < strlen($string=$element->__toString()); $i++)
+      if (!empty($data->current()))
+      {	
+	// echo "Attribute nalezen: ";
+	foreach ($data->current()->attributes() as $attname => $attval)
+        {
+	  $tablist->add($data->key(),$attname,$ddl->getT($attval,1));
+	  // echo $data->key()." ($attname => $attval), ";
+        }
+	// echo "\n";
+      }
+      else
       {
-	echo ord($string[$i]).", "; // odchaleni skrytych znaku pomoci prevodu do ASCII
-      } */ 
+        $tablist->add($tabname, $data->key(),$ddl->getT($data->current(),0)r);
+        //echo "$tabname, ".$data->key().", 0\n";
+      }
   }
   return 0; 
 }
@@ -65,7 +79,11 @@ function fileWrite($text_out)
     fwrite(STDOUT, $text_out);
   return(0);
 }
-
+function makeOutput ()
+{
+  global $tablist, $ddl;
+  
+}
 ################# main function #########################
 ///////// overeni parametru a otevreni souboru ////////////////////
 
@@ -113,19 +131,14 @@ $coltypes = array (
 $xml = new SimpleXMLIterator ($read_in_f);
 $xml->rewind();
 
-searchStruct($xml,"");
-
+print_r($xml);
+searchStruct($xml,"","");
+print_r($tablist);
 
 
 
 //fwrite($out_f, print_r($xml, TRUE));
 
-$create = "CREATE TABLE $tablename(";
-$prk = "\n\t\t\tprk_$tablename_id INT PRIMARY KEY";
-$row = ",\n\t\t\t$colname $coltype";
-
-/////////////////////////////////////////////////////////////////////
-/////////// validni zruseni zdroju //////////////////////////////////
 //fclose($out_f);
 var_dump($opts);
 
