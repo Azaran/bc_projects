@@ -16,7 +16,7 @@ class Elemlist{
     $this->cnt = 0;
     $this->curr = -1;
   }
-  public function add($tabname,$elemname,$ddltype,$attrib){
+  public function add($tabname,$elemname,$ddltype){
     $this->table[$this->cnt] = $tabname;
     $this->elem[$this->cnt] = $elemname;
     $this->dtype[$this->cnt] = $ddltype;
@@ -27,39 +27,60 @@ class Elemlist{
   public function size(){
   return $this->cnt;
   }
-  public function getCurr(){
-    if (!isempty())
+  public function getCTable(){
+    if (!$this->isempty())
     {    
-      $ret = new elemlist();
-      $ret->add($this->table[$this->curr],$this->elem[$this->curr],$this->attr[$this->curr],$this->dtype[$this->curr]);
-      return $ret;
+      return $this->table[$this->curr];
     }
     else
       return FALSE; 
+  }
+  public function getCElem(){
+    if (!$this->isempty())
+    {    
+      return $this->elem[$this->curr];
+    }
+    else
+      return FALSE; 
+  }
+  public function getCType(){
+    if (!$this->isempty())
+    {    
+      return $this->dtype[$this->curr];
+    }
+    else
+      return FALSE; 
+  }
+  public function nxt(){
+      if ($this->curr < $this->size())
+	$this->curr++;
+  }
+  public function currnt(){
+      return $this->curr;
   }
   public function getNext(){
       if ($this->curr+1 < $size)
       {
         $this->curr++;
         $ret = new elemlist();
-        $ret = getCurr();
+        $ret = $this->getCurr();
         return $ret;
       }
   } 
   public function getLast(){
       $this->curr = $size - 1;
-      $ret = new elemlist();
-      $ret = getCurr();
-      return $ret;
+      //$ret = new elemlist();
+      //$ret = $this->getCurr();
+      //return $ret;
   } 
-  public function getFirst(){
+  public function setFirst(){
       $this->curr = 0;
-      $ret = new elemlist();
-      $ret = getCurr();
-      return $ret;
+      //$ret = new elemlist();
+      //$ret = $this->getCurr();
+      //return $ret;
   }
   public function isempty(){
-    if ($this->size == 0)
+    if (!$this->size())
       return TRUE;
     else 
       return FALSE; 

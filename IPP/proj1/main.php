@@ -42,14 +42,15 @@ function searchStruct($data, $tabname, $indent)
   $indent.="\t";
   for ($data->rewind();$data->valid(); $data->next())
   {
+    $tablist->add($tabname, $data->key(),$ddl->getT($data->current(),0));
     //echo $data->current()."\t";
     if ($data->hasChildren())
     {
       // echo "Volame rekurzi > > >".$data->key()."\n";
       searchStruct($data->current(),$data->key(),$indent);
     }
-      if (!empty($data->current()))
-      {	
+ //     if (!empty($data->current()))
+ //     {	
 	// echo "Attribute nalezen: ";
 	foreach ($data->current()->attributes() as $attname => $attval)
         {
@@ -57,12 +58,11 @@ function searchStruct($data, $tabname, $indent)
 	  // echo $data->key()." ($attname => $attval), ";
         }
 	// echo "\n";
-      }
-      else
-      {
-        $tablist->add($tabname, $data->key(),$ddl->getT($data->current(),0)r);
+ //     }
+ //     else
+ //     {
         //echo "$tabname, ".$data->key().", 0\n";
-      }
+ //     }
   }
   return 0; 
 }
@@ -112,7 +112,7 @@ else
   $out_f = STDOUT;
 
 if (isset($opts["header"]))
-  fileWrite($opts["header"]);
+  fileWrite("--".$opts["header"]."\n\n");
 
 ////////////////////////////////////////////////////////////////////
 /////////// parsovani XML souboru //////////////////////////////////
@@ -121,26 +121,27 @@ $coltypes = array (
   "BIT",	// 0, 1, True, False - case-insensitive
   "INT",	// atribut celociselny
   "FLOAT",	// realne cislo dle C99
-  "NVARCHAR",	// atribut obsahuje retezec <tag art="nvarchar">
+  "NVARCHAR",	// atribut obsahuje retezec <tag attr="nvarchar">
   "NTEXT"	// textovy obsah obsahuje textovy retezec <tag>texttovy retezec</tag>
 );
 
-/////////////////////////////////////////////////////////
-/////////////////// PouyitiIiteratoru \\\\\\\\\\\\\\\\\\
+#\\\\\\\\\\\\\\\\\\\\\\\\\\/////////////////////////////#
+/////////////////// Pouziti Iteratoru \\\\\\\\\\\\\\\\\\\
 
-$xml = new SimpleXMLIterator ($read_in_f);
-$xml->rewind();
+$xml = new SimpleXMLIterator($read_in_f);  // vytvor z XML objekt
+$xml->rewind();				   // skoc na zacatek objektu
 
-print_r($xml);
+// print_r($xml);
 searchStruct($xml,"","");
-print_r($tablist);
-
+ for ($tablist->setFirst(); $tablist->currnt() <= $tablist->size()-1; $tablist->nxt())
+   echo $tablist->getCTable().", ".$tablist->getCElem().", ".$tablist->getCType().", ".$tablist->currnt()."\n";
+// print_r($tablist);
 
 
 //fwrite($out_f, print_r($xml, TRUE));
 
 //fclose($out_f);
-var_dump($opts);
+//var_dump($opts,$coltypes);
 
 reterr(0); // uspesny konec programu
 ?>

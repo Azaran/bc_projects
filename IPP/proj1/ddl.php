@@ -18,15 +18,15 @@ class DDL{
   }
   public function getT($value,$attr){
     if ($attr == 1)
-      return 3;
-    elseif (eregi("(0|1|true|false)$",$value))
-      return 0;
+      return 3; // "NVARCHAR"
+    elseif (eregi("^(0|1|true|false)$",$value))
+      return 0; // "BIT"
     elseif (ereg("^[-+]{0,1}[0-9]*\.{0,1}[0-9]+([eE][-+]{0,1}[0-9]+)*$",$value))
-      return 2;
-    elseif (ereg("[0-9]*$",$value))
-      return 1;
+      return 2; // "FLOAT"
+    elseif (ereg("^[0-9]*$",$value))
+      return 1; // "INT"
     else
-      return 4;
+      return 4; // "NTEXT"
   }
 }
 
