@@ -139,6 +139,7 @@ void invertFill(const S_Point * points, const int size,  const S_RGBA & color1, 
     {
       p_2 = points[0]; 
     }
+      //printf("P1(x=%d,y=%d), P2(x=%d,y=%d)\t",p_1.x,p_1.y,p_2.x,p_2.y);
     if (p_1.y != p_2.y)
     {
       if (p_1.y > p_2.y)
@@ -146,15 +147,17 @@ void invertFill(const S_Point * points, const int size,  const S_RGBA & color1, 
 	SWAP(p_1.x, p_2.x);
 	SWAP(p_1.y, p_2.y);
       }
+      //printf("P1(x=%d,y=%d), P2(x=%d,y=%d)",p_1.x,p_1.y,p_2.x,p_2.y);
       lines.push_back(S_Line(p_1, p_2));
     }
+  //  printf("\n");
   }
-
+//printf("size1=%lu, ",lines.size());
   // vytvoreni masky a jeji naplneni nulovymi hodnotami
   S_Mask m(width, height);
 
   // modifikacia masky pre kazdu hranu
-  for(int i = 0; i < lines.size(); i++) 
+  for(unsigned int i = 0; i < lines.size(); i++) 
   {
     S_Line line_i = lines[i];	// vybereme hranu ze seznamu
 
@@ -171,7 +174,7 @@ void invertFill(const S_Point * points, const int size,  const S_RGBA & color1, 
       int intersection = 0; // prusecik hrany s radkem "row"
       float k = (float)(line_i.point1.x - line_i.point2.x)/ \
 		(line_i.point1.y - line_i.point2.y);
-      intersection = ABS(ROUND(line_i.point1.x - k*line_i.point1.y )) ;
+      intersection = ROUND(line_i.point1.x + k*(y_i-line_i.point1.y));
       // invertuj masku napravo od tohoto bodu
       for(int x_i = intersection; x_i < width; x_i++) 
       {
@@ -206,7 +209,7 @@ void invertFill(const S_Point * points, const int size,  const S_RGBA & color1, 
 
 	float factor = 0.0; // interpolacni faktor pro namichani barev
 	factor = (float)x_i / width;
-	// interpolace barvy 
+	//interpolace barvy 
 	S_RGBA color =  S_RGBA::interpolate(color1, color2, factor);
 
 	putPixel(x_i, y_i, color);
@@ -214,8 +217,9 @@ void invertFill(const S_Point * points, const int size,  const S_RGBA & color1, 
     }
   }
 
+printf("size2=%lu\n",lines.size());
   // Prekresleni hranic polygonu
-  for(int i = 0; i < lines.size(); i++) 
+  for(unsigned int i = 0; i < lines.size(); i++) 
   {
     ///////////////////////////////////////////////////////
     //////////////////// VAS UKOL c. 4 ////////////////////
@@ -224,16 +228,31 @@ void invertFill(const S_Point * points, const int size,  const S_RGBA & color1, 
     //   pro barvu hran pouzijte barvu color1
     //
     ///////////////////////////////////////////////////////
-    S_Line line = lines.back();
-    lines.pop_back();
-    int x = line.p1.x;
-    int y = line.p1.y;
-    float k = (float)(x - line.p2.x) / (y - line.p2.y);
-    for(y; y < line.p2.y; y++) 
+    S_Line linka;    
+    S_Point p1, p2;
+    linka = lines[i];
+    p1 = linka.point1;
+    p2 = linka.point2;
+    //printf("x1=%d,y1=%d,x2=%d,y2=%d,i=%d\n",p1.x,p1.y,p2.x,p2.y,i);
+    int dx = p2.x-p1.x;
+    int dy = p2.y-p1.y;
+    int sig = 0;
+    if (ABS(p2.x - p1.x) < ABS(p2.y - p1.y))
     {
-      x = ABS(ROUND(x - k*y )) ;
-      putPixel(x, y, color1);
+      SWAP(p1.x, p1.y);
+      SWAP(p2.x, p2.y);
+      SWAP(dx, dy);
+      sig = 1;
+    }
+    int y = p1.y << 8;
+    int k = (dy << 8) / dx; 
+    for(int x = p1.x; x < p2.x; x++) 
+    {
+      if (sig == 1)
+        putPixel(y >> 8, x, color1);
+      else
+	putPixel(x, y >> 8, color1);
+      y += k;
     }
   }
-
 }
