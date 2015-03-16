@@ -29,5 +29,7 @@ class DDL{
       return 4; // "NTEXT"
   }
 }
+class Relations{
 
+}
 ?>

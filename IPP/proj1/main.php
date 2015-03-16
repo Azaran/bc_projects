@@ -35,13 +35,25 @@ $longopts = array (
 $tablist = new Elemlist;
 $ddl = new DDL;
 ################ function declaration ##################
-
+function findDupl($tabname)
+{
+  global $tablist;
+  echo "Start: ###############\n";
+  foreach($tablist->table as $name)
+    echo $name."\n";
+}
 function searchStruct($data, $tabname, $indent)
 {
   global $tablist,$ddl;
   $indent.="\t";
   for ($data->rewind();$data->valid(); $data->next())
   {
+    findDupl($tabname);
+/*    
+$appearcnt = findDupl($tabname);
+    if ($appercnt)
+      $tabname .= $appearcnt;
+*/
     $tablist->add($tabname, $data->key(),$ddl->getT($data->current(),0));
     //echo $data->current()."\t";
     if ($data->hasChildren())
@@ -134,7 +146,7 @@ $xml->rewind();				   // skoc na zacatek objektu
 // print_r($xml);
 searchStruct($xml,"","");
  for ($tablist->setFirst(); $tablist->currnt() <= $tablist->size()-1; $tablist->nxt())
-   echo $tablist->getCTable().", ".$tablist->getCElem().", ".$tablist->getCType().", ".$tablist->currnt()."\n";
+   fileWrite($tablist->getCTable().", ".$tablist->getCElem().", ".$tablist->getCType().", ".$tablist->currnt()."\n");
 // print_r($tablist);
 
 

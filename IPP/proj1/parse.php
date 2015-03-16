@@ -1,11 +1,11 @@
 <?php
 class Elemlist{
-   var $table;   // string
-   var $elem;    // string
-   var $dtype;    // string
+   public $table;   // string
+   public $elem;    // string
+   public $dtype;    // string
    // var $attr;    // boolean
-   var $cnt;   // integer
-   var $curr;    // integer
+   public $cnt;   // integer
+   public $curr;    // integer
   
   public function __construct()
   {
