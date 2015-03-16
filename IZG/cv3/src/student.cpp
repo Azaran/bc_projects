@@ -139,20 +139,18 @@ void invertFill(const S_Point * points, const int size,  const S_RGBA & color1, 
     {
       p_2 = points[0]; 
     }
-      //printf("P1(x=%d,y=%d), P2(x=%d,y=%d)\t",p_1.x,p_1.y,p_2.x,p_2.y);
+    // preskoc hrany s rocnobezne s radkem
     if (p_1.y != p_2.y)
     {
+      // prehod body pokud nejsou zadany od zhora dolu
       if (p_1.y > p_2.y)
       {
 	SWAP(p_1.x, p_2.x);
 	SWAP(p_1.y, p_2.y);
       }
-      //printf("P1(x=%d,y=%d), P2(x=%d,y=%d)",p_1.x,p_1.y,p_2.x,p_2.y);
       lines.push_back(S_Line(p_1, p_2));
     }
-  //  printf("\n");
   }
-//printf("size1=%lu, ",lines.size());
   // vytvoreni masky a jeji naplneni nulovymi hodnotami
   S_Mask m(width, height);
 
@@ -172,8 +170,10 @@ void invertFill(const S_Point * points, const int size,  const S_RGBA & color1, 
       ///////////////////////////////////////////////////////
 
       int intersection = 0; // prusecik hrany s radkem "row"
+      // smernice primky
       float k = (float)(line_i.point1.x - line_i.point2.x)/ \
 		(line_i.point1.y - line_i.point2.y);
+      // vypocet bodu na zaklade smernice
       intersection = ROUND(line_i.point1.x + k*(y_i-line_i.point1.y));
       // invertuj masku napravo od tohoto bodu
       for(int x_i = intersection; x_i < width; x_i++) 
@@ -208,8 +208,8 @@ void invertFill(const S_Point * points, const int size,  const S_RGBA & color1, 
 	///////////////////////////////////////////////////////
 
 	float factor = 0.0; // interpolacni faktor pro namichani barev
+	// vypocet rozlozeni barvy na zaklade polohy objektu v rovine
 	factor = (float)x_i / width;
-	//interpolace barvy 
 	S_RGBA color =  S_RGBA::interpolate(color1, color2, factor);
 
 	putPixel(x_i, y_i, color);
@@ -217,7 +217,6 @@ void invertFill(const S_Point * points, const int size,  const S_RGBA & color1, 
     }
   }
 
-printf("size2=%lu\n",lines.size());
   // Prekresleni hranic polygonu
   for(unsigned int i = 0; i < lines.size(); i++) 
   {
@@ -228,24 +227,26 @@ printf("size2=%lu\n",lines.size());
     //   pro barvu hran pouzijte barvu color1
     //
     ///////////////////////////////////////////////////////
-    S_Line linka;    
+    
+    // pouzita funkce pro vykreslovani primky z prvniho cviceni
+    S_Line line;    
     S_Point p1, p2;
-    linka = lines[i];
-    p1 = linka.point1;
-    p2 = linka.point2;
-    //printf("x1=%d,y1=%d,x2=%d,y2=%d,i=%d\n",p1.x,p1.y,p2.x,p2.y,i);
-    int dx = p2.x-p1.x;
-    int dy = p2.y-p1.y;
+    line = lines[i];
+    p1 = line.point1;
+    p2 = line.point2;
+    
+    int dx = p2.x-p1.x; // delka v x
+    int dy = p2.y-p1.y; // delka v y
     int sig = 0;
-    if (ABS(p2.x - p1.x) < ABS(p2.y - p1.y))
+    if (ABS(p2.x - p1.x) < ABS(p2.y - p1.y)) // prohozeni x a y pokud v y roste rychleji
     {
       SWAP(p1.x, p1.y);
       SWAP(p2.x, p2.y);
       SWAP(dx, dy);
       sig = 1;
     }
-    int y = p1.y << 8;
-    int k = (dy << 8) / dx; 
+    int y = p1.y << 8; // zarovnani na Fixed Point
+    int k = (dy << 8) / dx; // smernice ve Fixed Point
     for(int x = p1.x; x < p2.x; x++) 
     {
       if (sig == 1)
