@@ -37,7 +37,8 @@ $tablist = new Elemlist;
 $ddl = new DDL;
 $surfix = array();
 $output = "";
-$out_f = STDOUT;
+//$out_f = STDOUT;
+$in_f = STDIN;
 $mode = 0;
 ################ function declaration ##################
 function findDupl($tabname, $path)
@@ -95,16 +96,17 @@ function makeOutput ()
 ################# main function #########################
 ///////// overeni parametru a otevreni souboru ////////////////////
 $opts = getopt($shortopts, $longopts);
-var_dump($opts);
-if (empty($opts))
-  reterr(1);
-foreach ($opts as $opt)
+// var_dump($opts);
+// if (empty($opts))
+//  reterr(1);
+foreach (array_keys($opts) as $opt)
   switch($opt)
   {
     case "help":  // volame help?
     {
-     // if ()  // $opt obsahuje vic jak jednu polozku
-     //	reterr(1);
+//      echo "count = ".count($opts);
+      if (count($opts) > 1)  // $opt obsahuje vic jak jednu polozku
+	reterr(1);
       echo $help."\n";
       reterr(0);
     }
@@ -113,6 +115,12 @@ foreach ($opts as $opt)
       if ($mode == 2) // -b a --etc=n nemohou byt zaroven
         reterr(12);
       $mode = 1;
+      break;
+    }
+    case 'a':
+    {
+
+      $mode = 5;
       break;
     }
     case "etc":
@@ -124,14 +132,20 @@ foreach ($opts as $opt)
     }    
     case "input":
     {
+      /*
       $in_f = fopen($opts["input"], "r") or reterr(2);  // overeni vstupniho souboru
       $read_in_f = fread($in_f, filesize($opts["input"]));
+      */
+      $in_f = $opts["input"];
       //  echo "input= \\$opts[input]\\\n";
       break;
     }
     case "output":
     {
-      $out_f = fopen($opts["output"], "w") or reterr(3); // overeni vystupniho souboru
+       if (($fpath = realpath($opts["output"])))
+	 $out_f = fopen($fpath, "w") or reterr(3); // overeni vystupniho souboru
+       else
+	reterr(3);
     //    fwrite($out_f, $read_in_f);  // pouze pro testovaci ucely
       break;
     }
@@ -148,11 +162,10 @@ foreach ($opts as $opt)
     }
     default:
       reterr(1);
-      break;
   }
-if (!isset($opts["input"]))
-  $read_in_f = file_get_contents("php://stdin");
-
+if (empty($read_in_f))
+ if (!($read_in_f = file_get_contents("php://stdin")))
+   reterr(2);
 ////////////////////////////////////////////////////////////////////
 /////////// parsovani XML souboru //////////////////////////////////
 
@@ -167,7 +180,7 @@ $coltypes = array (
 #\\\\\\\\\\\\\\\\\\\\\\\\\\/////////////////////////////#
 /////////////////// Pouziti Iteratoru \\\\\\\\\\\\\\\\\\\
 
-$xml = new SimpleXMLIterator($read_in_f);  // vytvor z XML objekt
+$xml = new SimpleXMLIterator($in_f, 0, true);  // vytvor z XML objekt
 $xml->rewind();				   // skoc na zacatek objektu
 
 // print_r($xml);
