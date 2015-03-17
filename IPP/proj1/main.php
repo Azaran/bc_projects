@@ -34,47 +34,40 @@ $longopts = array (
 );
 $tablist = new Elemlist;
 $ddl = new DDL;
+$surfix = array();
+$output = "";
 ################ function declaration ##################
-function findDupl($tabname)
+function findDupl($tabname, $path)
 {
-  global $tablist;
-  echo "Start: ###############\n";
-  foreach($tablist->table as $name)
-    echo $name."\n";
+  global $surfix;
+    if (isset($surfix[$path][$tabname])) // pokud se uz prvek vyskytl navys
+      $surfix[$path][$tabname]++;
+    else 
+      $surfix[$path][$tabname] = 1;      // prvni vyskyt, inicializuj index
+  // echo $tabname.$surfix[$path][$tabname]."\t\t$path\n";
 }
-function searchStruct($data, $tabname, $indent)
+function searchStruct($data, $tabname, $path)
 {
   global $tablist,$ddl;
-  $indent.="\t";
-  for ($data->rewind();$data->valid(); $data->next())
+  for ($data->rewind();$data->valid(); $data->next()) // prochazej XML prvek po prvku
   {
-    findDupl($tabname);
-/*    
-$appearcnt = findDupl($tabname);
-    if ($appercnt)
-      $tabname .= $appearcnt;
-*/
-    $tablist->add($tabname, $data->key(),$ddl->getT($data->current(),0));
-    //echo $data->current()."\t";
-    if ($data->hasChildren())
+    $tablist->add($tabname, $data->key(), $ddl->getT($data->current(), 0), $path);
+    if ($data->hasChildren())                  // ma nejakej podelementy?
     {
-      // echo "Volame rekurzi > > >".$data->key()."\n";
-      searchStruct($data->current(),$data->key(),$indent);
+      if (!eregi("/".$data->key()."/",$path))  // neni posledni prvek v ceste stejny jak novy?
+	$path .= $data->key()."/";
+      findDupl($data->key(), $path);           // kolik je prvek v tabulce?
+      searchStruct($data->current(),$data->key(),$path);   // zanor se o uroven
     }
- //     if (!empty($data->current()))
- //     {	
-	// echo "Attribute nalezen: ";
-	foreach ($data->current()->attributes() as $attname => $attval)
-        {
-	  $tablist->add($data->key(),$attname,$ddl->getT($attval,1));
-	  // echo $data->key()." ($attname => $attval), ";
-        }
-	// echo "\n";
- //     }
- //     else
- //     {
-        //echo "$tabname, ".$data->key().", 0\n";
- //     }
+    elseif (eregi("^(! *$)?.+$",$data->current()))
+    { 
+      $tablist->add($data->key(), "value", $ddl->getT($data->current(), 0), $path);
+  //    echo "current: ".$data->current()."\n";
+    }
+    foreach ($data->current()->attributes() as $attname => $attval) // projdi attributy
+    {
+      $tablist->add($data->key(), $attname, $ddl->getT($attval, 1), $path);
+    }
   }
   return 0; 
 }
@@ -105,12 +98,12 @@ if (isset($opts["help"]))  // volame help?
   echo $help."\n";
   reterr(0);
 }
-if (isset($opts["b"]) && isset($opts["etc"])) // -g a --etc=n nemohou byt zaroven
+if (isset($opts["b"]) && isset($opts["etc"])) // -b a --etc=n nemohou byt zaroven
   reterr(12);
 
 if (isset($opts["input"]))
 {
-  $in_f = @fopen($opts["input"], "r") or reterr(2);  // overeni vstupniho souboru
+  $in_f = fopen($opts["input"], "r") or reterr(2);  // overeni vstupniho souboru
   $read_in_f = fread($in_f, filesize($opts["input"]));
   //  echo "input= \\$opts[input]\\\n";
 }
@@ -118,14 +111,16 @@ else
   $read_in_f = file_get_contents("php://stdin");
 
 if (isset($opts["output"]))
-  $out_f = @fopen($opts["output"], "w") or reterr(3); // overeni vystupniho souboru
+  $out_f = fopen($opts["output"], "w") or reterr(3); // overeni vystupniho souboru
 //    fwrite($out_f, $read_in_f);  // pouze pro testovaci ucely
 else 
   $out_f = STDOUT;
-
+if (isset($opts["g"]))
+  reterr(0);
 if (isset($opts["header"]))
   fileWrite("--".$opts["header"]."\n\n");
-
+if (!isset($opts))
+  reterr(1);
 ////////////////////////////////////////////////////////////////////
 /////////// parsovani XML souboru //////////////////////////////////
 
@@ -144,16 +139,34 @@ $xml = new SimpleXMLIterator($read_in_f);  // vytvor z XML objekt
 $xml->rewind();				   // skoc na zacatek objektu
 
 // print_r($xml);
-searchStruct($xml,"","");
- for ($tablist->setFirst(); $tablist->currnt() <= $tablist->size()-1; $tablist->nxt())
-   fileWrite($tablist->getCTable().", ".$tablist->getCElem().", ".$tablist->getCType().", ".$tablist->currnt()."\n");
-// print_r($tablist);
+searchStruct($xml,"","/");
+foreach ($tablist->table as $tabk => $tabv)
+{ $i=0;
+  if ($tabk == "" || $tabk == "0")
+    continue;
+  $output .= $ddl->create($tabk).$ddl->primary($tabk);
+  foreach ($tabv as $colk => $colv)
+  {
+    if (isset($tablist->table[$colk]))
+    {
+      if (isset($surfix[$colv[1]][$colk]) && ($k = $surfix[$colv[1]][$colk]) > 1) // vice prvku s stejnym nazvem?
+	for ($j = 1; $j <= $k; $j++)           
+	  $output .= $ddl->foreign($colk.$j);
+      else
+	$output .= $ddl->foreign($colk);
 
+    }
+    else
+      $output .= $ddl->row($colk, $coltypes[$colv[0]]);
 
-//fwrite($out_f, print_r($xml, TRUE));
+   // echo $tabk.", ".$colk.", ".$colv[0]."\n";
+  }
+  $output .= $ddl->endtab();
+}
+fileWrite($output);
+// print_r($tablist->table);
 
-//fclose($out_f);
-//var_dump($opts,$coltypes);
+// fclose($out_f);
 
 reterr(0); // uspesny konec programu
 ?>

@@ -4,17 +4,17 @@ class DDL{
   public function create($tablename){
   	return "CREATE TABLE $tablename(";
   }
-  public function primary($colname,$coltype){
-  	return "\n\t\t\tprk_$tablename"."_id INT PRIMARY KEY";
+  public function primary($tablename){
+  	return "\n   prk_$tablename"."_id INT PRIMARY KEY";
   }
-  public function foreign($colname,$coltype){
-  	return ",\n\t\t\t$colname\_id $coltype";
+  public function foreign($colname){
+  	return ",\n   ".$colname."_id INT";
   }
   public function row($colname,$coltype){
-  	return ",\n\t\t\t$colname $coltype";
+  	return ",\n   $colname $coltype";
   }
   public function endtab(){
-  	return "\n);\n";
+  	return "\n);\n\n";
   }
   public function getT($value,$attr){
     if ($attr == 1)

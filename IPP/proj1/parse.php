@@ -1,29 +1,30 @@
 <?php
 class Elemlist{
-   public $table;   // string
-   public $elem;    // string
-   public $dtype;    // string
-   // var $attr;    // boolean
-   public $cnt;   // integer
-   public $curr;    // integer
+  //public $path;    // string
+  public $table;   // string
+  //public $elem;    // string
+  //public $dtype;   // string
+  //public $cnt;     // integer
+  //public $curr;    // integer
   
   public function __construct()
   {
-    $this->table = array();
-    $this->elem = array();
-    $this->dtype = array();
-    // $this->attr = array();
-    $this->cnt = 0;
-    $this->curr = -1;
+    //$this->path = array();
+    $this->table = array(array());
+    //$this->elem = array();
+    //$this->dtype = array();
+    //$this->cnt = 0;
+    //$this->curr = -1;
   }
-  public function add($tabname,$elemname,$ddltype){
-    $this->table[$this->cnt] = $tabname;
-    $this->elem[$this->cnt] = $elemname;
-    $this->dtype[$this->cnt] = $ddltype;
-    // $this->attr[$this->cnt] = $attrib;
-    $this->cnt++;
-    $this->curr++;   
-}
+  public function add($tabname,$elemname,$ddltype, $path){
+    //$this->path[$this->cnt] = $path;
+    $this->table[$tabname][$elemname] = array($ddltype, $path);
+    //$this->elem[$this->cnt] = $elemname;
+    //$this->dtype[$this->cnt] = $ddltype;
+    //$this->cnt++;
+    //$this->curr++;   
+  } 
+  /*
   public function size(){
   return $this->cnt;
   }
@@ -51,6 +52,14 @@ class Elemlist{
     else
       return FALSE; 
   }
+  public function getCPath(){
+    if (!$this->isempty())
+    {    
+      return $this->path[$this->curr];
+    }
+    else
+      return FALSE; 
+  }
   public function nxt(){
       if ($this->curr < $this->size())
 	$this->curr++;
@@ -58,6 +67,7 @@ class Elemlist{
   public function currnt(){
       return $this->curr;
   }
+/*
   public function getNext(){
       if ($this->curr+1 < $size)
       {
@@ -67,7 +77,8 @@ class Elemlist{
         return $ret;
       }
   } 
-  public function getLast(){
+
+  public function setLast(){
       $this->curr = $size - 1;
       //$ret = new elemlist();
       //$ret = $this->getCurr();
@@ -79,6 +90,7 @@ class Elemlist{
       //$ret = $this->getCurr();
       //return $ret;
   }
+   */
   public function isempty(){
     if (!$this->size())
       return TRUE;
