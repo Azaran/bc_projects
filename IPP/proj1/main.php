@@ -23,19 +23,22 @@ $err_num = array (
     4 => "chybny format vstupniho souboru",
     12 => "zadane parametry -b a --etc nemohou spolecne fungovat",
     100 => "nespecifikovana chyba",
+    150 => "nenaimplementovano",
   );
 $shortopts = "abg";
 $longopts = array (
   "help",
-  "input::",
-  "output::",
-  "header::",
-  "etc::",
+  "input:",
+  "output:",
+  "header:",
+  "etc:",
 );
 $tablist = new Elemlist;
 $ddl = new DDL;
 $surfix = array();
 $output = "";
+$out_f = STDOUT;
+$mode = 0;
 ################ function declaration ##################
 function findDupl($tabname, $path)
 {
@@ -91,36 +94,65 @@ function makeOutput ()
 }
 ################# main function #########################
 ///////// overeni parametru a otevreni souboru ////////////////////
-
 $opts = getopt($shortopts, $longopts);
-if (isset($opts["help"]))  // volame help?
-{ 
-  echo $help."\n";
-  reterr(0);
-}
-if (isset($opts["b"]) && isset($opts["etc"])) // -b a --etc=n nemohou byt zaroven
-  reterr(12);
-
-if (isset($opts["input"]))
-{
-  $in_f = fopen($opts["input"], "r") or reterr(2);  // overeni vstupniho souboru
-  $read_in_f = fread($in_f, filesize($opts["input"]));
-  //  echo "input= \\$opts[input]\\\n";
-}
-else
+var_dump($opts);
+if (empty($opts))
+  reterr(1);
+foreach ($opts as $opt)
+  switch($opt)
+  {
+    case "help":  // volame help?
+    {
+     // if ()  // $opt obsahuje vic jak jednu polozku
+     //	reterr(1);
+      echo $help."\n";
+      reterr(0);
+    }
+    case 'b':
+    {
+      if ($mode == 2) // -b a --etc=n nemohou byt zaroven
+        reterr(12);
+      $mode = 1;
+      break;
+    }
+    case "etc":
+    {
+      if ($mode == 1) // -b a --etc=n nemohou byt zaroven
+        reterr(12);
+      $mode = 2;
+      break;
+    }    
+    case "input":
+    {
+      $in_f = fopen($opts["input"], "r") or reterr(2);  // overeni vstupniho souboru
+      $read_in_f = fread($in_f, filesize($opts["input"]));
+      //  echo "input= \\$opts[input]\\\n";
+      break;
+    }
+    case "output":
+    {
+      $out_f = fopen($opts["output"], "w") or reterr(3); // overeni vystupniho souboru
+    //    fwrite($out_f, $read_in_f);  // pouze pro testovaci ucely
+      break;
+    }
+    case "g":
+    {
+      // $mode = 3;
+      reterr(150);
+      break;
+    }
+    case "header":
+    {
+      $output .="--".$opts["header"]."\n\n";
+      break;
+    }
+    default:
+      reterr(1);
+      break;
+  }
+if (!isset($opts["input"]))
   $read_in_f = file_get_contents("php://stdin");
 
-if (isset($opts["output"]))
-  $out_f = fopen($opts["output"], "w") or reterr(3); // overeni vystupniho souboru
-//    fwrite($out_f, $read_in_f);  // pouze pro testovaci ucely
-else 
-  $out_f = STDOUT;
-if (isset($opts["g"]))
-  reterr(0);
-if (isset($opts["header"]))
-  fileWrite("--".$opts["header"]."\n\n");
-if (!isset($opts))
-  reterr(1);
 ////////////////////////////////////////////////////////////////////
 /////////// parsovani XML souboru //////////////////////////////////
 
