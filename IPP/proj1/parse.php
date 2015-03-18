@@ -18,7 +18,11 @@ class Elemlist{
   }
   public function add($tabname,$elemname,$ddltype, $path){
     //$this->path[$this->cnt] = $path;
-    $this->table[$tabname][$elemname] = array($ddltype, $path);
+    if (!isset($this->table[$tabname][$elemname]))
+      $this->table[$tabname][$elemname] = array($ddltype, $path);
+    elseif($this->table[$tabname][$elemname][0] < $ddltype)
+      $this->table[$tabname][$elemname][0] = $ddltype;
+
     //$this->elem[$this->cnt] = $elemname;
     //$this->dtype[$this->cnt] = $ddltype;
     //$this->cnt++;
