@@ -1,4 +1,7 @@
 <?php
+
+#XTD:xvecer18
+
 require 'ddl.php';
 require 'parse.php';
 ################# variable declaration ##################
@@ -44,6 +47,7 @@ $output = "";
 
 ################ function declaration ##################
 
+// hledani duplicit v zpracovanych elementu XML kodu
 function findDupl($tabname, $path)
 {
   global $surfix;
@@ -56,6 +60,7 @@ function findDupl($tabname, $path)
     $surfix[$path][$tabname] = 1;      // prvni vyskyt, inicializuj index
 }
 
+// rekurzivni prohledavani XML objektu a ukladani hodnot do objektu
 function searchStruct($data, $tabname, $path)
 {
   global $tablist,$ddl,$mode;
@@ -73,32 +78,38 @@ function searchStruct($data, $tabname, $path)
     if ($data->hasChildren())                  // ma nejakej podelementy?
       searchStruct($data->current(),$key,$cpath);   // zanor se o uroven
     elseif (preg_match("/^[ \t\n\r\x0B]*(.*)[ \t\n\r\x0B]*$/s",$data->current(),$match))
+      // ukladej pouze neprazdne elementy
       if ($match[1] != "")
 	$tablist->add($key, "value", $ddl->getT($match[1], 0), $cpath);
-
-    if ($mode["a"] == 0)
+      
+    if ($mode["a"] == 0) // uloz attributy pokud neni nastaven argument -a
       foreach ($data->current()->attributes() as $attname => $attval) // projdi attributy
       {
-	$attname = strtolower($attname);
+	$attname = strtolower($attname); // preved na mala pismena
 	$tablist->add($key, $attname, $ddl->getT($attval, 1), $cpath);
       }
   }
   return 0; 
 }
+
+// vypis na stderr a zaslani exit_code
 function reterr($err)   // vrat a zapis do stderr
 {
   fwrite(STDERR, $GLOBALS["err_num"][$err]);
   exit($err);
 }
+
+// vypis vystupu do patricneho souboru
 function fileWrite($text_out)
 {
   global $out_f;
   if (isset($out_f))
-    fwrite($out_f, $text_out, strlen($text_out));  // pouze pro testovaci ucely
+    fwrite($out_f, $text_out, strlen($text_out));  // --output
   else
-    fwrite(STDOUT, $text_out, strlen($text_out));
+    fwrite(STDOUT, $text_out, strlen($text_out));  // STDOUT
 }
 
+// kontrolovani pristupu k souborum
 function makeFilePath ($path, $io)
 {
   if (!is_string($path))
@@ -135,7 +146,7 @@ foreach (array_keys($opts) as $opt)
     }
     case 'b':
     {
-      if ($mode[$opt]!= 0)
+      if ($mode[$opt]!= 0)  // overeni zda neni zadany nektery argument vicekrat
 	reterr(1);
       if ($mode["etc"] > 0) // -b a --etc=n nemohou byt zaroven
         reterr(1);
@@ -151,7 +162,7 @@ foreach (array_keys($opts) as $opt)
     }
     case "etc":
     {
-      reterr(150);
+//      reterr(150);
       if ($mode[$opt]!= 0)
 	reterr(1);
       if ($mode["b"] > 0) // -b a --etc=n nemohou byt zaroven
@@ -164,9 +175,9 @@ foreach (array_keys($opts) as $opt)
     {
       $mode[$opt] = 1;
       $fpath = makeFilePath($opts["input"],1);
-      if ($fpath == 2)
+      if ($fpath == 2)             // zaslano pole => chyba arg
 	reterr(1);
-      elseif ($fpath == false)
+      elseif ($fpath == false)     // nepristupny soubor
 	reterr(2);
       else
 	$in_f = $opts[$opt];
@@ -175,7 +186,7 @@ foreach (array_keys($opts) as $opt)
     case "output":
     {
       $fpath = makeFilePath($opts["output"],0);
-      if ($fpath == 2)
+      if ($fpath == 2)                            // zaslano pole => chyba arg
 	reterr(1);
       elseif ($fpath)
 	$out_f = fopen($fpath, "w") or reterr(3); // overeni vystupniho souboru
@@ -188,7 +199,7 @@ foreach (array_keys($opts) as $opt)
       if ($mode[$opt]!= 0)
 	reterr(1);
       $mode[$opt] = 1;
-      reterr(150);
+      //reterr(150);
       break;
     }
     case "header":
