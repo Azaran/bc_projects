@@ -97,5 +97,35 @@ void	bezierDeCasteljau(int quality, const S_Vector *points, S_Vector *line_point
 {
   // Toto musi byt na zacatku funkce, nemazat.
   point2d_vecClean(line_points);
+   // printf("check 0");
+  S_Vector *local_points = point2d_vecCreateEmpty();
+  Point2d p_new, p_tmp1, p_tmp2;
+  double t = 0.0, t_step = 1.0/quality;
+  int n = point2d_vecSize(points) - 1;
+  if (n < 1)
+    return;
+  for (int q = 0; q <= quality; ++q, t += t_step)
+  {
+    for (int s = 0; s <= n; s++)		// zkopiruj points do local_points
+     point2d_vecPushBack(local_points, point2d_vecGet(points,s));
 
+    for (int j = 0; j < n; ++j)
+    {
+      for (int i = 0; i < n-j; ++i)
+      {
+	p_tmp1 = point2d_vecGet(local_points, i);
+	p_tmp2 = point2d_vecGet(local_points, i+1);
+	
+	mullPoint2d((1-t), &p_tmp1, &p_tmp1);
+	mullPoint2d(t, &p_tmp2, &p_tmp2);
+	addPoint2d(&p_tmp1, &p_tmp2, &p_new);
+	point2d_vecSet(local_points, i, p_new);   // prepsani od zacatku
+
+	if ((n-j) == 1)				  // pokud se jedna o posledni vypocitany bod
+	  point2d_vecPushBack(line_points, p_new);
+
+      }
+    }
+    
+  }
 }
