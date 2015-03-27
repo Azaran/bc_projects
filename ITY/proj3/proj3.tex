@@ -1,0 +1,166 @@
+\documentclass[11pt,a4paper,onecolumn]{article}
+\usepackage[left=2cm,text={17cm,24cm},top=3cm]{geometry}
+
+\usepackage[czech]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage{times}
+\usepackage{amsthm}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{array}
+\usepackage{multirow}
+\usepackage{dcolumn}
+\usepackage[czech,ruled,linesnumbered,longend,noline]{algorithm2e}
+\usepackage{graphics}
+
+
+
+\begin{document}
+\begin{titlepage}
+  \begin{center}
+
+    \textsc{\Huge Fakulta informačních technologií\\Vysoké učení technické v~Brně}\\
+    \vspace{\stretch{0.382}}\LARGE Typografie a publikování -- 3. projekt\\
+    Tabulky a obrázky\vspace{\stretch{0.618}}\\
+  \end{center}
+  {\Large 27. března 2015 \hfill Vojtěch Večeřa}
+\end{titlepage}
+
+\section{Úvodní stránka}
+\label{uvod}
+\noindent Název práce umístěte do zlatého řezu a nezapomeňte uvést dnešní datum a vaše jméno a příjmení.
+\section{Tabulky}
+\label{tabulky}
+\noindent Pro sázení tabule můžeme použít buď prostředí \texttt{tabbing} nebo prostředí \texttt{tabular}.
+\subsection{Protředí \texttt{tabbing}}
+\noindent Při použití \texttt{tabbing} vypadá tabulka následovně:
+\begin{tabbing}
+\pushtabs \qquad\qquad\qquad\qquad \= \qquad\qquad \= \qquad\qquad \kill
+\textbf{Ovoce} \> \textbf{Cena} \> \textbf{Množství} \\
+Jablka \> 25,90 \> 3 kg \\
+Hrušky \> 27,40 \> 2,5 kg \\
+Vodní melouny \> 35,-- \> 1 kus \\
+\poptabs
+\end{tabbing}
+\noindent Toto prostředí se dá také pro sázení algoritmů, ovšem vhodnější je použít prostředí \texttt{algorithm} nebo \texttt{algorithm2e} (viz sekce 3).
+\subsection{Prostředí \texttt{tabular}}
+\noindent Další možností jak vytvořit tabulku, je použít prostředí \texttt{tabular}. Tabulky pak budou vypadat takto\footnote{Kdyby byl problém s \texttt{cline}, zkuste se podívat třeba sem: http://www.abclinux.cz/tex/poradna/show/325037.}:
+
+\begin{table}[ht]
+\catcode`\-=12
+\begin{center}
+\begin{tabular}[p]{| c | c | c |}
+\hline 
+& \multicolumn{2}{c|}{\bfseries Cena} \\\cline{2-3}
+\textbf{Měna} &  \textbf{nákup} & \textbf{prodej} \\\hline
+EUR  & 27,34 & 27,42 \\
+GBP  & 33,09 & 33,41 \\
+USD  & 19,87 & 19,05 \\\hline
+\end{tabular}
+\caption{Tabulka kurzů k dnešnímu dni}
+\end{center}
+\end{table}
+\begin{table}[ht]
+\begin{center}
+\catcode`\-=12
+\begin{tabular}[p]{|>{\bfseries}c|c|}\hline
+$A$ & $\neg A$ \\\hline
+P & N \\\hline
+O & O \\\hline
+X & X \\\hline
+N & P \\\hline
+\end{tabular}
+\begin{tabular}[p]{|c|>{\bfseries}c|c|c|c|c|}\hline
+\multicolumn{2}{|c|}{\multirow{2}{*}{$A \wedge B$}} & \multicolumn{4}{c|}{$B$} \\\cline{3-6}
+\multicolumn{2}{|c|}{} & \textbf{P} & \textbf{O} & \textbf{X} & \textbf{N}  \\\hline
+\multirow{4}{*}{A} 
+  & P & P & O & X & N\\\cline{2-6}
+  & O & O & O & N & N\\\cline{2-6}
+  & X & X & N & X & N\\\cline{2-6}
+  & N & N & N & N & N\\\hline
+\end{tabular}
+\begin{tabular}[p]{|c|>{\bfseries}c|c|c|c|c|}\hline
+\multicolumn{2}{|c|}{\multirow{2}{*}{$A \vee B$}} & \multicolumn{4}{c|}{$B$} \\\cline{3-6}
+\multicolumn{2}{|c|}{} & \textbf{P} & \textbf{O} & \textbf{X} & \textbf{N}  \\\hline
+\multirow{4}{*}{A} 
+  & P & P & P & P & P\\\cline{2-6}
+  & O & P & O & P & O\\\cline{2-6}
+  & X & P & P & X & X\\\cline{2-6}
+  & N & P & O & X & N\\\hline
+\end{tabular}
+\begin{tabular}[p]{|c|>{\bfseries}c|c|c|c|c|}\hline
+\multicolumn{2}{|c|}{\multirow{2}{*}{$A \rightarrow B$}} & \multicolumn{4}{c|}{$B$} \\\cline{3-6}
+\multicolumn{2}{|c|}{} & \textbf{P} & \textbf{O} & \textbf{X} & \textbf{N}  \\\hline
+\multirow{4}{*}{A} 
+  & P & P & O & X & N\\\cline{2-6}
+  & O & P & O & P & O\\\cline{2-6}
+  & N & P & P & X & X\\\cline{2-6}
+  & X & P & P & P & P\\\hline
+\end{tabular}
+\caption{Protože Kleeneho trojhodnotová logika už je "zastaralá", uvádíme si zde příklad čtyřhodnotové logiky}
+\end{center}
+\end{table}
+\section{Algoritmy}
+\noindent Pokud budeme chtít vysázet algoritmus, můžeme použít prostředí \texttt{algorithm}\footnote{Pro nápovědu, jak zacházet s prostředím \texttt{algorithm}, můžeme zkusit tuhle stránku: http://ftp.cstug.cz/pub/tex/CTAN/macros/latex/contrib/algorithms/algorithms.pdf.}
+nebo \texttt{algorithm2e}\footnote{Pro \texttt{algorithm2e} zase tuhle: http://ftp.cstug.cz/pub/tex/CTAN/macros/latex/contrib/algorithm2e/doc/algorithm2e.pdf.}
+Příklad použití prostředí \texttt{algorithm2e} viz Algoritmus 1.
+
+\IncMargin{1em}
+\begin{algorithm}[H]
+\DontPrintSemicolon
+\SetNlSty{}{}{:}
+\SetAlgoNlRelativeSize{0}
+\KwIn{$(X_{t-1}, v_t, z_t)$}
+\KwOut{$X_t$}
+$\overline{X} = X = 0$ \;
+\For{$k = 1$ \KwTo $M$}{
+$x_t^{[k]} = sample\_motion\_model (u_t, x_{t-1}^{[k]}) $\;
+$w_t^{[k]} = measurement\_model (z_t, x_t^{[k]}, m_{t-1}) $\;
+$m_t^{[k]} = updated\_occupancy\_grid (z_t, x_t^{[k]},m_{t-1}^{[k]}) $\;
+$\overline{X_t} = \overline{X_t} + \langle x_x^{[m]}, w_t{[m]} \rangle $\;
+}
+\For{k = 1 \KwTo $M$}{
+draw $ i $ with probability $ \approx w_i^{[i]} $\;
+add $ \langle x_{x}^{[k]}, m_{i}^{[k]} \rangle$ \KwTo $ X_i $ \;
+}
+\KwRet $X_t$\;
+\caption{\textsc{FastSLAM}}
+\end{algorithm}
+\DecMargin{1em}
+\bigskip
+
+
+\section{Obrázky}
+\noindent Do našich článků můžeme samozřejmě vkládat obrázky. Pokud je obrázkem fotografie, můžeme klidně použít bitmapový soubor. Pokud by to ale mělo být nějaké schéma nebo něco podobného, je dobrým zvykem takovýto obrázek vytvořit vektorově.
+
+\begin{figure}[h]
+\begin{center}
+\scalebox{0.4}{\includegraphics{etiopan.eps}\reflectbox{\includegraphics{etiopan.eps}}}
+\caption{Malý etiopánek a jeho bratříček}
+\end{center}
+\end{figure}
+
+Rozdíl mezi vektorovým\dots
+
+\begin{figure}[h]
+\begin{center}
+\scalebox{0.33}{
+\includegraphics{oniisan.eps}}
+\end{center}
+\caption{Vektorový obrázek}
+\end{figure}
+
+\dots a bitmapovým obrázkem
+
+\begin{figure}[h]
+\begin{center}
+\scalebox{0.5}{
+\includegraphics{oniisan2.eps}}
+\end{center}
+\caption{Bitmapový obrázek}
+\end{figure}
+
+se projeví například při zvětšní.
+\indent Odkazy (nejen ty) na obrázky 1, 2, a 3, na tabulky 1 a 2 a také na algoritmus 1 jsou udělány pomocí křížových odkazů. Pak je ovšem potřeba zdrojový soubor přeložit dvakrát.
+\indent Vektorové obrázky lze vytvořit i přímo v \LaTeX u, například v prostředí \texttt{picture}. Všechny rozmery jsou uváděny v mm.
+\end{document}
