@@ -97,35 +97,38 @@ void	bezierDeCasteljau(int quality, const S_Vector *points, S_Vector *line_point
 {
   // Toto musi byt na zacatku funkce, nemazat.
   point2d_vecClean(line_points);
-   // printf("check 0");
+  
+  //quality = 3;
+  
   S_Vector *local_points = point2d_vecCreateEmpty();
   Point2d p_new, p_tmp1, p_tmp2;
   double t = 0.0, t_step = 1.0/quality;
   int n = point2d_vecSize(points) - 1;
-  if (n < 1)
+  
+  
+  if (n < 1)				  // pokud neni zadan zadny bod
     return;
-  for (int q = 0; q <= quality; ++q, t += t_step)
+  
+  for (int q = 0; q <= quality; ++q, t += t_step) // kolik bodu krivky se ma vypocitat? 
   {
     for (int s = 0; s <= n; s++)		// zkopiruj points do local_points
      point2d_vecPushBack(local_points, point2d_vecGet(points,s));
 
-    for (int j = 0; j < n; ++j)
+    for (int j = 0; j < n; ++j)			// uroven hloubky pruchodu
     {
-      for (int i = 0; i < n-j; ++i)
+      for (int i = 0; i < n-j; ++i)		// pocet hodnot ke zpracovani na radku
       {
-	p_tmp1 = point2d_vecGet(local_points, i);
+	p_tmp1 = point2d_vecGet(local_points, i);     // nacteni bodu 1 a 2
 	p_tmp2 = point2d_vecGet(local_points, i+1);
 	
-	mullPoint2d((1-t), &p_tmp1, &p_tmp1);
+	mullPoint2d((1-t), &p_tmp1, &p_tmp1);	    //mezivypocet bodu 1 a 2
 	mullPoint2d(t, &p_tmp2, &p_tmp2);
-	addPoint2d(&p_tmp1, &p_tmp2, &p_new);
-	point2d_vecSet(local_points, i, p_new);   // prepsani od zacatku
+	addPoint2d(&p_tmp1, &p_tmp2, &p_new);	    // sestaveni vysledneho bodu
+	point2d_vecSet(local_points, i, p_new);    // prepsani pocatecnich hodnot vectoru
 
-	if ((n-j) == 1)				  // pokud se jedna o posledni vypocitany bod
-	  point2d_vecPushBack(line_points, p_new);
-
+	if ((n-j) == 1)				  // jsme na nejnizsi urovni pruchodu
+	  point2d_vecPushBack(line_points, p_new); // posli bod na obrazovku
       }
     }
-    
   }
 }
