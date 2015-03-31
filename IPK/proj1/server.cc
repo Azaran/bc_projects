@@ -53,7 +53,7 @@ int main(int argc, char *argv[]){
   scaddr.sin_addr.s_addr = INADDR_ANY;
   scaddr.sin_port = htons(port);
 
-  if ((rc = bind(sc, (struct sockaddr *)&scaddr, sizeof(scaddr)))< 0)
+  if (bind(sc, (struct sockaddr *)&scaddr, sizeof(scaddr))< 0)
   {
     perror("Socket failure: bind()");
     exit(2);
@@ -61,7 +61,7 @@ int main(int argc, char *argv[]){
 
   while(1)
   {
-    if ((rc = listen(sc, 1)) < 0)
+    if (listen(sc, 1) < 0)
     {
       perror("Listen failed:");
       exit(5);
@@ -72,7 +72,7 @@ int main(int argc, char *argv[]){
       pid_t pid = fork();
       if (pid > 0)
       {
-	struct passwd *usrinfo;
+	usleep(15000);
 	bool sign[6];
 	string out_msg;
 	char msg_buffer[1024];
@@ -83,19 +83,25 @@ int main(int argc, char *argv[]){
 	if (read(rec_sc, msg_buffer, sizeof(msg_buffer)) < 0)
 	{
 	  perror("Read failure:");
-	  exit(5);
+	  exit(6);
 	}
 	string msg(msg_buffer);
 	parseSockMsg(&msg, &name, &uid, sign);
 	getPasswd(&out_msg, &name, &uid, sign);
-    
+	 
+	if (write(rec_sc, out_msg.c_str(), sizeof(out_msg.c_str())) < 0)
+	{
+	  perror("Write failure:");
+	  exit(7);
+	}
+      
+	close(rec_sc);
       }
       else if (pid < 0)
       {
 	perror("Fork failure:");
 	exit(4);
       }
-      close(sc);
     }
   }
   return 0;
@@ -156,16 +162,16 @@ bool toBool(string subs)
 void getPasswd(string *msg, vector<string> *name, vector<uid_t> *uid, bool *sign ){
   string subs;
   struct passwd *usrinfo;
-  if (!name.empty())
-    for (vector<string>::size_type s; s < name.size();s++)
+  if (!name->empty())
+    for (vector<string>::size_type s = 0; s < name->size();s++)
     {
-      usrinfo = getpwnam(name[s]);
+      usrinfo = getpwnam(((*name)[s]).c_str());   // get const char from ptr_vector of strings
       makeMsg(msg,sign,usrinfo);
     }
   else 
-    for (vector<uid_t>::size_type s; s < name.size();s++)
+    for (vector<uid_t>::size_type s = 0; s < uid->size();s++)
     {
-      usrinfo = getpwuid(uid[s]);
+      usrinfo = getpwuid((*uid)[s]);
       makeMsg(msg,sign,usrinfo);
     }
 }
@@ -186,11 +192,11 @@ void makeMsg (string *msg, bool *sign, struct passwd *usrinfo)
     *msg += usrinfo->pw_shell;
 }
 
-int checkParams(int argc, char **argv){
+int checkparams(int argc, char **argv){
   int port = 0;
   if (argc != 3)	    // dostal jsem 3 argumenty
   {
-    cerr << "Invalid arguments: wrong number of arguments" << endl;
+    cerr << "invalid arguments: wrong number of arguments" << endl;
     exit(1);
   }
   if (!strcmp(argv[1], "-p"))         // dostal jsem -p
@@ -201,13 +207,13 @@ int checkParams(int argc, char **argv){
     }
     catch (invalid_argument& ia)
     {
-      cerr << "Invalid arguments: port is not a number" << endl;
+      cerr << "invalid arguments: port is not a number" << endl;
       exit(1);
     }
   }
   else
   {
-    cerr << "Invalid arguments: -p missing" << endl;
+    cerr << "invalid arguments: -p missing" << endl;
     exit(1);
   }
   return port;
