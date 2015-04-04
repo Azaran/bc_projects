@@ -13,47 +13,104 @@
 #include <arpa/inet.h>
 #include <netdb.h>
 #include <vector>
+
 using namespace std;
 
-int checkParams(int argc, char **argv);
-void makeMsg (string *msg, bool *sign, struct passwd *usrinfo);
+typedef struct AChar{
+  char *string;
+}t_AChar;
+
+void checkParams(int argc, char **argv, char **host, int *port,\
+    vector<t_AChar> *id, bool *type, bool *sign);
+void makeMsg (string *msg, vector<t_AChar> *id, bool type, bool *sign);
 
 
-int main(int argc, char *argv[]){
 
-  std::cout << "Hello client!" << std::endl;
-  if (checkParams(argc,argv));
-return 0;
+int main(int argc, char **argv)
+{
+  vector<t_AChar> id;
+  int sc, rc, port;
+  char *host;
+  struct sockaddr_in scin;
+  struct hostent *hptr;
+  string out_msg;
+  char in_msg[1024] = {};
+  bool type;
+  bool sign[6] = {0};
+
+  checkParams(argc, argv, &host, &port, &id, &type, sign);
+  
+  if ((sc = socket(AF_INET, SOCK_STREAM, 0)) < 0)
+  {
+    perror("Socket failure: socket()");
+    exit(2);
+  }
+
+  scin.sin_family = AF_INET;
+  scin.sin_port = htons(port);
+
+  if ((hptr = gethostbyname(host)) == NULL)
+  {
+    cout << "gethostbyname() failure: couldnt resolve " << host << endl;
+    exit(3);
+  }
+
+  memcpy(&scin.sin_addr, hptr->h_addr, hptr-> h_length);
+  if (connect(sc, (struct sockaddr *)&scin, sizeof(scin)) < 0)
+  {
+    perror("connect() failure:");
+    exit(4);
+  }
+
+  makeMsg(&out_msg, &id, type, sign);
+
+  if (write(sc, out_msg.c_str(), out_msg.length() +1) < 0)
+  {
+    perror("write() failure:");
+    exit(5);
+  }
+
+  if ((rc = read(sc, in_msg, sizeof(in_msg))) < 0)
+  {
+    perror("read() failure:");
+    exit(5);
+  }
+
+  cout << in_msg << endl;
+  
+  if (close(sc) < 0)
+  {
+    perror("close() failure:");
+    exit(6);
+  }
+
+  return 0;
 }
 
-int checkParams(int argc, char **argv){
-  int port = 0;
+void checkParams(int argc, char **argv, char **host, int *port,\
+    vector<t_AChar> *id, bool *type, bool *sign)
+{
   if (argc < 6)	    // dostal jsem host, port, selector
   {
     cerr << "Invalid arguments: wrong number of arguments" << endl;
     exit(1);
   }
-  char *host;
-  bool sign[6]={0};
-  bool lflag=0,uflag=0;
-  struct AChar{
-    char *string;
-  };
+  
   AChar selval;
-  vector<AChar> id;
+  *host = (char *) ""; 
   
   for (int i = 1; i < argc; i++)
   { 
-    cout << "arg = " << argv[i] << " i = "<< i << endl;
     if (!strcmp(argv[i],"-h"))
     {
-	host = argv[++i];
+	*host = argv[++i];
     }
     else if (!strcmp(argv[i],"-p"))
     {
       try 
       {
-	port = stoi(argv[++i]);}
+	*port = stoi(argv[++i]);
+      }
       catch (invalid_argument& ia) 
       {
 	cerr << "Invalid argument: port is not a number" << endl;
@@ -62,24 +119,27 @@ int checkParams(int argc, char **argv){
     }
     else if (!strcmp(argv[i],"-u") || !strcmp(argv[i],"-l"))
     {
-      if(!lflag && argv[i][1] == 'u') 
-	uflag = 1;
-      else if(!uflag && argv[i][1] == 'l') 
-	lflag = 1;
+      if(argv[i][1] == 'u') 
+       *type = 1;
+      else if(argv[i][1] == 'l') 
+       *type = 0;
       else 
       {
 	cerr << "Invalid argument: -l and -u cant be used together" << endl;
 	exit(1);
       }
+
+      id->clear();
+
       while (++i < argc && argv[i][0] != '-')
       {
-
 	selval.string = argv[i];
-	if (uflag)
+	
+	if (*type)
 	{
 	  try 
 	  {
-	    int number = stoi(argv[i]);
+	    stoi(argv[i]);
 	  }
 	  catch (invalid_argument& ia) 
 	  {
@@ -87,10 +147,11 @@ int checkParams(int argc, char **argv){
 	    exit(1);
 	  }
 	}
+	
 	selval.string = argv[i];
-
-	id.push_back(selval);
+	id->push_back(selval);
       }
+      i--; // while se dostava preskakuje nasledujici arg
     } 
     else if (argv[i][0] == '-')
     {
@@ -119,7 +180,6 @@ int checkParams(int argc, char **argv){
 	    cerr << "Invalid argument: unknown argument \"" <<argv[i][j]<<"\"" << endl;
 	    exit(1);
 	    break;
-
 	}
       }
     }
@@ -129,11 +189,28 @@ int checkParams(int argc, char **argv){
       exit(1);
     }
   }
-  cout << "host = " << host << " port = " << port << " lflag = " << lflag << " uflag = "\
-   << uflag;
-  for (unsigned int i=0; i < id.size();i++)
-    cout << " selval"<< i << " = " << id[i].string;
-  cout << " sign = " << sign[0] << sign[1]  << sign[2] << sign[3] << sign[4] << sign[5]\
-    << endl;
- return 0;
+}
+void makeMsg (string *msg, vector<t_AChar> *id, bool type, bool *sign){
+  
+  if (!type)
+    msg->append(";");
+  
+  for (int i=0; i < (int)id->size(); i++)
+  {
+    if (i > 0)
+      msg->append(",");
+
+    msg->append((*id)[i].string);
+  }
+  
+  msg->append(";");
+  
+  if (type)
+    msg->append(";");
+
+  for (int i = 0; i < 6; i++)
+    if (sign[i]) 
+      msg->append("1;");
+    else 
+      msg->append("0;");
 }
