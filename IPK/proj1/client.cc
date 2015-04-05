@@ -25,7 +25,7 @@ void checkParams(int argc, char **argv, char **host, int *port,\
 void makeMsg (string *msg, vector<t_AChar> *id, bool type, int *sign);
 
 
-
+// generovani a zpracovani zprav a nastaveni socketu
 int main(int argc, char **argv)
 {
   vector<t_AChar> id;
@@ -38,64 +38,67 @@ int main(int argc, char **argv)
   bool type;
   int sign[6] = {0};
   int err = 0;
-  checkParams(argc, argv, &host, &port, &id, &type, sign);
+
+  checkParams(argc, argv, &host, &port, &id, &type, sign); // zkontroluj argumenty
   
-  if ((sc = socket(PF_INET, SOCK_STREAM, 0)) < 0)
+  if ((sc = socket(PF_INET, SOCK_STREAM, 0)) < 0) // vytvor socket
   {
     perror("Socket failure: socket()");
     exit(2);
   }
 
-  scin.sin_family = PF_INET;
+  scin.sin_family = PF_INET;	  // nastav socket
   scin.sin_port = htons(port);
 
-  if ((hptr = gethostbyname(host)) == NULL)
+  if ((hptr = gethostbyname(host)) == NULL)   // zjisti zda je zadany host dostupny
   {
     cout << "gethostbyname() failure: couldnt resolve " << host << endl;
     exit(3);
   }
 
   memcpy(&scin.sin_addr, hptr->h_addr, hptr-> h_length);
-  if (connect(sc, (struct sockaddr *)&scin, sizeof(scin)) < 0)
+  if (connect(sc, (struct sockaddr *)&scin, sizeof(scin)) < 0)	  // propoj se na hosta
   {
     perror("connect() failure:");
     exit(4);
   }
 
-  makeMsg(&out_msg, &id, type, sign);
+  makeMsg(&out_msg, &id, type, sign);		// vytvor pozadavek
 
-  if (write(sc, out_msg.c_str(), out_msg.length() +1) < 0)
+  if (write(sc, out_msg.c_str(), out_msg.length() +1) < 0)    // zapis do socketu
   {
     perror("write() failure:");
     exit(5);
   }
 
-  if ((rc = read(sc, in_msg, sizeof(in_msg))) < 0)
+  if ((rc = read(sc, in_msg, sizeof(in_msg))) < 0)	// cti ze socketu
   {
     perror("read() failure:");
     exit(5);
   }
-  bool written = 0;
-  for (int i = 0; i < (int) strlen(in_msg); i++)
+  
+  bool written = 0; // vypsal jsem neco na vystup
+
+  for (int i = 0; i < (int) strlen(in_msg); i++) // pro kazdy znak zpravy
   {
-    if (in_msg[i+1] == ';')
+    if (in_msg[i+1] == ';')	// zjisti zda se jedna zpravu o nalezeni pozadavku
     {
       if (in_msg[i++] == '0')
       {
-	while (in_msg[i+1] !='\n' && in_msg[i+1] !='\0' )
+	while (in_msg[i+1] !='\n' && in_msg[i+1] !='\0' ) // cti radek
 	{
 	  written = 1;
 	  cout << in_msg[++i];
 	}
 	if (written)
-	  cout << endl;
+	  cout << endl;	// pokud jsem neco zapsal vloz novy radek
 	else
-	  cout << flush;
+	  cout << flush;  // jinak jen ukonci stream
       }
-      else
+      else  // pokud chyba
       {
 	err = 100;
-	while (in_msg[++i] !='\n')
+	while (in_msg[++i] !='\n')  // vypis radk pro chybu na stderr
 	  cerr << in_msg[i];
 	cerr << endl;
       }
@@ -103,7 +106,7 @@ int main(int argc, char **argv)
   }
   //cout << in_msg << endl;
   
-  if (close(sc) < 0)
+  if (close(sc) < 0)  // zavri socket
   {
     perror("close() failure:");
     exit(6);
@@ -112,6 +115,7 @@ int main(int argc, char **argv)
   return err;
 }
 
+// zkontroluj argumenty, vrat hosta a port
 void checkParams(int argc, char **argv, char **host, int *port,\
     vector<t_AChar> *id, bool *type, int *sign)
 {
@@ -125,7 +129,7 @@ void checkParams(int argc, char **argv, char **host, int *port,\
   int order = 0;
   *host = (char *) ""; 
   
-  for (int i = 1; i < argc; i++)
+  for (int i = 1; i < argc; i++)    // pro kazdy argument
   { 
     if (!strcmp(argv[i],"-h"))
     {
@@ -157,13 +161,13 @@ void checkParams(int argc, char **argv, char **host, int *port,\
 
       id->clear();
       int j = i;
-      while (++i < argc && argv[i][0] != '-')
+      while (++i < argc && argv[i][0] != '-')   // dokud dalsi arg nezacina - tak cti data
       {
 	selval.string = argv[i];
 	
-	if (*type)
+	if (*type)  // pokud -u
 	{
-	  try 
+	  try	    // zkus zda hodnota je cislo
 	  {
 	    stoi(argv[i]);
 	  }
@@ -174,17 +178,19 @@ void checkParams(int argc, char **argv, char **host, int *port,\
 	  }
 	}
 	
-	selval.string = argv[i];
-	id->push_back(selval);
+	selval.string = argv[i];    
+	id->push_back(selval);	      // uloz hodnotu do vektoru
       }
+
       i--; // while se dostava preskakuje nasledujici arg
-      if (i <= j )
+      
+      if (i <= j )   // pokud za -l a -u nenasleduje hodnota
       {
 	cerr << "Invalid argument: missing value after -l or -u" << endl;
 	exit(1);
       }
     } 
-    else if (argv[i][0] == '-')
+    else if (argv[i][0] == '-') // zpracuj priznaky
     {
       for (int j = 1; j < (int)strlen(argv[i]); j++)
       {
@@ -259,27 +265,29 @@ void checkParams(int argc, char **argv, char **host, int *port,\
     }
   }
 }
+
+// vytor zpravu z vektoru, typu a priznaku, vraci zpravu
 void makeMsg (string *msg, vector<t_AChar> *id, bool type, int *sign){
   
-  if (!type)
+  if (!type)	  // pokud -l tak prvne vloz oddelovac
     msg->append(";");
   
-  for (int i=0; i < (int)id->size(); i++)
+  for (int i=0; i < (int)id->size(); i++)   // pro vsechny polozky vektoru
   {
-    if (i > 0)
+    if (i > 0)		// pokud vic jak jedna dej oddelovac
       msg->append(",");
 
     msg->append((*id)[i].string);
   }
   
-  msg->append(";");
+  msg->append(";");   // oddel informaci
   
   if (type)
-    msg->append(";");
+    msg->append(";"); // pokud -u vloz oddelovac pro vytvoreni prazdneho zaznamu
 
-  for (int i = 0; i < 6; i++)
+  for (int i = 0; i < 6; i++) // vytvor zpravu z priznaku
   {
-      *msg += to_string(sign[i]);
+      *msg += to_string(sign[i]); // preved cislo na string
       *msg += ';';
   }
 }
