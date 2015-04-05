@@ -21,8 +21,8 @@ typedef struct AChar{
 }t_AChar;
 
 void checkParams(int argc, char **argv, char **host, int *port,\
-    vector<t_AChar> *id, bool *type, bool *sign);
-void makeMsg (string *msg, vector<t_AChar> *id, bool type, bool *sign);
+    vector<t_AChar> *id, bool *type, int *sign);
+void makeMsg (string *msg, vector<t_AChar> *id, bool type, int *sign);
 
 
 
@@ -36,8 +36,8 @@ int main(int argc, char **argv)
   string out_msg;
   char in_msg[1024] = {};
   bool type;
-  bool sign[6] = {0};
-
+  int sign[6] = {0};
+  int err = 0;
   checkParams(argc, argv, &host, &port, &id, &type, sign);
   
   if ((sc = socket(PF_INET, SOCK_STREAM, 0)) < 0)
@@ -75,8 +75,33 @@ int main(int argc, char **argv)
     perror("read() failure:");
     exit(5);
   }
-
-  cout << in_msg << endl;
+  bool written = 0;
+  for (int i = 0; i < (int) strlen(in_msg); i++)
+  {
+    if (in_msg[i+1] == ';')
+    {
+      if (in_msg[i++] == '0')
+      {
+	while (in_msg[i+1] !='\n' && in_msg[i+1] !='\0' )
+	{
+	  written = 1;
+	  cout << in_msg[++i];
+	}
+	if (written)
+	  cout << endl;
+	else
+	  cout << flush;
+      }
+      else
+      {
+	err = 100;
+	while (in_msg[++i] !='\n')
+	  cerr << in_msg[i];
+	cerr << endl;
+      }
+    }
+  }
+  //cout << in_msg << endl;
   
   if (close(sc) < 0)
   {
@@ -84,11 +109,11 @@ int main(int argc, char **argv)
     exit(6);
   }
 
-  return 0;
+  return err;
 }
 
 void checkParams(int argc, char **argv, char **host, int *port,\
-    vector<t_AChar> *id, bool *type, bool *sign)
+    vector<t_AChar> *id, bool *type, int *sign)
 {
   if (argc < 6)	    // dostal jsem host, port, selector
   {
@@ -97,6 +122,7 @@ void checkParams(int argc, char **argv, char **host, int *port,\
   }
   
   AChar selval;
+  int order = 0;
   *host = (char *) ""; 
   
   for (int i = 1; i < argc; i++)
@@ -162,24 +188,62 @@ void checkParams(int argc, char **argv, char **host, int *port,\
     {
       for (int j = 1; j < (int)strlen(argv[i]); j++)
       {
+	order++;
 	switch(argv[i][j]){  
 	  case 'L':
-	    sign[0]=1;
+	    if (!sign[0])
+	      sign[0]=order;
+	    else
+	    {
+	      cerr << "Duplicit argument: \"" <<argv[i][j]<<"\"" << endl;
+	      exit(1);
+	    }
 	    break;
 	  case 'U':
-	    sign[1]=1;
+	    if (!sign[1])
+	      sign[1]=order;
+	    else
+	    {
+	      cerr << "Duplicit argument: \"" <<argv[i][j]<<"\"" << endl;
+	      exit(1);
+	    }
 	    break;
 	  case 'G':
-	    sign[2]=1;
+	    if (!sign[2])
+	      sign[2]=order;
+	    else
+	    {
+	      cerr << "Duplicit argument: \"" <<argv[i][j]<<"\"" << endl;
+	      exit(1);
+	    }
+	    sign[2]=order;
 	    break;
 	  case 'N':
-	    sign[3]=1;
+	    if (!sign[3])
+	      sign[3]=order;
+	    else
+	    {
+	      cerr << "Duplicit argument: \"" <<argv[i][j]<<"\"" << endl;
+	      exit(1);
+	    }
 	    break;
 	  case 'H':
-	    sign[4]=1;
+	    if (!sign[4])
+	      sign[4]=order;
+	    else
+	    {
+	      cerr << "Duplicit argument: \"" <<argv[i][j]<<"\"" << endl;
+	      exit(1);
+	    }
 	    break;
 	  case 'S':
-	    sign[5]=1;
+	    if (!sign[5])
+	      sign[5]=order;
+	    else
+	    {
+	      cerr << "Duplicit argument: \"" <<argv[i][j]<<"\"" << endl;
+	      exit(1);
+	    }
 	    break;
 	  default:
 	    cerr << "Invalid argument: unknown argument \"" <<argv[i][j]<<"\"" << endl;
@@ -195,7 +259,7 @@ void checkParams(int argc, char **argv, char **host, int *port,\
     }
   }
 }
-void makeMsg (string *msg, vector<t_AChar> *id, bool type, bool *sign){
+void makeMsg (string *msg, vector<t_AChar> *id, bool type, int *sign){
   
   if (!type)
     msg->append(";");
@@ -214,8 +278,8 @@ void makeMsg (string *msg, vector<t_AChar> *id, bool type, bool *sign){
     msg->append(";");
 
   for (int i = 0; i < 6; i++)
-    if (sign[i]) 
-      msg->append("1;");
-    else 
-      msg->append("0;");
+  {
+      *msg += to_string(sign[i]);
+      *msg += ';';
+  }
 }
