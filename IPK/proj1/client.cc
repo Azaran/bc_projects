@@ -40,13 +40,13 @@ int main(int argc, char **argv)
 
   checkParams(argc, argv, &host, &port, &id, &type, sign);
   
-  if ((sc = socket(AF_INET, SOCK_STREAM, 0)) < 0)
+  if ((sc = socket(PF_INET, SOCK_STREAM, 0)) < 0)
   {
     perror("Socket failure: socket()");
     exit(2);
   }
 
-  scin.sin_family = AF_INET;
+  scin.sin_family = PF_INET;
   scin.sin_port = htons(port);
 
   if ((hptr = gethostbyname(host)) == NULL)
@@ -130,7 +130,7 @@ void checkParams(int argc, char **argv, char **host, int *port,\
       }
 
       id->clear();
-
+      int j = i;
       while (++i < argc && argv[i][0] != '-')
       {
 	selval.string = argv[i];
@@ -152,6 +152,11 @@ void checkParams(int argc, char **argv, char **host, int *port,\
 	id->push_back(selval);
       }
       i--; // while se dostava preskakuje nasledujici arg
+      if (i <= j )
+      {
+	cerr << "Invalid argument: missing value after -l or -u" << endl;
+	exit(1);
+      }
     } 
     else if (argv[i][0] == '-')
     {

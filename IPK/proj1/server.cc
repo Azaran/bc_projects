@@ -49,37 +49,42 @@ int main(int argc, char *argv[]){
   if ((sc = socket(PF_INET, SOCK_STREAM, 0)) < 0) 
   {
     perror("Socket failure: socket()");
-    exit(2);
+    exit(21);
   }
   
+      //cout << "socket" << endl;
   if ((rc = setsockopt(sc, SOL_SOCKET, SO_REUSEADDR, (char *)&buffer, sizeof(sc_addr))) < 0)
   {
     perror("Socket failure: setsockopt()");
     close(sc);
-    exit(2);
+    exit(22);
   }
   
+     // cout << "setsockopt" << endl;
   memset(&sc_addr, 0, sizeof(sc_addr));
-  sc_addr.sin_family = AF_INET;
+  sc_addr.sin_family = PF_INET;
   sc_addr.sin_addr.s_addr = INADDR_ANY;
   sc_addr.sin_port = htons(port);
 
   if (bind(sc, (struct sockaddr *)&sc_addr, sizeof(sc_addr))< 0)
   {
     perror("Socket failure: bind()");
-    exit(2);
+    exit(23);
   }
   
+     // cout << "bind" << endl;
   if (listen(sc, 1) < 0)
   {
     perror("Listen failed:");
     exit(5);
   }
   
+      cout << "listen" << endl;
   cl_sc_addr_len = sizeof(cl_sc_addr); 
   
   while(1)
   {
+    ended = 0;
     if ((rec_sc = accept(sc, (struct sockaddr*)&cl_sc_addr, &cl_sc_addr_len)) < 0)
     {
       perror("Socket failure: accept()");
@@ -88,7 +93,7 @@ int main(int argc, char *argv[]){
     
     if (rec_sc > 0)
     {
- //     cout << "fork" << endl;
+      //cout << "fork" << endl;
       pid_t pid = fork();
   
       if (pid == 0)
@@ -113,8 +118,8 @@ int main(int argc, char *argv[]){
 
 	parseSockMsg(&msg, &name, &uid, sign);
 	getPasswd(&out_msg, &name, &uid, sign);
-//	fprintf(stdout,"MSG: %s\n", out_msg.c_str());
-//	cout << "Im out" << endl;
+	//fprintf(stdout,"MSG: %s\n", out_msg.c_str());
+	//cout << "Im out" << endl;
 
 	if (write(rec_sc, out_msg.c_str(), out_msg.length()*sizeof(char)) < 0)
 	{
@@ -122,9 +127,7 @@ int main(int argc, char *argv[]){
 	  exit(7);
 	}
 	
-	close(sc);
-	vpid.pop_back();
-	return 0;
+	exit(0);
       }
       else if (pid < 0)
       {
@@ -133,23 +136,29 @@ int main(int argc, char *argv[]){
       }
       else
       {
-//	cout << pid << endl;
+	cout << pid << endl;
 	vpid.push_back(pid);
       }
     }
     
     int child_ec;
     ended = waitpid(-1, &child_ec, WIFEXITED(child_ec));
-    
-    if (child_ec)
-    {
-      onSignal(SIGINT);
-      exit(child_ec);
-    }
-    
+   /* 
+    */
     if (ended > 0)
     {  
-      vpid.pop_back();
+      if (child_ec > 0)
+      {
+	//cout << "child err " << child_ec << " PID " << ended << endl;
+	close(sc);
+	onSignal(SIGINT);
+	exit(child_ec);
+      }
+      else
+      {
+	//cout << "child PID " << ended << endl;
+	vpid.pop_back();
+      }
     }
   }
   return 0;
@@ -227,10 +236,14 @@ void getPasswd(string *msg, vector<string> *name, vector<uid_t> *uid, bool *sign
     for (vector<uid_t>::size_type s = 0; s < uid->size();s++)
     {
       usrinfo = getpwuid((*uid)[s]);
-      if (usrinfo > 0)
+      if (usrinfo != NULL)
 	makeMsg(msg,sign,usrinfo);
       else 
+      {
+	if (!msg->empty())
+	  *msg += '\n';
 	msg->append("Uzivatel nenalezen");
+      }
     }
   }
 }
