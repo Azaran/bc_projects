@@ -74,7 +74,14 @@ void ProjectTriangle(const S_Coords& a,
   // - complete back-faced triangle test
   // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-
+  double cos_a;
+  S_Coords  v(0 - aa.x, 0 - aa.y, -CAMERA_DIST - aa.z); // make vector between 2 points
+  
+  cos_a = (nn.x*v.x + nn.y*v.y + nn.z*v.z); // evaluate cos_a, division is made by normalize
+  
+  if (cos_a < 0)		    // is the angle >|90| degrees?
+    return;			    // yes, well then we dont have to print it
+  
   // recompute color
   S_RGBA color;
   color.red = ROUND2BYTE(255 * material.red);
@@ -85,7 +92,6 @@ void ProjectTriangle(const S_Coords& a,
   DrawLine(u1, v1, u2, v2, aa.z, bb.z, color);
   DrawLine(u2, v2, u3, v3, bb.z, cc.z, color);
   DrawLine(u3, v3, u1, v1, cc.z, aa.z, color);
-  
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -148,13 +154,15 @@ void DrawScene()
   // - use material MAT_RED2
   // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   
-  // draw object with second color
   
+  // there has to be some easier way but this works too
+
   trLoadIdentity(); // "set" new clean object
 
   // adjust new object to scene
   // translate whole scene
   trTranslate(0.0, 0.0, scene_move_z); 
+  
   // rotate whole scene - in two axis only - mouse is 2D device only... :(
   trRotateX(scene_rot_x * 0.01);
   trRotateY(scene_rot_y * 0.01);
@@ -164,6 +172,7 @@ void DrawScene()
   trTranslate(obj_move_x * 0.015, obj_move_y * 0.015, 0.0); // apply same transitions
   trRotateX(obj_rot_x * 0.01);	// apply same rotations
   trRotateY(obj_rot_y * 0.01);
+
   // now project and draw the object
   ProjectObject(MAT_RED2);
 
