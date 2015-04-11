@@ -280,6 +280,7 @@ void studrenDrawTriangle(S_Renderer *pRenderer,
 	//int size = fragvecSize(renderer->frag);
 	//S_Frag *frag = fragvecGetPtr(renderer->frag, new);
 	ivecSet(renderer->map,y*renderer->base.frame_w+x, new);
+//	printf("z = %f\n",z);
 	//new = ivecGet(renderer->map, y*renderer->base.frame_w+x);
 //	printf("new = %d, next1 = %d, next2 = %d\n", new, new_frag.next, (int)frag->next);
       }
@@ -408,12 +409,10 @@ void renderStudentScene(S_Renderer *pRenderer, S_Model *pModel)
     renMatSpecular(pRenderer, &MAT_RED_SPECULAR);
 
     // pridame posun
-    trTranslate(-1.0,0.0,0.0);
+    trTranslate(-1.3,0.0,0.0);
 
     /* a vykreslime nas model */
     renderModel(pRenderer, pModel);
-    
-  
     
     // navrat do puvodniho stavu po nastaveni sceny
     trSetMatrix(&init);
@@ -426,85 +425,74 @@ void renderStudentScene(S_Renderer *pRenderer, S_Model *pModel)
     renMatSpecular(pRenderer, &MAT_STUD_SPECULAR);
     
     // pridame posun
-    trTranslate(1.0,0.0,0.0);
+    trTranslate(1.3,0.0,0.0);
     
     renderModel(pRenderer, pModel);
-    
-    
-    int imap, max = -1;
+   
+
+    // michani barev
+    int imap;
     S_FragVec *tmp;
     S_Frag frag, save;
-    //printf("size = %d\n", fragvecSize(renderer->frag)); 
-    // pro kazdy bod 
-/*
-   for (imap = 0; imap < ivecSize(renderer->map); imap++)
-    {
-      max = MAX(max, ivecGet(renderer->map, imap));
-    }
-    printf("MAX = %d\n",max);
-    
-    max = -1;
-    for (imap = 0; imap < fragvecSize(renderer->frag)-1; imap++)
-    {
-      frag = vecGetPtr(renderer->frag,imap);
-      printf("imap = %d, next = %d\n",imap, frag->next);
-      max = MAX(max, frag->next);
-    }
-    printf("MAX = %d\n",max);
-   */
 
     for (imap = 0; imap < ivecSize(renderer->map); imap++)
     {
       int i, next = ivecGet(renderer->map, imap);
+      if ( next > -1)
+      {
       tmp = fragvecCreateEmpty();
 
-      if (next > -1)
+      // vytvor vektor fragmentu daneho bodu
+      while (next > -1)
       {
-	while (next > -1)
-	{
-	  
-//	  printf("next= %d\n", next); 
-
-	  frag = fragvecGet(renderer->frag,next);
-	  fragvecPushBack(tmp,frag);
-	  next = frag.next;
-	}
-
-	// insert sort
-	for (i = 0; i < fragvecSize(tmp) ; i++)
-	{
-	  int j = i + 1;
-	  save = fragvecGet(tmp,i);
-	  while (j > 0 && save.depth > fragvecGet(tmp, j-1).depth)
-	  {
-	    fragvecSet(tmp, j, fragvecGet(tmp,j-1));
-	    j--;
-	  }
-	  fragvecSet(tmp,0, save);
-	}
-	
-	S_RGBA src, dst = makeColorA(0,0,0,255);
-	
-	for (i = 0; i < fragvecSize(tmp) ; i++)
-	{
-	  save = fragvecGet(tmp,i);
-	  src = save.color;
-	  dst= makeColorA(				      \
-	      ROUND(dst.alpha*(src.alpha*src.red)+dst.red),	      \
-	      ROUND(dst.alpha*(src.alpha*src.green)+dst.green),   \
-	      ROUND(dst.alpha*(src.alpha*src.blue)+dst.blue),     \
-	      ROUND((255-src.alpha)*dst.alpha)); 
-	}
-/*
-	src = pRenderer->frame_buffer[imap];
-	dst= makeColorA(				      \
-	    ROUND(dst.alpha*src.red+dst.red),	      \
-	    ROUND(dst.alpha*src.green+dst.green),   \
-	    ROUND(dst.alpha*src.blue+dst.blue),     \
-	    255); 
-*/	pRenderer->frame_buffer[imap] = dst;
+	frag = fragvecGet(renderer->frag,next);
+	fragvecPushBack(tmp,frag);
+	next = frag.next;
       }
-	fragvecRelease(&tmp);
+
+      // insert sort
+      for (i = 1; i < fragvecSize(tmp); i++)
+      {
+	int j = i;
+	while (j > 0 && fragvecGet(tmp,j).depth < fragvecGet(tmp, j-1).depth)
+	{
+	  save = fragvecGet(tmp,j);
+	  fragvecSet(tmp,   j, fragvecGet(tmp, j-1));
+	  fragvecSet(tmp, j-1, save);
+	  j--;
+	}
+      }    // insert sort end
+
+      // inicializace barvy
+      S_RGBA dst = makeColor(0,0,0);
+
+      // smichej barvy segmentu
+      for (i = 0; i < fragvecSize(tmp); i++)
+      {
+	save = fragvecGet(tmp,i);
+	S_RGBA src = save.color;
+	double srcal = src.alpha / 255.0, dstal = dst.alpha / 255.0;
+	dst = makeColorA(				      \
+	    ROUND(dstal*(srcal*src.red)+dst.red),	      \
+	    ROUND(dstal*(srcal*src.green)+dst.green),   \
+	    ROUND(dstal*(srcal*src.blue)+dst.blue),     \
+	    ROUND(((1-srcal)*dstal)*255)			  \
+	    ); 
+      }
+
+      // pridej barvu sceny
+      
+      S_RGBA src = pRenderer->frame_buffer[imap];
+      double dstal = dst.alpha / 255.0;
+      dst = makeColor(				      \
+	  ROUND(dstal*src.red+dst.red),	      \
+	  ROUND(dstal*src.green+dst.green),   \
+	  ROUND(dstal*src.blue+dst.blue)\
+	  );
+     // dst.alpha = 255;
+      pRenderer->frame_buffer[imap] = dst;
+      fragvecRelease(&tmp);
+      }
     }
 }
 
