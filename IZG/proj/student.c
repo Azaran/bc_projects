@@ -32,26 +32,26 @@ const S_Material    MAT_STUD_SPECULAR = { 0.8, 0.8, 0.8, 1.0 };
 
 S_Renderer * studrenCreate()
 {
-    S_StudentRenderer * renderer = (S_StudentRenderer *)malloc(sizeof(S_StudentRenderer));
-    IZG_CHECK(renderer, "Cannot allocate enough memory");
+  S_StudentRenderer * renderer = (S_StudentRenderer *)malloc(sizeof(S_StudentRenderer));
+  IZG_CHECK(renderer, "Cannot allocate enough memory");
 
-    /* inicializace default rendereru */
-    renderer->base.type = STUDENT_RENDERER;
-    renInit(&renderer->base);
+  /* inicializace default rendereru */
+  renderer->base.type = STUDENT_RENDERER;
+  renInit(&renderer->base);
 
-    /* nastaveni ukazatelu na upravene funkce */
-    /* napr. renderer->base.releaseFunc = studrenRelease; */
-    renderer->base.releaseFunc = studrenRelease;
-    renderer->base.createBuffersFunc = studrenCreateBuffers;
-    renderer->base.clearBuffersFunc = studrenClearBuffers;
-    renderer->base.projectTriangleFunc = studrenProjectTriangle;
-    renderer->map = ivecCreateEmpty();
-    renderer->frag = fragvecCreateEmpty();
-    /* inicializace nove pridanych casti */
-    //ivecInit(renderer->map);
-    //fragvecInit(renderer->frag);
+  /* nastaveni ukazatelu na upravene funkce */
+  /* napr. renderer->base.releaseFunc = studrenRelease; */
+  renderer->base.releaseFunc = studrenRelease;
+  renderer->base.createBuffersFunc = studrenCreateBuffers;
+  renderer->base.clearBuffersFunc = studrenClearBuffers;
+  renderer->base.projectTriangleFunc = studrenProjectTriangle;
+  renderer->map = ivecCreateEmpty();
+  renderer->frag = fragvecCreateEmpty();
+  /* inicializace nove pridanych casti */
+  ivecInit(renderer->map);
+  fragvecInit(renderer->frag);
 
-    return (S_Renderer *)renderer;
+  return (S_Renderer *)renderer;
 }
 
 /*****************************************************************************
@@ -60,20 +60,20 @@ S_Renderer * studrenCreate()
 
 void studrenRelease(S_Renderer **ppRenderer)
 {
-    S_StudentRenderer * renderer;
+  S_StudentRenderer * renderer;
 
-    if( ppRenderer && *ppRenderer )
-    {
-        /* ukazatel na studentsky renderer */
-        renderer = (S_StudentRenderer *)(*ppRenderer);
+  if( ppRenderer && *ppRenderer )
+  {
+    /* ukazatel na studentsky renderer */
+    renderer = (S_StudentRenderer *)(*ppRenderer);
 
-        /* pripadne uvolneni pameti */
-        ivecRelease(&renderer->map); 
-        fragvecRelease(&renderer->frag); 
-        
-        /* fce default rendereru */
-        renRelease(ppRenderer);
-    }
+    /* pripadne uvolneni pameti */
+    ivecRelease(&renderer->map); 
+    fragvecRelease(&renderer->frag); 
+
+    /* fce default rendereru */
+    renRelease(ppRenderer);
+  }
 }
 
 /*****************************************************************************
@@ -82,26 +82,26 @@ void studrenRelease(S_Renderer **ppRenderer)
 
 void studrenCreateBuffers(S_Renderer *pRenderer, int width, int height)
 {
-    S_StudentRenderer   * renderer;
-    int x,y, val = -1;
-    IZG_ASSERT(pRenderer && width > 0 && height > 0);
-    
-    /* ukazatel na studentsky renderer */
-    renderer = (S_StudentRenderer *)pRenderer;
+  S_StudentRenderer   * renderer;
+  int x,y, val = -1;
+  IZG_ASSERT(pRenderer && width > 0 && height > 0);
 
-    /* alokace pameti pro buffery a vymazani obsahu bufferu */
-    ivecResize(renderer->map, width*height);
+  /* ukazatel na studentsky renderer */
+  renderer = (S_StudentRenderer *)pRenderer;
 
-    for (x=0; x < width; x++)
+  /* alokace pameti pro buffery a vymazani obsahu bufferu */
+  ivecResize(renderer->map, width*height);
+
+  for (x=0; x < width; x++)
+  {
+    for (y=0; y < height; y++)
     {
-      for (y=0; y < height; y++)
-      {
-	vecSet(renderer->map,y*width+x, &val);
-      }
+      vecSet(renderer->map,y*width+x, &val);
     }
-  //  fragvecInit(renderer->frag); 
-    /* zavolame take puvodni funkci */
-    renCreateBuffers(pRenderer, width, height);
+  }
+  fragvecInit(renderer->frag); 
+  /* zavolame take puvodni funkci */
+  renCreateBuffers(pRenderer, width, height);
 }
 
 /*****************************************************************************
@@ -110,25 +110,26 @@ void studrenCreateBuffers(S_Renderer *pRenderer, int width, int height)
 
 void studrenClearBuffers(S_Renderer *pRenderer)
 {
-    S_StudentRenderer   * renderer;
+  S_StudentRenderer   * renderer;
 
-    IZG_ASSERT(pRenderer);
+  IZG_ASSERT(pRenderer);
 
-    /* ukazatel na studentsky renderer */
-    renderer = (S_StudentRenderer *)pRenderer;
+  /* ukazatel na studentsky renderer */
+  renderer = (S_StudentRenderer *)pRenderer;
 
-    /* vymazeme a inicializujeme buffery */
-    int val=-1,s,size = ivecSize(renderer->map);  
-    for (s=0; s < size; s++)
-      {
-	vecSet(renderer->map,s, &val);
-      }
-    //memset(renderer->map, -1, renderer->base.frame_w * renderer->base.frame_h*sizeof(int));
-    //ivecClear(renderer->map);
-    fragvecClear(renderer->frag);
-    
-    /* zavolame take puvodni funkci */
-    renClearBuffers(pRenderer);
+  /* vymazeme a inicializujeme buffery */
+  int val=-1,s,size = ivecSize(renderer->map);  
+  for (s=0; s < size; s++)
+  {
+    vecSet(renderer->map,s, &val);
+  }
+  //memset(renderer->map, -1, renderer->base.frame_w * renderer->base.frame_h*sizeof(int));
+  //ivecClear(renderer->map);
+  fragvecClear(renderer->frag);
+  fragvecInit(renderer->frag); 
+
+  /* zavolame take puvodni funkci */
+  renClearBuffers(pRenderer);
 }
 
 /******************************************************************************
@@ -139,154 +140,156 @@ void studrenClearBuffers(S_Renderer *pRenderer)
  */
 
 void studrenDrawTriangle(S_Renderer *pRenderer,
-                         S_Coords *v1, S_Coords *v2, S_Coords *v3,
-                         S_Coords *n1, S_Coords *n2, S_Coords *n3,
-                         int x1, int y1,
-                         int x2, int y2,
-                         int x3, int y3
-                         )
+    S_Coords *v1, S_Coords *v2, S_Coords *v3,
+    S_Coords *n1, S_Coords *n2, S_Coords *n3,
+    int x1, int y1,
+    int x2, int y2,
+    int x3, int y3
+    )
 {
-    S_StudentRenderer   * renderer;
-    IZG_ASSERT(pRenderer);
+  S_StudentRenderer   * renderer;
+  IZG_ASSERT(pRenderer);
 
-    /* ukazatel na studentsky renderer */
-    renderer = (S_StudentRenderer *)pRenderer;
-    
-    
-    /* zaklad fce zkopirujte z render.c */
-    
-    int         minx, miny, maxx, maxy;
-    int         a1, a2, a3, b1, b2, b3, c1, c2, c3;
-    int         /*s1,*/ s2, s3;
-    int         x, y, e1, e2, e3;
-    double      alpha, beta, w1, w2, w3, z;
-    S_RGBA      col1, col2, col3, color;
+  /* ukazatel na studentsky renderer */
+  renderer = (S_StudentRenderer *)pRenderer;
 
-    IZG_ASSERT(pRenderer && v1 && v2 && v3 && n1 && n2 && n3);
 
-    /* vypocet barev ve vrcholech */
-    col1 = pRenderer->calcReflectanceFunc(pRenderer, v1, n1);
-    col2 = pRenderer->calcReflectanceFunc(pRenderer, v2, n2);
-    col3 = pRenderer->calcReflectanceFunc(pRenderer, v3, n3);
+  /* zaklad fce zkopirujte z render.c */
 
-    /* obalka trojuhleniku */
-    minx = MIN(x1, MIN(x2, x3));
-    maxx = MAX(x1, MAX(x2, x3));
-    miny = MIN(y1, MIN(y2, y3));
-    maxy = MAX(y1, MAX(y2, y3));
+  int         minx, miny, maxx, maxy;
+  int         a1, a2, a3, b1, b2, b3, c1, c2, c3;
+  int         /*s1,*/ s2, s3;
+  int         x, y, e1, e2, e3;
+  double      alpha, beta, w1, w2, w3, z;
+  S_RGBA      col1, col2, col3, color;
 
-    /* oriznuti podle rozmeru okna */
-    miny = MAX(miny, 0);
-    maxy = MIN(maxy, pRenderer->frame_h - 1);
-    minx = MAX(minx, 0);
-    maxx = MIN(maxx, pRenderer->frame_w - 1);
+  IZG_ASSERT(pRenderer && v1 && v2 && v3 && n1 && n2 && n3);
 
-    /* vektory urcene vrcholy 1-2 a 1-3 */
-    a1 = x2 - x1;
-    a3 = x3 - x1;
-    b1 = y2 - y1;
-    b3 = y3 - y1;
+  /* vypocet barev ve vrcholech */
+  col1 = pRenderer->calcReflectanceFunc(pRenderer, v1, n1);
+  col2 = pRenderer->calcReflectanceFunc(pRenderer, v2, n2);
+  col3 = pRenderer->calcReflectanceFunc(pRenderer, v3, n3);
 
-    /* overeni counterclockwise orientace troj. pomoci vektoroveho soucinu */
-    if( (a1 * b3 - b1 * a3) < 0 )
+  /* obalka trojuhleniku */
+  minx = MIN(x1, MIN(x2, x3));
+  maxx = MAX(x1, MAX(x2, x3));
+  miny = MIN(y1, MIN(y2, y3));
+  maxy = MAX(y1, MAX(y2, y3));
+
+  /* oriznuti podle rozmeru okna */
+  miny = MAX(miny, 0);
+  maxy = MIN(maxy, pRenderer->frame_h - 1);
+  minx = MAX(minx, 0);
+  maxx = MIN(maxx, pRenderer->frame_w - 1);
+
+  /* vektory urcene vrcholy 1-2 a 1-3 */
+  a1 = x2 - x1;
+  a3 = x3 - x1;
+  b1 = y2 - y1;
+  b3 = y3 - y1;
+
+  /* overeni counterclockwise orientace troj. pomoci vektoroveho soucinu */
+  if( (a1 * b3 - b1 * a3) < 0 )
+  {
+    /* spatna orientace -> prohodime vrcholy 2 a 3 */
+    SWAP(x2, x3);
+    SWAP(y2, y3);
+
+    /* a take barvy vrcholu */
+    SWAP(col2.red, col3.red);
+    SWAP(col2.green, col3.green);
+    SWAP(col2.blue, col3.blue);
+    SWAP(col2.alpha, col3.alpha);
+  }
+
+  /* Pineduv alg. rasterizace troj.
+     hranova fce je obecna rovnice primky Ax + By + C = 0
+     primku prochazejici body (x1, y1) a (x2, y2) urcime jako
+     (y1 - y2)x + (x2 - x1)y + x1y2 - x2y1 = 0 */
+
+  /* normala primek - vektor kolmy k vektoru mezi dvema vrcholy, tedy (-dy, dx) */
+  a1 = y1 - y2;
+  a2 = y2 - y3;
+  a3 = y3 - y1;
+  b1 = x2 - x1;
+  b2 = x3 - x2;
+  b3 = x1 - x3;
+
+  /* koeficient C */
+  c1 = x1 * y2 - x2 * y1;
+  c2 = x2 * y3 - x3 * y2;
+  c3 = x3 * y1 - x1 * y3;
+
+  /* vypocet hranove fce (vzdalenost od primky) pro protejsi body */
+  /*s1 = a1 * x3 + b1 * y3 + c1;*/
+  s2 = a2 * x1 + b2 * y1 + c2;
+  s3 = a3 * x2 + b3 * y2 + c3;
+
+  /* uprava koeficientu C pro korektni vyplnovani, viz "OpenGL top-left rule" */
+  /* https://books.google.cz/books?id=3ljRBQAAQBAJ&pg=PA73 */
+  if( (y1 == y2 && x2 > x1) || y2 < y1 )
+  {
+    c1 -= 1;
+  }
+  if( (y2 == y3 && x3 > x2) || y3 < y2 )
+  {
+    c2 -= 1;
+  }
+  if( (y3 == y1 && x1 > x3) || y1 < y3 )
+  {
+    c3 -= 1;
+  }
+
+  /* koeficienty pro barycentricke souradnice */
+  alpha = 1.0 / (ABS(s2) + 1);
+  beta = 1.0 / (ABS(s3) + 1);
+
+  /* vyplnovani... */
+  for( y = miny; y <= maxy; ++y )
+  {
+    /* inicilizace hranove fce v bode (minx, y) */
+    e1 = a1 * minx + b1 * y + c1;
+    e2 = a2 * minx + b2 * y + c2;
+    e3 = a3 * minx + b3 * y + c3;
+
+    for( x = minx; x <= maxx; ++x )
     {
-        /* spatna orientace -> prohodime vrcholy 2 a 3 */
-        SWAP(x2, x3);
-        SWAP(y2, y3);
+      if( e1 >= 0 && e2 >= 0 && e3 >= 0 )
+      {
+	/* interpolace pomoci barycentrickych souradnic
+	   e1, e2, e3 je aktualni vzdalenost bodu (x, y) od primek */
+	w1 = alpha * e2;
+	w2 = beta * e3;
+	w3 = 1.0 - w1 - w2;
 
-        /* a take barvy vrcholu */
-        SWAP(col2.red, col3.red);
-        SWAP(col2.green, col3.green);
-        SWAP(col2.blue, col3.blue);
-        SWAP(col2.alpha, col3.alpha);
+	/* interpolace z-souradnice */
+	z = w1 * v1->z + w2 * v2->z + w3 * v3->z;
+
+	/* interpolace barvy */
+	color.red = ROUND2BYTE(w1 * col1.red + w2 * col2.red + w3 * col3.red);
+	color.green = ROUND2BYTE(w1 * col1.green + w2 * col2.green + w3 * col3.green);
+	color.blue = ROUND2BYTE(w1 * col1.blue + w2 * col2.blue + w3 * col3.blue);
+	color.alpha = ROUND2BYTE(w1 * col1.alpha + w2 * col2.alpha + w3 * col3.alpha);
+
+	/* vykresleni bodu */
+
+
+	int last = ivecGet(renderer->map,y*renderer->base.frame_w+x);
+	S_Frag new_frag = makeFrag(color, z, last);
+	int new = fragvecPushBack(renderer->frag, new_frag);
+	//int size = fragvecSize(renderer->frag);
+	//S_Frag *frag = fragvecGetPtr(renderer->frag, new);
+	ivecSet(renderer->map,y*renderer->base.frame_w+x, new);
+	//new = ivecGet(renderer->map, y*renderer->base.frame_w+x);
+//	printf("new = %d, next1 = %d, next2 = %d\n", new, new_frag.next, (int)frag->next);
+      }
+
+      /* hranova fce o pixel vedle */
+      e1 += a1;
+      e2 += a2;
+      e3 += a3;
     }
-
-    /* Pineduv alg. rasterizace troj.
-       hranova fce je obecna rovnice primky Ax + By + C = 0
-       primku prochazejici body (x1, y1) a (x2, y2) urcime jako
-       (y1 - y2)x + (x2 - x1)y + x1y2 - x2y1 = 0 */
-
-    /* normala primek - vektor kolmy k vektoru mezi dvema vrcholy, tedy (-dy, dx) */
-    a1 = y1 - y2;
-    a2 = y2 - y3;
-    a3 = y3 - y1;
-    b1 = x2 - x1;
-    b2 = x3 - x2;
-    b3 = x1 - x3;
-
-    /* koeficient C */
-    c1 = x1 * y2 - x2 * y1;
-    c2 = x2 * y3 - x3 * y2;
-    c3 = x3 * y1 - x1 * y3;
-
-    /* vypocet hranove fce (vzdalenost od primky) pro protejsi body */
-    /*s1 = a1 * x3 + b1 * y3 + c1;*/
-    s2 = a2 * x1 + b2 * y1 + c2;
-    s3 = a3 * x2 + b3 * y2 + c3;
-
-    /* uprava koeficientu C pro korektni vyplnovani, viz "OpenGL top-left rule" */
-    /* https://books.google.cz/books?id=3ljRBQAAQBAJ&pg=PA73 */
-    if( (y1 == y2 && x2 > x1) || y2 < y1 )
-    {
-        c1 -= 1;
-    }
-    if( (y2 == y3 && x3 > x2) || y3 < y2 )
-    {
-        c2 -= 1;
-    }
-    if( (y3 == y1 && x1 > x3) || y1 < y3 )
-    {
-        c3 -= 1;
-    }
-
-    /* koeficienty pro barycentricke souradnice */
-    alpha = 1.0 / (ABS(s2) + 1);
-    beta = 1.0 / (ABS(s3) + 1);
-
-    /* vyplnovani... */
-    for( y = miny; y <= maxy; ++y )
-    {
-        /* inicilizace hranove fce v bode (minx, y) */
-        e1 = a1 * minx + b1 * y + c1;
-        e2 = a2 * minx + b2 * y + c2;
-        e3 = a3 * minx + b3 * y + c3;
-
-        for( x = minx; x <= maxx; ++x )
-        {
-            if( e1 >= 0 && e2 >= 0 && e3 >= 0 )
-            {
-                /* interpolace pomoci barycentrickych souradnic
-                   e1, e2, e3 je aktualni vzdalenost bodu (x, y) od primek */
-                w1 = alpha * e2;
-                w2 = beta * e3;
-                w3 = 1.0 - w1 - w2;
-
-                /* interpolace z-souradnice */
-                z = w1 * v1->z + w2 * v2->z + w3 * v3->z;
-                
-                /* interpolace barvy */
-                color.red = ROUND2BYTE(w1 * col1.red + w2 * col2.red + w3 * col3.red);
-                color.green = ROUND2BYTE(w1 * col1.green + w2 * col2.green + w3 * col3.green);
-                color.blue = ROUND2BYTE(w1 * col1.blue + w2 * col2.blue + w3 * col3.blue);
-                color.alpha = ROUND2BYTE(w1 * col1.alpha + w2 * col2.alpha + w3 * col3.alpha);
-
-                /* vykresleni bodu */
-
-		
-		int *last = ivecGetPtr(renderer->map,y*renderer->base.frame_w+x);
-		  S_Frag new_frag = makeFrag(color, z, *last);
-		  //printf("last = %d\n",*last);
-		  int new = vecPushBack(renderer->frag, &new_frag);
-		  printf("new = %d\n",new);
-		  ivecSet(renderer->map,y*renderer->base.frame_w+x, new);
-	    }
-
-            /* hranova fce o pixel vedle */
-            e1 += a1;
-            e2 += a2;
-            e3 += a3;
-        }
-    }
+  }
 }
 
 /******************************************************************************
@@ -429,11 +432,12 @@ void renderStudentScene(S_Renderer *pRenderer, S_Model *pModel)
     
     
     int imap, max = -1;
-    S_FragVec tmp;
+    S_FragVec *tmp;
     S_Frag frag, save;
-    printf("size = %d\n", fragvecSize(renderer->frag)); 
+    //printf("size = %d\n", fragvecSize(renderer->frag)); 
     // pro kazdy bod 
-    for (imap = 0; imap < ivecSize(renderer->map); imap++)
+/*
+   for (imap = 0; imap < ivecSize(renderer->map); imap++)
     {
       max = MAX(max, ivecGet(renderer->map, imap));
     }
@@ -442,12 +446,12 @@ void renderStudentScene(S_Renderer *pRenderer, S_Model *pModel)
     max = -1;
     for (imap = 0; imap < fragvecSize(renderer->frag)-1; imap++)
     {
-      frag = fragvecGet(renderer->frag,imap);
-      max = MAX(max, frag.next);
+      frag = vecGetPtr(renderer->frag,imap);
+      printf("imap = %d, next = %d\n",imap, frag->next);
+      max = MAX(max, frag->next);
     }
     printf("MAX = %d\n",max);
-   
-    /*
+   */
 
     for (imap = 0; imap < ivecSize(renderer->map); imap++)
     {
@@ -459,7 +463,7 @@ void renderStudentScene(S_Renderer *pRenderer, S_Model *pModel)
 	while (next > -1)
 	{
 	  
-	  printf("next= %d\n", next); 
+//	  printf("next= %d\n", next); 
 
 	  frag = fragvecGet(renderer->frag,next);
 	  fragvecPushBack(tmp,frag);
@@ -478,7 +482,9 @@ void renderStudentScene(S_Renderer *pRenderer, S_Model *pModel)
 	  }
 	  fragvecSet(tmp,0, save);
 	}
-	S_RGBA src,dst = makeColorA(0,0,0,1);
+	
+	S_RGBA src, dst = makeColorA(0,0,0,255);
+	
 	for (i = 0; i < fragvecSize(tmp) ; i++)
 	{
 	  save = fragvecGet(tmp,i);
@@ -487,19 +493,19 @@ void renderStudentScene(S_Renderer *pRenderer, S_Model *pModel)
 	      ROUND(dst.alpha*(src.alpha*src.red)+dst.red),	      \
 	      ROUND(dst.alpha*(src.alpha*src.green)+dst.green),   \
 	      ROUND(dst.alpha*(src.alpha*src.blue)+dst.blue),     \
-	      ROUND((1-src.alpha)*dst.alpha)); 
+	      ROUND((255-src.alpha)*dst.alpha)); 
 	}
-
+/*
 	src = pRenderer->frame_buffer[imap];
 	dst= makeColorA(				      \
 	    ROUND(dst.alpha*src.red+dst.red),	      \
 	    ROUND(dst.alpha*src.green+dst.green),   \
 	    ROUND(dst.alpha*src.blue+dst.blue),     \
-	    1); 
-	pRenderer->frame_buffer[imap] = dst;
+	    255); 
+*/	pRenderer->frame_buffer[imap] = dst;
       }
+	fragvecRelease(&tmp);
     }
-     */
 }
 
 
