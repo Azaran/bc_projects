@@ -7,6 +7,8 @@
 \pagestyle{empty}
 \usepackage{natbib}        % pouzita literatura
 \usepackage{url}             % URL
+\DeclareUrlCommand\url{\def\UrlLeft{<}\def\UrlRight{>} \urlstyle{tt}}
+\providecommand{\myuv}[1]{\quotedblbase #1\textquotedblleft}
 
 \begin{document}
 \begin{titlepage}
@@ -19,40 +21,47 @@
   {\Large 8. dubna 2015 \hfill Vojtěch Večeřa}
 \end{titlepage}
 
-\section*{Historie typografie a tisku}
-\subsection*{Tisk}
-\noindent První výskyty typografie se datují do Mezopotámie, Babylonu a Řecka do doby 2000 let př.n.l. Samozřejmě se jednalo pouze o primitivní formy jako například pečetě, mince apod. 
-
-\indent Svůj hlavní rozvoj zažívá typografie v období středověku. Z této doby bylo nalezeno několik předmětů poukazujících na to, že se již objevovali jisté typgrafické techniky. Do tétot doby se také datuje vznik pvního \uv{pohyblivého} psacího stroje sestrojeného v Číně v 11. století odkud se tato myšlenka rozšířila do Korei. Jako první byly použity keramické součásti, které ale později byly nahrazeny dřevěnými a bronzovými. Toto vyústilo až v kovový psací stroj velmi podobný tomu, kterým se proslavil Johannes Gutenberg.
-
-\indent Gutenbergův psací stroj je ovšem pvní, který používá mechanický lis pro tisk. Jeho součásti tvořené ze slitinou kde bylo hlavní složkou olovo se osvědčily natolik, že se používají dodnes. S tím také vynalez techniku pro odlívání levných razníků písmen a jejich následné kombinování pro vytvoření více kopií. Tímto se mu v 15. století podařilo odstartovat tzv.Tiskařskou revoluci.
-
-\indent V 20. století proběhla další revoluce typografie a to díky postupnému rozšíření osobních počítačů, které dovolili tvůrcům vytvářet a používat experimentální druhy písem a stejně tak, jako písma již zažitá. Což umožnilo novým návrhářům se prosadit.
-
-\subsection*{Typografie}
-\noindent Typografie se vyvýjela postupně s vývojem tisku a od svého počátku se značně změnila ovšem je poněkud konzervativní takže ponechává ty nejlépe čitelná písma i přesto, že se jedná písmo používané po dlouhou dobu.
-
-\indent V raných fázích tisku v Evropě byla snaha o připodobnění tisknutého textu k tomu ručně psanému. Nejednalo se ale o úplně ideální ideu. Problém tohoto typu tisku byl že tisk nebyl lehce čitelný. Toto se ovšem začalo měnit s příchodem kovových psacích strojů ve středověku, kde začalo přecházet k použítí Římského písma. Kořeny Římského písma ovšem směřují do Řecka.
-
-\noindent V současnoti rozlišujeme dva druhy Římského písma \uv{staromódní} a moderní. Staromódní je charakteristické tím, že je má stejně tučné čáry, kdežto moderní využívá kontrastu tenkých a širokých čar.
 \newpage
+\pagestyle{plain}
+\section*{Typografie v současnosti}
+
+\subsection*{Co je to typografie?}
+\begingroup
+\leftskip4ex
+\rightskip\leftskip
+{\myuv{Typografie je disciplína zabývající se písmem, především jeho správným výběrem, použitím a sazbou. Cílem typografie je zajistit čtenáři snazší čtení, efektivnější vnímání čteného textu a případně i vyloučit možné chyby a nejednoznačnosti plynoucí z více možných zápisů téže věty.}\citep{Strafelda:co_je_typografie}
+}\par
+\endgroup 
 
 
+\subsection*{Moderní formy typografie}
+Počátky moderní typografie lze datovat do počátků 20. století za největšího představitele této doby je považován Karel Teige, který již od velmi útlého věku uplaťňoval principy nové typografie. \citep{Pecina:o_konstruktivismu_v_typografii}
 
+\subsubsection*{Moderní písmo}
 
+V současnosti existuje zhruba 400 druhů písem počínaje latinkou a končeje Braillovým písmem. Již zmíněná latinka je pravděpodobně nejrozšířenějším typem písma současnosti. Klíčem k její popularitě je její jednoduchá rozšiřit o interpunkci díky čemž vyhovuje velkému množství jazyků. \citep{Jiricek:zivy_font}
 
-   0/2 monografie (alespoň jedna musí být cizojazyčná),
-   
-   0/3 elektronické dokumenty,
-   
-   0/1 seriálovou publikaci (časopis či sborník z konference),
-   
-   0/2 články v seriálové publikaci,
-   
-   0/2 kvalifikační práce (bakalářské, diplomové nebo disertační).
+\subsubsection*{Typografie a počítače}
+S vytvářením a upravovaním dokumentů se setkáváme až v době kdz se rošířily počítače a začaly obsahovat nějaké elementární programy. V daném období sloužily aplikace pouze jako simulace strojopisu a jako příprava dokumentů pro jehličkové tiskárny. O velký průlom se postaralo vytváření předloh sborníků a skript pro tisk. \citep{Rybicka:typografie_a_tex}
 
+\subsubsection*{TeX}
 
+Změnu v přípravě dokumentů pro tisk přinesl \TeX , který slouží pouze jako sazeč písma a neobsahuje typografická pravidla, která přínáší až jeho nástavby. Tyto nástavby ovšem stále používají \TeX jako sázeč tudíž jejich příkazy jsou transformovány na příkazy v \TeX u . \citep{Lamport:latex_a_document_preparation_system}
 
+Nejvýznamnějším rozšířením je \LaTeX , který za cíl usnadnit práci s \TeX em lajkům a lidem, kteří se sazbou teprve začínají. V \LaTeX u uživatel neříká \textit{jak} chce věci sázet, ale \textit{co} chce sázet. Na otázku \textit{jak} odpovídá \LaTeX . \citep{Rybicka:latex_pro_zacatecniky}
+\paragraph*{Další rozšíření}
+Balíček \textbf{sudokubundle} je zajímavé rozšíření pro \TeX \,zprostředkovávající sazbu, generování a řešení (\textit{zjednodušování}) sudoku na určitou složitost. \citep{Wilson:sudokubundle}
+
+\subsubsection*{Web}
+Jedná se o další velké médium, kde je třeba řešit alespoň základní typografické otázky. \citep{Stastny:navrh_internetovych_stranek}
+Jaké nástroje tedy můžeme použít? Základním nástrojem pro práci s webem je jazyk HTML ten ovšem není moc vhodný pokud požadujeme vytříbený typografický styl.Eliminování nedostatků HTML je ovšem jednoduché přidáme--li technologii CSS většina těchto nedostatků je eliminována. \citep{Pecina:typografie_na_webu}
+
+Co nám tedy CSS z pohledu typografie přináší? Především možnost nastavení písma. Můžeme zde přesně definovat velikost, zarovnání, tloušťku, rodinu, variantu, styl písma atd. možností co pro nastavení parametrů písma je v CSS opravdu mnoho. \citep{Polakovic:CSS}
+
+\newpage
+\bibliographystyle{csplainnat}
+\renewcommand{\refname}{Literatura}
+\bibliography{literatura}
 
 \end{document}
 
