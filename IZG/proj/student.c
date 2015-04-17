@@ -473,9 +473,9 @@ void renderStudentScene(S_Renderer *pRenderer, S_Model *pModel)
 	S_RGBA src = save.color;
 	double srcal = src.alpha / 255.0, dstal = dst.alpha / 255.0;
 	dst = makeColorA(				      \
-	    ROUND(dstal*(srcal*src.red)+dst.red),	      \
-	    ROUND(dstal*(srcal*src.green)+dst.green),   \
-	    ROUND(dstal*(srcal*src.blue)+dst.blue),     \
+	    ROUND(dstal*(src.red)+dst.red),	      \
+	    ROUND(dstal*(src.green)+dst.green),   \
+	    ROUND(dstal*(src.blue)+dst.blue),     \
 	    ROUND(((1-srcal)*dstal)*255)			  \
 	    ); 
       }
@@ -489,7 +489,7 @@ void renderStudentScene(S_Renderer *pRenderer, S_Model *pModel)
 	  ROUND(dstal*src.green+dst.green),   \
 	  ROUND(dstal*src.blue+dst.blue)\
 	  );
-     // dst.alpha = 255;
+      dst.alpha = 255;
       pRenderer->frame_buffer[imap] = dst;
       fragvecRelease(&tmp);
       }
