@@ -29,7 +29,17 @@ def printHelp():
 
 def my_fopen(filename,mode):
     path = os.path.abspath(filename)
-    new_file = open(path,mode)
+#    print("path = "+path)
+    try:
+        new_file = open(path,mode)
+    except IOError:
+        if mode == 'rt':
+            reterr(2)
+        elif mode == 'wt':
+            reterr(3)
+        else:
+            raise
+
     if new_file != False:
 #        print("soubor uspesne otevren")
         return new_file
@@ -37,11 +47,15 @@ def my_fopen(filename,mode):
 #        print("soubor se nepovedlo otevrit")
         return None
 
+def copyFile(in_f,out_f):
+    r = in_f.read()
+    out_f.write(str(r))
+
 def parseArg(argc,argv):
    # print ("argc = "+ str(argc))
     i = 1
     global infile,outfile,formatfile
-    print (argv[i])
+#    print (argv[i])
     if argc <= 1:
         return 0
     if argv[1] == "--help":
@@ -95,12 +109,35 @@ def parseArg(argc,argv):
         i+=1
     return argc-1
 
+def processFile():
+    global infile,outfile,args
+    msg = None
+    
+    # modifikuj sobour podle formatu ve formatfile
+    if args['--format']:
+        msg = applyFormat(getFormat())
+     
+     # nahrad konce radku <br />   
+    if args['--br']:
+        nl = re.compile("\n")
+        if msg == None:
+            msg = ""
+            fmsg = infile.read()
+            for line in fmsg:
+                line = nl.sub("<br />\n",line)
+                msg = line
+        else:
+            msg = nl.sub("<br />\n",msg)
+
+    outfile.write(msg)
+
 def getFormat():
     global formatfile
     format_s = {}
     for line in formatfile:
         found = line.find("\t")
-        keywords_r = line[:found]
+        keyword = line[:found]
+        keywords_r = editKeyword(keyword)
         while line[found] == "\t":    # kdyby bylo vis tabulatoru za sebou
             found +=1
         nl = line.find("\n")
@@ -108,12 +145,23 @@ def getFormat():
             nl = None
         fmt_str = line[found:nl]
 #        print ("keywords = "+keywords_str+", format = "+fmt_str)
-    #    keywords = parseKWords(keywords_str)
         fmt = parseFormat(fmt_str)
         format_s[keywords_r] = fmt
-#    print(format_s)
     return format_s
-#def parseKWords(kw_str):
+
+def editKeyword(keyword):
+    keyword = re.sub('\%s', '[\\t\\n\\r\\f\\v]', keyword)
+    keyword = re.sub('\%a', '.', keyword)
+    keyword = re.sub('\%d', '[0-9]', keyword)
+    keyword = re.sub('\%l', '[a-z]', keyword)
+    keyword = re.sub('\%L', '[A-Z]', keyword)
+    keyword = re.sub('\%w', '[a-zA-Z]', keyword)
+    keyword = re.sub('\%W', '[a-zA-Z0-9]', keyword)
+    keyword = re.sub('\%t', '\\t', keyword)
+    keyword = re.sub('\%n', '\\n', keyword)
+    keyword = re.sub('%(\.|\||\!|\*|\+|\(|\)|%)', '\\1', keyword)
+    
+    return keyword
 
 def parseFormat(fmt_str):
     tags = \
@@ -171,42 +219,60 @@ def makeForml(matches):
 
 def applyFormat(format_s):
     global infile
-    print(format_s)
-    for regex in format_s.keys():
-        print(regex)
-        lookfor = re.compile(regex)
-        print(lookfor.findall(infile.read()))
+#    print(format_s)
+    msg = ""
+    for line in infile:
+        for regex in format_s:
+#            print("regex = ",regex)
+            lookfor = re.compile(regex)
+            for kword in lookfor.finditer(line):
+                line = addTags(line, kword, format_s[regex])
+        msg += line
 
-   # return msg
+    return msg
 
-def processFile():
-    global infile,outfile,args
-    msg = None
-    # modifikuj sobour podle formatu ve formatfile
-    if args['--format']:
-        format_s = getFormat()
-        msg = applyFormat(format_s)
-        #outfile.write(msg)
-        """
-        for key in forml:
-
-            word = re.compile(regex)
-            for line in infile:
-                line = word.sub("<br />\n",line)
-                outfile.write(line)
-                """
-     # nahrad konce radku <br />   
-    if args['--br']:
-        nl = re.compile("\n")
-        if msg == None:
-            msg = infile.read()
-        for line in infile:
-            line = nl.sub("<br />\n",line)
-            outfile.write(line)
-
-def copyFile(in_f,out_f):
-    r = in_f.read()
-    out_f.write(str(r))
+def addTags(line, kword, format_t):
+    morder = max(format_t[1])
+    start = kword.start()
+    end = kword.end()
+    for i in range(1,morder+1):
+        for j in range(0,len(format_t[0])):
+            if format_t[1][j] == i:
+                if j == 0 and format_t[0][j]:
+                    line = line[:start]+"<b>"+kword.group()+"</b>"+line[end:]
+                    l = len("<b>")
+                    start += l
+                    end += l
+                elif j == 1 and format_t[0][j]:
+                    line = line[:start]+"<i>"+kword.group()+"</i>"+line[end:]
+                    l = len("<i>")
+                    start += l
+                    end += l
+                elif j == 2 and format_t[0][j]:
+                    line = line[:start]+"<u>"+kword.group()+"</u>"+line[end:]
+                    l = len("<u>")
+                    start += l
+                    end += l
+                elif j == 3 and format_t[0][j]:
+                    line = line[:start]+"<tt>"+kword.group()+"</tt>"+\
+                            line[end:]
+                    l = len("<tt>")
+                    start += l
+                    end += l
+                elif j == 4 and format_t[0][j] > 0:
+                    line = line[:start]+"<size="+str(format_t[0][j])+">"+kword.group()+\
+                            "</size>"+line[end:]
+                    l = len("<size=1>")         # size je 1 - 7
+                    start += l
+                    end += l
+                elif j == 5 and format_t[0][j] != "":
+                    line = line[:start]+"<color=#"+format_t[0][j]+">"+kword.group()+\
+                            "</color>"+line[end:]
+                    l = len("<color=#FFFFFF>")
+                    start += l
+                    end += l
+#                print (line)
+    return line
 
 infile = None
 outfile = None
