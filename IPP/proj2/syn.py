@@ -115,7 +115,9 @@ def processFile():
     
     # modifikuj sobour podle formatu ve formatfile
     if args['--format']:
-        msg = applyFormat(getFormat())
+#        checkFormatFile()
+        format_s, format_o = getFormat()
+        msg = applyFormat(format_s, format_o)
      
      # nahrad konce radku <br />   
     if args['--br']:
@@ -131,9 +133,17 @@ def processFile():
 
     outfile.write(msg)
 
+#def checkFormatFile():
+#    global formatfile
+#    if 
+
+
+
 def getFormat():
     global formatfile
     format_s = {}
+    format_o = []
+    i = 0
     for line in formatfile:
         found = line.find("\t")
         keyword = line[:found]
@@ -147,7 +157,10 @@ def getFormat():
 #        print ("keywords = "+keywords_str+", format = "+fmt_str)
         fmt = parseFormat(fmt_str)
         format_s[keywords_r] = fmt
-    return format_s
+        format_o.append(keywords_r)
+#        print(format_s)
+        i += 1
+    return format_s, format_o
 
 def editKeyword(keyword):
     keyword = re.sub('\%s', '[\\t\\n\\r\\f\\v]', keyword)
@@ -217,62 +230,63 @@ def makeForml(matches):
 #    print("pos =",forml[1])    
     return forml
 
-def applyFormat(format_s):
+def applyFormat(format_s, format_o):
     global infile
 #    print(format_s)
     msg = ""
+    kword_l = []
     for line in infile:
-        for regex in format_s:
+        shift = -1
+        for regex in format_o:
 #            print("regex = ",regex)
-            lookfor = re.compile(regex)
-            for kword in lookfor.finditer(line):
-                line = addTags(line, kword, format_s[regex])
+            if regex != []:
+                lookfor = re.compile(regex)
+                kworditer = lookfor.finditer(line)
+                for kword in kworditer:
+                    kword_l.append([regex,kword.group(),kword.start(),kword.end(),0])    
+#        print (kword_l)       
+        for kword in kword_l:        
+#            print(kword, str(shift))
+            if shift == -1:
+                shift = 0
+            line, shift = addTags(line, kword[1], kword[2], kword[3], format_s[kword[0]])
+            for i in range(0,len(kword_l)):
+                if kword_l[i][2] > kword[2]:
+                    kword_l[i][2] += shift
+                    kword_l[i][3] += shift
         msg += line
-
+    msg += "\n"
     return msg
 
-def addTags(line, kword, format_t):
+def addTags(line, group, start, end, format_t):
     morder = max(format_t[1])
-    start = kword.start()
-    end = kword.end()
+    prefix = ""
+    surfix = ""
     for i in range(1,morder+1):
         for j in range(0,len(format_t[0])):
             if format_t[1][j] == i:
                 if j == 0 and format_t[0][j]:
-                    line = line[:start]+"<b>"+kword.group()+"</b>"+line[end:]
-                    l = len("<b>")
-                    start += l
-                    end += l
+                    prefix += "<b>" 
+                    surfix = "</b>" + surfix
                 elif j == 1 and format_t[0][j]:
-                    line = line[:start]+"<i>"+kword.group()+"</i>"+line[end:]
-                    l = len("<i>")
-                    start += l
-                    end += l
+                    prefix += "<i>" 
+                    surfix = "</i>" + surfix
                 elif j == 2 and format_t[0][j]:
-                    line = line[:start]+"<u>"+kword.group()+"</u>"+line[end:]
-                    l = len("<u>")
-                    start += l
-                    end += l
+                    prefix += "<u>" 
+                    surfix = "</u>" + surfix
                 elif j == 3 and format_t[0][j]:
-                    line = line[:start]+"<tt>"+kword.group()+"</tt>"+\
-                            line[end:]
-                    l = len("<tt>")
-                    start += l
-                    end += l
+                    prefix += "<tt>" 
+                    surfix = "</tt>" + surfix
                 elif j == 4 and format_t[0][j] > 0:
-                    line = line[:start]+"<size="+str(format_t[0][j])+">"+kword.group()+\
-                            "</size>"+line[end:]
-                    l = len("<size=1>")         # size je 1 - 7
-                    start += l
-                    end += l
+                    prefix += "<font size=" + str(format_t[0][j]) + ">" 
+                    surfix = "</font>" + surfix
                 elif j == 5 and format_t[0][j] != "":
-                    line = line[:start]+"<color=#"+format_t[0][j]+">"+kword.group()+\
-                            "</color>"+line[end:]
-                    l = len("<color=#FFFFFF>")
-                    start += l
-                    end += l
-#                print (line)
-    return line
+                    prefix += "<font color=#" + str(format_t[0][j]) + ">"
+                    surfix = "</font>" + surfix
+    line =  line[:start] + prefix + group + surfix + line[end:]
+#    print ("line"+str(i)+" = "+line)
+    shift = len(prefix) + len(surfix)
+    return line, shift
 
 infile = None
 outfile = None
