@@ -91,14 +91,10 @@ void studrenCreateBuffers(S_Renderer *pRenderer, int width, int height)
 
   /* alokace pameti pro buffery a vymazani obsahu bufferu */
   ivecResize(renderer->map, width*height);
-
-  for (x=0; x < width; x++)
-  {
-    for (y=0; y < height; y++)
-    {
-      vecSet(renderer->map,y*width+x, &val);
-    }
-  }
+  int s,size = ivecSize(renderer->map);
+  for (s = 0; s < size; s++)
+    vecSet(renderer->map, s, &val);
+  
   fragvecInit(renderer->frag); 
   /* zavolame take puvodni funkci */
   renCreateBuffers(pRenderer, width, height);
