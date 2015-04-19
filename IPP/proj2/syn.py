@@ -37,6 +37,8 @@ def my_fopen(filename,mode):
             reterr(2)
         elif mode == 'wt':
             reterr(3)
+        elif mode == 'r':
+            new_file = False
         else:
             raise
 
@@ -94,10 +96,11 @@ def parseArg(argc,argv):
         elif arg == "--format":
             if args[arg]:
                 reterr(1)
-            args[arg] = True
             if val != "":
  #               print (val)
-                formatfile = my_fopen(val,'rt')
+                formatfile = my_fopen(val,'r')
+                if formatfile != None:
+                    args[arg] = True
             else:
                 reterr(1)
         elif arg == "--br":
@@ -132,13 +135,232 @@ def processFile():
             msg = nl.sub("<br />\n",msg)
 
     outfile.write(msg)
+"""
+def checkFormatFile():
+    global formatfile
+    text = formatfile.read()
+    state = 'start'
+    par = 0
+    for i in range(0,len(text)):
+        ch = text[i]
+        if ord(ch) < 32:
+            reterr(4)
+        if state == 'start': 
+            if ch == '.':
+                state = '.'
+            elif ch == '|':
+                state = 'err'
+            elif ch == '!':
+                state = '!'
+            elif ch == '*':
+                state = 'err'
+            elif ch == '+':
+                state = 'err'
+            elif ch == '(':
+                state = '('
+            elif ch == ')':
+                state = 'err'
+            elif ch == '%':
+                state = '%'
+            else:
+                state = 'string'
+        elif state == '.':
+            if ch == '.':
+                state = 'err'
+            elif ch == '|':
+                state = '|'
+            elif ch == '!':
+                state = '!'
+            elif ch == '*':
+                state = '*'
+            elif ch == '+':
+                state = '+'
+            elif ch == '(':
+                state = '('
+            elif ch == ')' and par > 0:
+                state = ')'
+            elif ch == ')' and par == 0:
+                state = 'err'
+            elif ch == '%':
+                state = '%'
+            else:
+                state = 'string'
+        elif state == '|':
+            if ch == '.':
+                state = '.'
+            elif ch == '|':
+                state = 'err'
+            elif ch == '!':
+                state = '!'
+            elif ch == '*':
+                state = 'err'
+            elif ch == '+':
+                state = 'err'
+            elif ch == '(':
+                state = '('
+            elif ch == ')':
+                state = 'err'
+            elif ch == '%':
+                state = '%'
+            else:
+                state = 'string'
+        elif state == '!':
+            if ch == '.':
+                state = '.'
+            elif ch == '|':
+                state = '|'
+            elif ch == '!':
+                state = '!'
+            elif ch == '*':
+                state = '*'
+            elif ch == '+':
+                state = '+'
+            elif ch == '(':
+                state = '('
+            elif ch == ')':
+                state = ')'
+            elif ch == '%':
+                state = '%'
+            else:
+                state = 'string'
 
-#def checkFormatFile():
-#    global formatfile
-#    if 
+        elif state == '*':
+            if ch == '.':
+                state = '.'
+            elif ch == '|':
+                state = '|'
+            elif ch == '!':
+                state = '!'
+            elif ch == '*':
+                state = '*'
+            elif ch == '+':
+                state = '+'
+            elif ch == '(':
+                state = '('
+            elif ch == ')':
+                state = ')'
+            elif ch == '%':
+                state = '%'
+            else:
+                state = 'string'
 
+        elif state == '+':
+            if ch == '.':
+                state = '.'
+            elif ch == '|':
+                state = '|'
+            elif ch == '!':
+                state = '!'
+            elif ch == '*':
+                state = '*'
+            elif ch == '+':
+                state = '+'
+            elif ch == '(':
+                state = '('
+            elif ch == ')':
+                state = ')'
+            elif ch == '%':
+                state = '%'
+            else:
+                state = 'string'
 
+        elif state == '(':
+            if ch == '.':
+                state = '.'
+            elif ch == '|':
+                state = '|'
+            elif ch == '!':
+                state = '!'
+            elif ch == '*':
+                state = '*'
+            elif ch == '+':
+                state = '+'
+            elif ch == '(':
+                state = '('
+            elif ch == ')':
+                state = ')'
+            elif ch == '%':
+                state = '%'
+            else:
+                state = 'string'
 
+        elif state == ')':
+            if ch == '.':
+                state = '.'
+            elif ch == '|':
+                state = '|'
+            elif ch == '!':
+                state = '!'
+            elif ch == '*':
+                state = '*'
+            elif ch == '+':
+                state = '+'
+            elif ch == '(':
+                state = '('
+            elif ch == ')':
+                state = ')'
+            elif ch == '%':
+                state = '%'
+            else:
+                state = 'string'
+               
+        elif state == 'string':
+            if ch == '.':
+                state = '.'
+            elif ch == '|':
+                state = '|'
+            elif ch == '!':
+                state = '!'
+            elif ch == '*':
+                state = '*'
+            elif ch == '+':
+                state = '+'
+            elif ch == '(':
+                state = '('
+            elif ch == ')':
+                state = ')'
+            elif ch == '%':
+                state = '%'
+            else:
+                state = 'string'
+        elif state == '%':
+            if ch == 's':
+                state = 'start'
+            elif ch == 'a':
+                state = 'start'
+            elif ch == 'd':
+                state = 'start'
+            elif ch == 'l':
+                state = 'start'
+            elif ch == 'L':
+                state = 'start'
+            elif ch == 'w':
+                state = 'start'
+            elif ch == 'W':
+                state = 'start'
+            elif ch == 't':
+                state = 'start'
+            elif ch == 'n':
+                state = 'start'
+            elif ch == '.':
+                state = 'start'
+            elif ch == '|':
+                state = 'start'
+            elif ch == '!':
+                state = 'start'
+            elif ch == '*':
+                state = 'start'
+            elif ch == '+':
+                state = 'start'
+            elif ch == '(':
+                state = 'start'
+            elif ch == ')':
+                state = 'start'
+            elif ch == '%':
+                state = 'start'
+            else:
+                reterr(4)
+       """ 
 def getFormat():
     global formatfile
     format_s = {}
@@ -154,6 +376,8 @@ def getFormat():
         if nl == -1:            #pokud nema zalomeni uloz az do konce radku, -1 odrizne posl znak
             nl = None
         fmt_str = line[found:nl]
+        if len(fmt_str) == 0:
+            reterr(4)
 #        print ("keywords = "+keywords_str+", format = "+fmt_str)
         fmt = parseFormat(fmt_str)
         format_s[keywords_r] = fmt
@@ -163,17 +387,28 @@ def getFormat():
     return format_s, format_o
 
 def editKeyword(keyword):
-    keyword = re.sub('\%s', '[\\t\\n\\r\\f\\v]', keyword)
-    keyword = re.sub('\%a', '.', keyword)
-    keyword = re.sub('\%d', '[0-9]', keyword)
-    keyword = re.sub('\%l', '[a-z]', keyword)
-    keyword = re.sub('\%L', '[A-Z]', keyword)
-    keyword = re.sub('\%w', '[a-zA-Z]', keyword)
-    keyword = re.sub('\%W', '[a-zA-Z0-9]', keyword)
-    keyword = re.sub('\%t', '\\t', keyword)
-    keyword = re.sub('\%n', '\\n', keyword)
-    keyword = re.sub('%(\.|\||\!|\*|\+|\(|\)|%)', '\\1', keyword)
-    
+    key = keyword
+    keyword = re.sub('%s', '[\\t\\n\\r\\f\\v]', keyword)
+    keyword = re.sub('%a', '.', keyword)
+    keyword = re.sub('%d', '[0-9]', keyword)
+    keyword = re.sub('%l', '[a-z]', keyword)
+    keyword = re.sub('%L', '[A-Z]', keyword)
+    keyword = re.sub('%w', '[a-zA-Z]', keyword)
+    keyword = re.sub('%W', '[a-zA-Z0-9]', keyword)
+    keyword = re.sub('%t', '\\t', keyword)
+    keyword = re.sub('%n', '\\n', keyword)
+    keyword = re.sub('%\.', '\\.', keyword)
+    keyword = re.sub('%\|', '\\|', keyword)
+    keyword = re.sub('%\!', '\\!', keyword)
+    keyword = re.sub('%\*', '\\*', keyword)
+    keyword = re.sub('%\+', '\\+', keyword)
+    keyword = re.sub('%\(', '\\(', keyword)
+    keyword = re.sub('%\)', '\\)', keyword)
+    keyword = re.sub('%%', '\\%', keyword)
+    keyword = re.sub('!(.)', '[^\\1]', keyword)
+    keyword = re.sub('(.+)(\.){1}(.+)', '\\1\\3', keyword)
+#    keyword = re.sub('%(\.|\||\!|\*|\+|\(|\)|%)', '\134\000\\1', keyword)
+#    print (key+" -> "+keyword) 
     return keyword
 
 def parseFormat(fmt_str):
@@ -226,6 +461,8 @@ def makeForml(matches):
                     forml[1][5] = pos
                     pos += 1
                     color = False
+#            else:
+#                reterr(4)
 #    print("list =",forml[0])    
 #    print("pos =",forml[1])    
     return forml
@@ -234,16 +471,113 @@ def applyFormat(format_s, format_o):
     global infile
 #    print(format_s)
     msg = ""
-    kword_l = []
     for line in infile:
-        shift = -1
+        added_l = []
+        tags_l = []   # [[start_of_tag,end_of_tag]]
+        rn = 0
         for regex in format_o:
 #            print("regex = ",regex)
-            if regex != []:
+            rn += 1
+            if len(format_o) == 0:
+                continue
+            shift = 0
+            lookfor = re.compile(regex)
+            kworditer = lookfor.finditer(line)
+            for kword in kworditer:
+                start = kword.start()+shift
+                end = kword.end()+shift
+                if kword.group() != '':
+                    err = False
+#                    print(kword)
+                    for i in range(0, len(tags_l)):
+                        if ((start > tags_l[i][0] and start < tags_l[i][1]) or \
+                                (end > tags_l[i][0] and end < tags_l[i][1])):
+                            err = True
+                            break
+                    for i in range(0, len(added_l)):
+                        if added_l[i][0] == start and added_l[i][1] == end and \
+                                added_l[i][2] == rn:
+                            err = True
+                            break
+                    if not err:
+                        len_prefix, len_surfix, line = addTags(line, kword.group(), \
+                                start, end, format_s[regex])
+                        end -= 1 
+                        kw_len = end - start
+                        tags_l.append([start,start+len_prefix])
+                        tags_l.append([start+len_prefix+kw_len+1,start+len_prefix+kw_len+len_surfix])
+                        added_l.append([start+len_prefix,start+len_prefix+kw_len,rn])
+                        shift += len_prefix+len_surfix
+#                    print("tags = ",tags_l,"\nadded = ",added_l) 
+
+#<b><i><font color=#FFFFFF><font size=2><u><tt>if</tt></u></font></font></i></b>then
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+        msg += line
+#    msg += "\n"
+    return msg
+
+def addTags(line, group, start, end, format_t):
+    morder = max(format_t[1])
+    prefix = ""
+    surfix = ""
+    for i in range(1,morder+1):
+        for j in range(0,len(format_t[0])):
+            if format_t[1][j] == i:
+                if j == 0 and format_t[0][j]:
+                    prefix += "<b>" 
+                    surfix = "</b>" + surfix
+                elif j == 1 and format_t[0][j]:
+                    prefix += "<i>" 
+                    surfix = "</i>" + surfix
+                elif j == 2 and format_t[0][j]:
+                    prefix += "<u>" 
+                    surfix = "</u>" + surfix
+                elif j == 3 and format_t[0][j]:
+                    prefix += "<tt>" 
+                    surfix = "</tt>" + surfix
+                elif j == 4 and format_t[0][j] > 0:
+                    prefix += "<font size=" + str(format_t[0][j]) + ">" 
+                    surfix = "</font>" + surfix
+                elif j == 5 and format_t[0][j] != "":
+                    prefix += "<font color=#" + str(format_t[0][j]) + ">"
+                    surfix = "</font>" + surfix
+    line =  line[:start] + prefix + group + surfix + line[end:]
+#    print ("line"+str(i)+" = "+line)
+#    shift = len(prefix) + len(surfix)
+    
+    return len(prefix), len(surfix), line
+
+
+
+"""
+def applyFormat(format_s, format_o):
+    global infile
+#    print(format_s)
+    msg = ""
+    for line in infile:
+        shift = -1
+        kword_l = []
+        for regex in format_o:
+#            print("regex = ",regex)
+            if len(format_o) > 0:
                 lookfor = re.compile(regex)
                 kworditer = lookfor.finditer(line)
                 for kword in kworditer:
-                    kword_l.append([regex,kword.group(),kword.start(),kword.end(),0])    
+                    if kword.start() < kword.end():
+                        kword_l.append([regex,kword.group(),kword.start(),kword.end(),0])    
 #        print (kword_l)       
         for kword in kword_l:        
 #            print(kword, str(shift))
@@ -255,7 +589,7 @@ def applyFormat(format_s, format_o):
                     kword_l[i][2] += shift
                     kword_l[i][3] += shift
         msg += line
-    msg += "\n"
+#    msg += "\n"
     return msg
 
 def addTags(line, group, start, end, format_t):
@@ -287,7 +621,7 @@ def addTags(line, group, start, end, format_t):
 #    print ("line"+str(i)+" = "+line)
     shift = len(prefix) + len(surfix)
     return line, shift
-
+"""
 infile = None
 outfile = None
 formatfile = None
