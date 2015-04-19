@@ -83,7 +83,6 @@ void studrenRelease(S_Renderer **ppRenderer)
 void studrenCreateBuffers(S_Renderer *pRenderer, int width, int height)
 {
   S_StudentRenderer   * renderer;
-  int x,y, val = -1;
   IZG_ASSERT(pRenderer && width > 0 && height > 0);
 
   /* ukazatel na studentsky renderer */
@@ -91,7 +90,7 @@ void studrenCreateBuffers(S_Renderer *pRenderer, int width, int height)
 
   /* alokace pameti pro buffery a vymazani obsahu bufferu */
   ivecResize(renderer->map, width*height);
-  int s,size = ivecSize(renderer->map);
+  int s,val = -1, size = ivecSize(renderer->map);
   for (s = 0; s < size; s++)
     vecSet(renderer->map, s, &val);
   
