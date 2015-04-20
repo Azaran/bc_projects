@@ -135,6 +135,232 @@ def processFile():
             msg = nl.sub("<br />\n",msg)
 
     outfile.write(msg)
+
+def getFormat():
+    global formatfile
+    format_s = {}
+    format_o = []
+    for line in formatfile:
+        reg_line = re.compile("^(.*?)([\s]+)(.+)[\s]*$")
+        parts = reg_line.match(line)
+        if parts == None:
+            empty_line = re.compile("^([\s]*)$")
+            if empty_line.match(line) == None:
+                reterr(4)
+        else:
+            keyword = parts.group(1)
+            fmt_str = parts.group(3)
+            if len(keyword) == 0 or len(fmt_str) == 0 or len(parts.group(2)) == 0:
+                reterr(4)
+#            print("group1 = '"+keyword+"' group2 = "+fmt_str)
+            keyword = editKeyword(keyword)
+#        print ("keywords = "+keywords_str+", format = "+fmt_str)
+            fmt = parseFormat(fmt_str)
+            format_s[keyword] = fmt
+            format_o.append(keyword)
+#        print(format_s)
+    return format_s, format_o
+
+def editKeyword(keyword):
+    key = keyword
+    keyword = re.sub('%s', '\\s', keyword)
+    keyword = re.sub('%a', '.', keyword)
+    keyword = re.sub('%d', '[0-9]', keyword)
+    keyword = re.sub('%l', '[a-z]', keyword)
+    keyword = re.sub('%L', '[A-Z]', keyword)
+    keyword = re.sub('%w', '[a-zA-Z]', keyword)
+    keyword = re.sub('%W', '[a-zA-Z0-9]', keyword)
+    keyword = re.sub('%t', '\\t', keyword)
+    keyword = re.sub('%n', '\\n', keyword)
+    keyword = re.sub('%\.', '\\.', keyword)
+    keyword = re.sub('%\|', '\\|', keyword)
+    keyword = re.sub('%\!', '\\!', keyword)
+    keyword = re.sub('%\*', '\\*', keyword)
+    keyword = re.sub('%\+', '\\+', keyword)
+    keyword = re.sub('%\(', '\\(', keyword)
+    keyword = re.sub('%\)', '\\)', keyword)
+    keyword = re.sub('%%', '\\%', keyword)
+    keyword = re.sub(r'!((\[.+\])|(\\.)|(.))', '[^\\1]', keyword)
+    keyword = re.sub('(.+)(\.){1}(.+)', '\\1\\3', keyword)
+#    keyword = re.sub('%(\.|\||\!|\*|\+|\(|\)|%)', '\134\000\\1', keyword)
+#    print (key+" -> "+keyword) 
+    return keyword
+
+def parseFormat(fmt_str):
+    tags = \
+    re.compile('(bold){1}|(italic){1}|(underline){1}|(teletype){1}|(size)?:([1-7]{1}){1}|(color)?:([0-9A-F]{6}){1}')
+    matches = re.finditer(tags, fmt_str)
+   # print (matches)
+    return makeForml(matches)
+
+
+def makeForml(matches):
+    forml = [[False,False,False,False,0,""],[ 0, 0, 0, 0, 0, 0]]
+    pos = 1                     # position in format string
+    size = color = False
+    for match in matches:
+#        print ("match = ",match)
+        i = 0
+        for m in match.groups():
+#            if m != None:                   # testing purpose
+#                print (i," ",m ," starts at ",match.start())
+            i+=1
+            if m == "bold":
+                forml[0][0] = True
+                forml[1][0] = pos
+                pos += 1
+            elif m == "italic":
+                forml[0][1] = True
+                forml[1][1] = pos
+                pos += 1
+            elif m == "underline":
+                forml[0][2] = True
+                forml[1][2] = pos
+                pos += 1
+            elif m == "teletype":
+                forml[0][3] = True
+                forml[1][3] = pos
+                pos += 1
+            elif m == "size":
+                size = True            
+            elif m == "color":
+                color = True            
+            elif m != None:
+                if size:
+                    if m != '':
+                        forml[0][4] = int(m)
+                        forml[1][4] = pos
+                        pos += 1
+                        size = False
+                    else:
+                        reterr(4)
+                elif color:
+                    if m != '':
+                        forml[0][5] = m
+                        forml[1][5] = pos
+                        pos += 1
+                        color = False
+                    else:
+                        reterr(4)
+#    print("list =",forml[0])    
+#    print("pos =",forml[1])    
+    return forml
+
+def applyFormat(format_s, format_o):
+    global infile
+#    print(format_s)
+    msg = ""
+#    for line in infile:
+    line = infile.read()
+    added_l = []
+    tags_l = []   # [[start_of_tag,end_of_tag]]
+    rn = 0
+    for regex in format_o:
+        rn += 1
+        if len(format_o) == 0:
+            continue
+        shift = 0
+        lookfor = re.compile(regex)
+        kworditer = lookfor.finditer(line)
+        for kword in kworditer:
+            start = kword.start()+shift
+            end = kword.end()+shift
+            if kword.group() != '':
+                err = False
+                print(kword)
+                for i in range(0, len(tags_l)):
+                    if ((start >= tags_l[i][0] and start <= tags_l[i][1]) or \
+                            (end > tags_l[i][0] and end < tags_l[i][1])):
+                        err = True
+                        break
+                for i in range(0, len(added_l)):
+                    if added_l[i][0] == start and added_l[i][1] == end and \
+                            added_l[i][2] == rn:
+                        err = True
+                        break
+                if not err:
+                    len_prefix, len_surfix, line = addTags(line, kword.group(), \
+                            start, end, format_s[regex])
+                    kw_len = end - start
+                    added_l.append([start+len_prefix,start+len_prefix+kw_len-1,rn])
+                    for i in range(0,len(tags_l)):
+                        if tags_l[i][0] > start:
+                            tags_l[i][0] += len_prefix
+                            tags_l[i][1] += len_prefix 
+                        if tags_l[i][1] > end:
+                            tags_l[i][0] += len_surfix
+                            tags_l[i][1] += len_surfix
+                    
+                    tags_l.append([start,start+len_prefix-1])
+                    tags_l.append([start+len_prefix+kw_len,start+len_prefix+kw_len+len_surfix-1])
+                    shift += len_prefix+len_surfix
+                    print("tags = ",tags_l,"\nadded = ",added_l) 
+                    print(line)
+                    """
+a<b> </b><b>b</b><b> </b><b>c</b><b> </b><b>d</b><b> </b><b>e</b><b> </b><b>f</b><b> </b><b>g</b><b> </b><b>h</b<i>>
+    """
+    return line
+
+def addTags(line, group, start, end, format_t):
+    morder = max(format_t[1])
+    prefix = ""
+    surfix = ""
+    for i in range(1,morder+1):
+        for j in range(0,len(format_t[0])):
+            if format_t[1][j] == i:
+                if j == 0 and format_t[0][j]:
+                    prefix += "<b>" 
+                    surfix = "</b>" + surfix
+                elif j == 1 and format_t[0][j]:
+                    prefix += "<i>" 
+                    surfix = "</i>" + surfix
+                elif j == 2 and format_t[0][j]:
+                    prefix += "<u>" 
+                    surfix = "</u>" + surfix
+                elif j == 3 and format_t[0][j]:
+                    prefix += "<tt>" 
+                    surfix = "</tt>" + surfix
+                elif j == 4 and format_t[0][j] > 0:
+                    prefix += "<font size=" + str(format_t[0][j]) + ">" 
+                    surfix = "</font>" + surfix
+                elif j == 5 and format_t[0][j] != "":
+                    prefix += "<font color=#" + str(format_t[0][j]) + ">"
+                    surfix = "</font>" + surfix
+    line =  line[:start] + prefix + group + surfix + line[end:]
+#    print ("line"+str(i)+" = "+line)
+#    shift = len(prefix) + len(surfix)
+    
+    return len(prefix), len(surfix), line
+
+
+infile = None
+outfile = None
+formatfile = None
+args = { 
+    '--input': False,
+    '--output': False,
+    '--format': False,
+    '--br': False
+    }
+
+chkarg = parseArg(len(sys.argv),sys.argv)
+
+if not args['--input']:
+    infile = sys.stdin
+if not args['--output']:
+    outfile = sys.stdout
+
+if not args['--format'] and not args['--br']:
+    copyFile(infile,outfile)  # zkopiruj vstup na vystup pokud 0 argumentu
+else:
+    processFile()               # proved operace nad vstupem
+    if infile!= sys.stdin:      # pokud jsme necetli ze stdin zavri soubor
+        infile.close()
+    if outfile != sys.stdin:    # pokud jsme necetli ze stdout zavri soubor
+        outfile.close()
+    if formatfile != None:      # pokud byl zadan soubor s formatem zavri soubor
+        formatfile.close()
+
 """
 def checkFormatFile():
     global formatfile
@@ -361,292 +587,3 @@ def checkFormatFile():
             else:
                 reterr(4)
        """ 
-def getFormat():
-    global formatfile
-    format_s = {}
-    format_o = []
-    i = 0
-    for line in formatfile:
-        found = line.find("\t")
-        keyword = line[:found]
-        keywords_r = editKeyword(keyword)
-        while line[found] == "\t":    # kdyby bylo vis tabulatoru za sebou
-            found +=1
-        nl = line.find("\n")
-        if nl == -1:            #pokud nema zalomeni uloz az do konce radku, -1 odrizne posl znak
-            nl = None
-        fmt_str = line[found:nl]
-        if len(fmt_str) == 0:
-            reterr(4)
-#        print ("keywords = "+keywords_str+", format = "+fmt_str)
-        fmt = parseFormat(fmt_str)
-        format_s[keywords_r] = fmt
-        format_o.append(keywords_r)
-#        print(format_s)
-        i += 1
-    return format_s, format_o
-
-def editKeyword(keyword):
-    key = keyword
-    keyword = re.sub('%s', '[\\t\\n\\r\\f\\v]', keyword)
-    keyword = re.sub('%a', '.', keyword)
-    keyword = re.sub('%d', '[0-9]', keyword)
-    keyword = re.sub('%l', '[a-z]', keyword)
-    keyword = re.sub('%L', '[A-Z]', keyword)
-    keyword = re.sub('%w', '[a-zA-Z]', keyword)
-    keyword = re.sub('%W', '[a-zA-Z0-9]', keyword)
-    keyword = re.sub('%t', '\\t', keyword)
-    keyword = re.sub('%n', '\\n', keyword)
-    keyword = re.sub('%\.', '\\.', keyword)
-    keyword = re.sub('%\|', '\\|', keyword)
-    keyword = re.sub('%\!', '\\!', keyword)
-    keyword = re.sub('%\*', '\\*', keyword)
-    keyword = re.sub('%\+', '\\+', keyword)
-    keyword = re.sub('%\(', '\\(', keyword)
-    keyword = re.sub('%\)', '\\)', keyword)
-    keyword = re.sub('%%', '\\%', keyword)
-    keyword = re.sub('!(.)', '[^\\1]', keyword)
-    keyword = re.sub('(.+)(\.){1}(.+)', '\\1\\3', keyword)
-#    keyword = re.sub('%(\.|\||\!|\*|\+|\(|\)|%)', '\134\000\\1', keyword)
-#    print (key+" -> "+keyword) 
-    return keyword
-
-def parseFormat(fmt_str):
-    tags = \
-    re.compile('(bold){1}|(italic){1}|(underline){1}|(teletype){1}|(size)?:([1-7]{1}){1}|(color)?:([0-9A-F]{6}){1}')
-    matches = re.finditer(tags, fmt_str)
-   # print (matches)
-    return makeForml(matches)
-
-
-def makeForml(matches):
-    forml = [[False,False,False,False,0,""],[ 0, 0, 0, 0, 0, 0]]
-    pos = 1                     # position in format string
-    size = color = False
-    for match in matches:
-#        print ("match = ",match)
-        i = 0
-        for m in match.groups():
-#            if m != None:                   # testing purpose
-#                print (i," ",m ," starts at ",match.start())
-            i+=1
-            if m == "bold":
-                forml[0][0] = True
-                forml[1][0] = pos
-                pos += 1
-            elif m == "italic":
-                forml[0][1] = True
-                forml[1][1] = pos
-                pos += 1
-            elif m == "underline":
-                forml[0][2] = True
-                forml[1][2] = pos
-                pos += 1
-            elif m == "teletype":
-                forml[0][3] = True
-                forml[1][3] = pos
-                pos += 1
-            elif m == "size":
-                size = True            
-            elif m == "color":
-                color = True            
-            elif m != None:
-                if size:
-                    forml[0][4] = int(m)
-                    forml[1][4] = pos
-                    pos += 1
-                    size = False
-                elif color:
-                    forml[0][5] = m
-                    forml[1][5] = pos
-                    pos += 1
-                    color = False
-#            else:
-#                reterr(4)
-#    print("list =",forml[0])    
-#    print("pos =",forml[1])    
-    return forml
-
-def applyFormat(format_s, format_o):
-    global infile
-#    print(format_s)
-    msg = ""
-    for line in infile:
-        added_l = []
-        tags_l = []   # [[start_of_tag,end_of_tag]]
-        rn = 0
-        for regex in format_o:
-#            print("regex = ",regex)
-            rn += 1
-            if len(format_o) == 0:
-                continue
-            shift = 0
-            lookfor = re.compile(regex)
-            kworditer = lookfor.finditer(line)
-            for kword in kworditer:
-                start = kword.start()+shift
-                end = kword.end()+shift
-                if kword.group() != '':
-                    err = False
-#                    print(kword)
-                    for i in range(0, len(tags_l)):
-                        if ((start > tags_l[i][0] and start < tags_l[i][1]) or \
-                                (end > tags_l[i][0] and end < tags_l[i][1])):
-                            err = True
-                            break
-                    for i in range(0, len(added_l)):
-                        if added_l[i][0] == start and added_l[i][1] == end and \
-                                added_l[i][2] == rn:
-                            err = True
-                            break
-                    if not err:
-                        len_prefix, len_surfix, line = addTags(line, kword.group(), \
-                                start, end, format_s[regex])
-                        end -= 1 
-                        kw_len = end - start
-                        tags_l.append([start,start+len_prefix])
-                        tags_l.append([start+len_prefix+kw_len+1,start+len_prefix+kw_len+len_surfix])
-                        added_l.append([start+len_prefix,start+len_prefix+kw_len,rn])
-                        shift += len_prefix+len_surfix
-#                    print("tags = ",tags_l,"\nadded = ",added_l) 
-
-#<b><i><font color=#FFFFFF><font size=2><u><tt>if</tt></u></font></font></i></b>then
-                        
-                        
-                        
-                        
-                        
-                        
-                        
-                        
-                        
-                        
-                        
-                        
-                        
-                        
-        msg += line
-#    msg += "\n"
-    return msg
-
-def addTags(line, group, start, end, format_t):
-    morder = max(format_t[1])
-    prefix = ""
-    surfix = ""
-    for i in range(1,morder+1):
-        for j in range(0,len(format_t[0])):
-            if format_t[1][j] == i:
-                if j == 0 and format_t[0][j]:
-                    prefix += "<b>" 
-                    surfix = "</b>" + surfix
-                elif j == 1 and format_t[0][j]:
-                    prefix += "<i>" 
-                    surfix = "</i>" + surfix
-                elif j == 2 and format_t[0][j]:
-                    prefix += "<u>" 
-                    surfix = "</u>" + surfix
-                elif j == 3 and format_t[0][j]:
-                    prefix += "<tt>" 
-                    surfix = "</tt>" + surfix
-                elif j == 4 and format_t[0][j] > 0:
-                    prefix += "<font size=" + str(format_t[0][j]) + ">" 
-                    surfix = "</font>" + surfix
-                elif j == 5 and format_t[0][j] != "":
-                    prefix += "<font color=#" + str(format_t[0][j]) + ">"
-                    surfix = "</font>" + surfix
-    line =  line[:start] + prefix + group + surfix + line[end:]
-#    print ("line"+str(i)+" = "+line)
-#    shift = len(prefix) + len(surfix)
-    
-    return len(prefix), len(surfix), line
-
-
-
-"""
-def applyFormat(format_s, format_o):
-    global infile
-#    print(format_s)
-    msg = ""
-    for line in infile:
-        shift = -1
-        kword_l = []
-        for regex in format_o:
-#            print("regex = ",regex)
-            if len(format_o) > 0:
-                lookfor = re.compile(regex)
-                kworditer = lookfor.finditer(line)
-                for kword in kworditer:
-                    if kword.start() < kword.end():
-                        kword_l.append([regex,kword.group(),kword.start(),kword.end(),0])    
-#        print (kword_l)       
-        for kword in kword_l:        
-#            print(kword, str(shift))
-            if shift == -1:
-                shift = 0
-            line, shift = addTags(line, kword[1], kword[2], kword[3], format_s[kword[0]])
-            for i in range(0,len(kword_l)):
-                if kword_l[i][2] > kword[2]:
-                    kword_l[i][2] += shift
-                    kword_l[i][3] += shift
-        msg += line
-#    msg += "\n"
-    return msg
-
-def addTags(line, group, start, end, format_t):
-    morder = max(format_t[1])
-    prefix = ""
-    surfix = ""
-    for i in range(1,morder+1):
-        for j in range(0,len(format_t[0])):
-            if format_t[1][j] == i:
-                if j == 0 and format_t[0][j]:
-                    prefix += "<b>" 
-                    surfix = "</b>" + surfix
-                elif j == 1 and format_t[0][j]:
-                    prefix += "<i>" 
-                    surfix = "</i>" + surfix
-                elif j == 2 and format_t[0][j]:
-                    prefix += "<u>" 
-                    surfix = "</u>" + surfix
-                elif j == 3 and format_t[0][j]:
-                    prefix += "<tt>" 
-                    surfix = "</tt>" + surfix
-                elif j == 4 and format_t[0][j] > 0:
-                    prefix += "<font size=" + str(format_t[0][j]) + ">" 
-                    surfix = "</font>" + surfix
-                elif j == 5 and format_t[0][j] != "":
-                    prefix += "<font color=#" + str(format_t[0][j]) + ">"
-                    surfix = "</font>" + surfix
-    line =  line[:start] + prefix + group + surfix + line[end:]
-#    print ("line"+str(i)+" = "+line)
-    shift = len(prefix) + len(surfix)
-    return line, shift
-"""
-infile = None
-outfile = None
-formatfile = None
-args = { 
-    '--input': False,
-    '--output': False,
-    '--format': False,
-    '--br': False
-    }
-
-chkarg = parseArg(len(sys.argv),sys.argv)
-
-if not args['--input']:
-    infile = sys.stdin
-if not args['--output']:
-    outfile = sys.stdout
-
-if not args['--format'] and not args['--br']:
-    copyFile(infile,outfile)  # zkopiruj vstup na vystup pokud 0 argumentu
-else:
-    processFile()               # proved operace nad vstupem
-    if infile!= sys.stdin:      # pokud jsme necetli ze stdin zavri soubor
-        infile.close()
-    if outfile != sys.stdin:    # pokud jsme necetli ze stdout zavri soubor
-        outfile.close()
-    if formatfile != None:      # pokud byl zadan soubor s formatem zavri soubor
-        formatfile.close()
-
