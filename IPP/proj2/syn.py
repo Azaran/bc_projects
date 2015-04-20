@@ -5,6 +5,7 @@
 import sys
 import os
 import re
+from operator import itemgetter
 
 def reterr(err):
     errnum = {
@@ -27,17 +28,18 @@ def printHelp():
  ------------------------------------------------------------------------------"
     print (help_msg)
 
-def my_fopen(filename,mode):
+def my_fopen(filename,omode):
+
     path = os.path.abspath(filename)
 #    print("path = "+path)
     try:
-        new_file = open(path,mode)
+        new_file = open(path, mode = omode, encoding='utf-8')
     except IOError:
-        if mode == 'rt':
+        if omode == 'rt':
             reterr(2)
-        elif mode == 'wt':
+        elif omode == 'wt':
             reterr(3)
-        elif mode == 'r':
+        elif omode == 'r':
             new_file = False
         else:
             raise
@@ -138,13 +140,13 @@ def processFile():
 
 def getFormat():
     global formatfile
-    format_s = {}
+    format_s = [] 
     format_o = []
     for line in formatfile:
-        reg_line = re.compile("^(.*?)([\s]+)(.+)[\s]*$")
+        reg_line = re.compile(u'^(.*?)([\t]+)(.+)[\s]*$')
         parts = reg_line.match(line)
         if parts == None:
-            empty_line = re.compile("^([\s]*)$")
+            empty_line = re.compile(u'^([\s]*)$')
             if empty_line.match(line) == None:
                 reterr(4)
         else:
@@ -154,41 +156,71 @@ def getFormat():
                 reterr(4)
 #            print("group1 = '"+keyword+"' group2 = "+fmt_str)
             keyword = editKeyword(keyword)
-#        print ("keywords = "+keywords_str+", format = "+fmt_str)
+#            print ("keywords = "+keyword+", format = "+fmt_str)
             fmt = parseFormat(fmt_str)
-            format_s[keyword] = fmt
+            format_s.append([keyword, fmt])
             format_o.append(keyword)
-#        print(format_s)
+#    print(format_s)
     return format_s, format_o
 
 def editKeyword(keyword):
     key = keyword
-    keyword = re.sub('%s', '\\s', keyword)
-    keyword = re.sub('%a', '.', keyword)
-    keyword = re.sub('%d', '[0-9]', keyword)
-    keyword = re.sub('%l', '[a-z]', keyword)
-    keyword = re.sub('%L', '[A-Z]', keyword)
-    keyword = re.sub('%w', '[a-zA-Z]', keyword)
-    keyword = re.sub('%W', '[a-zA-Z0-9]', keyword)
-    keyword = re.sub('%t', '\\t', keyword)
-    keyword = re.sub('%n', '\\n', keyword)
-    keyword = re.sub('%\.', '\\.', keyword)
-    keyword = re.sub('%\|', '\\|', keyword)
-    keyword = re.sub('%\!', '\\!', keyword)
-    keyword = re.sub('%\*', '\\*', keyword)
-    keyword = re.sub('%\+', '\\+', keyword)
-    keyword = re.sub('%\(', '\\(', keyword)
-    keyword = re.sub('%\)', '\\)', keyword)
-    keyword = re.sub('%%', '\\%', keyword)
-    keyword = re.sub(r'!((\[.+\])|(\\.)|(.))', '[^\\1]', keyword)
-    keyword = re.sub('(.+)(\.){1}(.+)', '\\1\\3', keyword)
-#    keyword = re.sub('%(\.|\||\!|\*|\+|\(|\)|%)', '\134\000\\1', keyword)
+    keyword = re.sub(r'\\', u'\\\\\\\\', keyword)
+    keyword = re.sub(r'\[', u'\\[', keyword)
+    keyword = re.sub(r'\]', u'\\]', keyword)
+    keyword = re.sub(r'\{', u'\\{', keyword)
+    keyword = re.sub(r'\}', u'\\}', keyword)
+    keyword = re.sub(r'\^', u'\\^', keyword)
+    keyword = re.sub(r'\$', u'\\$', keyword)
+    keyword = re.sub(r'\\n', u'\\\\n', keyword)
+    keyword = re.sub(r'\\t', u'\\\\t', keyword)
+    keyword = re.sub(r'\?', u'\\\\?', keyword)
+    keyword = re.sub('%s', u'\\s', keyword)
+    keyword = re.sub('%a', u'[\s\S]', keyword)
+    keyword = re.sub('%d', u'\\d', keyword)
+    keyword = re.sub('%l', u'[a-z]', keyword)
+    keyword = re.sub('%L', u'[A-Z]', keyword)
+    keyword = re.sub('%w', u'[a-zA-Z]', keyword)
+    keyword = re.sub('%W', u'[a-zA-Z0-9]', keyword)
+    keyword = re.sub('%t', u'\\\\t', keyword)
+    keyword = re.sub('%n', u'\\\\n', keyword)
+    keyword = re.sub('%\.', u'\\.', keyword)
+    keyword = re.sub('%\|', u'\\|', keyword)
+    keyword = re.sub('%\*', u'\\*', keyword)
+    keyword = re.sub('%\+', u'\\+', keyword)
+    keyword = re.sub('%\(', u'\\(', keyword)
+    keyword = re.sub('%\)', u'\\)', keyword)
+    keyword = re.sub('%%', u'%', keyword)
+    
+    i = 0
+    while i < len(keyword):
+        if keyword[i] == '.' and keyword[i-1] != '\\':
+            keyword = keyword[:i] + keyword[i+1:]
+        elif keyword[i] == '!' and keyword[i-1] == '%':
+            keyword = keyword[:i-1] + keyword[i:]
+        elif keyword[i] == '!': 
+            if keyword[i+1] == '[':
+                msg = ''
+                j = i+2
+                while keyword[j] != ']' and j < len(keyword): 
+                    msg += keyword[j]
+                    j += 1
+                keyword = keyword[:i] + "[^" + msg + "]" + keyword[j+1:]
+                i = j
+            elif keyword[i+1] == '\\':
+                keyword = keyword[:i] + "[^\\" + keyword[i+2] + "]" + keyword[i+3:]
+            else:
+                keyword = keyword[:i] + "[^" + keyword[i+1] + "]" + keyword[i+2:]
+
+
+        i += 1 
 #    print (key+" -> "+keyword) 
+    
     return keyword
 
 def parseFormat(fmt_str):
     tags = \
-    re.compile('(bold){1}|(italic){1}|(underline){1}|(teletype){1}|(size)?:([1-7]{1}){1}|(color)?:([0-9A-F]{6}){1}')
+    re.compile(u'(bold){1}|(italic){1}|(underline){1}|(teletype){1}|(size)?:([1-7]{1}){1}|(color)?:([0-9A-Fa-f]{6}){1}')
     matches = re.finditer(tags, fmt_str)
    # print (matches)
     return makeForml(matches)
@@ -251,55 +283,53 @@ def applyFormat(format_s, format_o):
 #    print(format_s)
     msg = ""
 #    for line in infile:
-    line = infile.read()
+    orig_msg = infile.read()
     added_l = []
     tags_l = []   # [[start_of_tag,end_of_tag]]
     rn = 0
-    for regex in format_o:
+    scope = 0
+    prefixes =[]
+    surfixes = []
+    new_msg = ""
+    for r in range(0,len(format_o)):
         rn += 1
         if len(format_o) == 0:
             continue
-        shift = 0
-        lookfor = re.compile(regex)
-        kworditer = lookfor.finditer(line)
+        
+        scope += 1
+
+        lookfor = re.compile(format_o[r])
+        kworditer = lookfor.finditer(orig_msg)
         for kword in kworditer:
-            start = kword.start()+shift
-            end = kword.end()+shift
+#            print(kword,format_o[r])
+            start = kword.start()
+            end = kword.end()
             if kword.group() != '':
-                err = False
-                print(kword)
-                for i in range(0, len(tags_l)):
-                    if ((start >= tags_l[i][0] and start <= tags_l[i][1]) or \
-                            (end > tags_l[i][0] and end < tags_l[i][1])):
-                        err = True
-                        break
-                for i in range(0, len(added_l)):
-                    if added_l[i][0] == start and added_l[i][1] == end and \
-                            added_l[i][2] == rn:
-                        err = True
-                        break
-                if not err:
-                    len_prefix, len_surfix, line = addTags(line, kword.group(), \
-                            start, end, format_s[regex])
-                    kw_len = end - start
-                    added_l.append([start+len_prefix,start+len_prefix+kw_len-1,rn])
-                    for i in range(0,len(tags_l)):
-                        if tags_l[i][0] > start:
-                            tags_l[i][0] += len_prefix
-                            tags_l[i][1] += len_prefix 
-                        if tags_l[i][1] > end:
-                            tags_l[i][0] += len_surfix
-                            tags_l[i][1] += len_surfix
-                    
-                    tags_l.append([start,start+len_prefix-1])
-                    tags_l.append([start+len_prefix+kw_len,start+len_prefix+kw_len+len_surfix-1])
-                    shift += len_prefix+len_surfix
-                    print("tags = ",tags_l,"\nadded = ",added_l) 
-                    print(line)
-                    """
-a<b> </b><b>b</b><b> </b><b>c</b><b> </b><b>d</b><b> </b><b>e</b><b> </b><b>f</b><b> </b><b>g</b><b> </b><b>h</b<i>>
-    """
-    return line
+                prefix, surfix = addTags(orig_msg, kword.group(), \
+                        start, end, format_s[r][1])
+                prefixes.append([kword.group(),scope,kword.start(),prefix])
+                surfixes.append([kword.group(),scope,kword.end()-1,surfix])
+    prefixes.sort(key=itemgetter(1))                
+    prefixes.sort(key=itemgetter(2))                
+    surfixes.sort(key=itemgetter(1), reverse=True)                
+    surfixes.sort(key=itemgetter(2))  
+    
+    for i in range(0,len(orig_msg)):
+        p = 0
+        s = 0
+        while p < len(prefixes):
+            if prefixes[p][2] == i:
+                new_msg += prefixes[p][3]
+            p += 1
+        new_msg += orig_msg[i]
+        while s < len(prefixes):
+            if surfixes[s][2] == i:
+                new_msg += surfixes[s][3]
+            s += 1
+
+#    print(new_msg) 
+                
+    return new_msg 
 
 def addTags(line, group, start, end, format_t):
     morder = max(format_t[1])
@@ -326,12 +356,11 @@ def addTags(line, group, start, end, format_t):
                 elif j == 5 and format_t[0][j] != "":
                     prefix += "<font color=#" + str(format_t[0][j]) + ">"
                     surfix = "</font>" + surfix
-    line =  line[:start] + prefix + group + surfix + line[end:]
+#    line =  line[:start] + prefix + group + surfix + line[end:]
 #    print ("line"+str(i)+" = "+line)
 #    shift = len(prefix) + len(surfix)
     
-    return len(prefix), len(surfix), line
-
+    return prefix, surfix
 
 infile = None
 outfile = None
@@ -360,230 +389,3 @@ else:
         outfile.close()
     if formatfile != None:      # pokud byl zadan soubor s formatem zavri soubor
         formatfile.close()
-
-"""
-def checkFormatFile():
-    global formatfile
-    text = formatfile.read()
-    state = 'start'
-    par = 0
-    for i in range(0,len(text)):
-        ch = text[i]
-        if ord(ch) < 32:
-            reterr(4)
-        if state == 'start': 
-            if ch == '.':
-                state = '.'
-            elif ch == '|':
-                state = 'err'
-            elif ch == '!':
-                state = '!'
-            elif ch == '*':
-                state = 'err'
-            elif ch == '+':
-                state = 'err'
-            elif ch == '(':
-                state = '('
-            elif ch == ')':
-                state = 'err'
-            elif ch == '%':
-                state = '%'
-            else:
-                state = 'string'
-        elif state == '.':
-            if ch == '.':
-                state = 'err'
-            elif ch == '|':
-                state = '|'
-            elif ch == '!':
-                state = '!'
-            elif ch == '*':
-                state = '*'
-            elif ch == '+':
-                state = '+'
-            elif ch == '(':
-                state = '('
-            elif ch == ')' and par > 0:
-                state = ')'
-            elif ch == ')' and par == 0:
-                state = 'err'
-            elif ch == '%':
-                state = '%'
-            else:
-                state = 'string'
-        elif state == '|':
-            if ch == '.':
-                state = '.'
-            elif ch == '|':
-                state = 'err'
-            elif ch == '!':
-                state = '!'
-            elif ch == '*':
-                state = 'err'
-            elif ch == '+':
-                state = 'err'
-            elif ch == '(':
-                state = '('
-            elif ch == ')':
-                state = 'err'
-            elif ch == '%':
-                state = '%'
-            else:
-                state = 'string'
-        elif state == '!':
-            if ch == '.':
-                state = '.'
-            elif ch == '|':
-                state = '|'
-            elif ch == '!':
-                state = '!'
-            elif ch == '*':
-                state = '*'
-            elif ch == '+':
-                state = '+'
-            elif ch == '(':
-                state = '('
-            elif ch == ')':
-                state = ')'
-            elif ch == '%':
-                state = '%'
-            else:
-                state = 'string'
-
-        elif state == '*':
-            if ch == '.':
-                state = '.'
-            elif ch == '|':
-                state = '|'
-            elif ch == '!':
-                state = '!'
-            elif ch == '*':
-                state = '*'
-            elif ch == '+':
-                state = '+'
-            elif ch == '(':
-                state = '('
-            elif ch == ')':
-                state = ')'
-            elif ch == '%':
-                state = '%'
-            else:
-                state = 'string'
-
-        elif state == '+':
-            if ch == '.':
-                state = '.'
-            elif ch == '|':
-                state = '|'
-            elif ch == '!':
-                state = '!'
-            elif ch == '*':
-                state = '*'
-            elif ch == '+':
-                state = '+'
-            elif ch == '(':
-                state = '('
-            elif ch == ')':
-                state = ')'
-            elif ch == '%':
-                state = '%'
-            else:
-                state = 'string'
-
-        elif state == '(':
-            if ch == '.':
-                state = '.'
-            elif ch == '|':
-                state = '|'
-            elif ch == '!':
-                state = '!'
-            elif ch == '*':
-                state = '*'
-            elif ch == '+':
-                state = '+'
-            elif ch == '(':
-                state = '('
-            elif ch == ')':
-                state = ')'
-            elif ch == '%':
-                state = '%'
-            else:
-                state = 'string'
-
-        elif state == ')':
-            if ch == '.':
-                state = '.'
-            elif ch == '|':
-                state = '|'
-            elif ch == '!':
-                state = '!'
-            elif ch == '*':
-                state = '*'
-            elif ch == '+':
-                state = '+'
-            elif ch == '(':
-                state = '('
-            elif ch == ')':
-                state = ')'
-            elif ch == '%':
-                state = '%'
-            else:
-                state = 'string'
-               
-        elif state == 'string':
-            if ch == '.':
-                state = '.'
-            elif ch == '|':
-                state = '|'
-            elif ch == '!':
-                state = '!'
-            elif ch == '*':
-                state = '*'
-            elif ch == '+':
-                state = '+'
-            elif ch == '(':
-                state = '('
-            elif ch == ')':
-                state = ')'
-            elif ch == '%':
-                state = '%'
-            else:
-                state = 'string'
-        elif state == '%':
-            if ch == 's':
-                state = 'start'
-            elif ch == 'a':
-                state = 'start'
-            elif ch == 'd':
-                state = 'start'
-            elif ch == 'l':
-                state = 'start'
-            elif ch == 'L':
-                state = 'start'
-            elif ch == 'w':
-                state = 'start'
-            elif ch == 'W':
-                state = 'start'
-            elif ch == 't':
-                state = 'start'
-            elif ch == 'n':
-                state = 'start'
-            elif ch == '.':
-                state = 'start'
-            elif ch == '|':
-                state = 'start'
-            elif ch == '!':
-                state = 'start'
-            elif ch == '*':
-                state = 'start'
-            elif ch == '+':
-                state = 'start'
-            elif ch == '(':
-                state = 'start'
-            elif ch == ')':
-                state = 'start'
-            elif ch == '%':
-                state = 'start'
-            else:
-                reterr(4)
-       """ 
