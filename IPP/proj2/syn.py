@@ -162,7 +162,7 @@ def getFormat():
             fmt = parseFormat(fmt_str)              # rozeber format
             format_s.append([keyword, fmt])         # uloz regex a format
             format_o.append(keyword)                # uloz poradi regexu
-    
+
     return format_s, format_o
 
 # vstup klicove slovo (regex), prevadi regex ze vstupni abecedy do abecedy Pythonu 3
@@ -194,24 +194,43 @@ def editKeyword(keyword):
     keyword = re.sub('%\(', '\\(', keyword)
     keyword = re.sub('%\)', '\\)', keyword)
     keyword = re.sub('%%', '%', keyword)
+#    print (key+" -> "+keyword) 
     
     i = 0
-    while i < len(keyword):                     # slozitejsi prevody pomoci prochaze po znaku
+    while i < len(keyword):                 # slozitejsi prevody pomoci prochazeni po znaku
         if keyword[i] == '.' and keyword[i-1] != '\\':
             keyword = keyword[:i] + keyword[i+1:]
-        elif keyword[i] == '!' and keyword[i-1] == '%':
-            keyword = keyword[:i-1] + keyword[i:]
-        elif keyword[i] == '!': 
-            if keyword[i+1] == '[':
+        i += 1
+#    print (key+" -> "+keyword) 
+    i = 0
+    while i+1 <= len(keyword):
+        if keyword[i] == '!': 
+            if keyword[i-1] == '%':
+                keyword = keyword[:i-1] + keyword[i:]
+            elif keyword[i+1] == '[':
                 msg = ''
                 j = i+2
                 while keyword[j] != ']' and j < len(keyword): 
                     msg += keyword[j]
                     j += 1
                 keyword = keyword[:i] + "[^" + msg + "]" + keyword[j+1:]
-                i = j
+                i = j-1
             elif keyword[i+1] == '\\':
                 keyword = keyword[:i] + "[^\\" + keyword[i+2] + "]" + keyword[i+3:]
+            elif keyword[i+1] == '(':
+                msg = ''
+                j = i+2
+                while keyword[j] != ')' and j < len(keyword):
+                    if keyword[j] != '|':
+                        msg += keyword[j]
+                    if keyword[j] == '\\' and keyword[j+1] == ')':
+                        msg += '\\)'
+                        j += 2
+                    else:
+                        j += 1
+                keyword = keyword[:i] + "[^" + msg + "]" + keyword[j+1:]
+                i = j-2
+                        
             else:
                 keyword = keyword[:i] + "[^" + keyword[i+1] + "]" + keyword[i+2:]
         i += 1 
@@ -264,8 +283,12 @@ def checkFormatFile(keyword):
         elif last == '.':
             if i == klen:
                 reterr(4)
-            elif ch == '.' or ch == '*' or ch == '+' or ch == '|':
-                reterr(4)
+            elif ch == '.' or ch == '*' or ch == '+' or ch == '|' :
+                if prelast != '%':
+                    reterr(4)
+                elif i+1 >= klen:
+                    reterr(4)
+
         elif last == '+':
             if neg:
                 neg = False
@@ -284,11 +307,13 @@ def checkFormatFile(keyword):
                 reterr(4)
             elif prelast != '%':
                 brac -= 1
+            if ch == ')':
+                brac -= 1
             if neg:
                 neg = False
 
         elif last == '(':
-            if i+2 >= klen:
+            if i+2 >= klen and prelast != '%':
                 reterr(4)
             if prelast != '%':
                 brac += 1 
@@ -327,7 +352,7 @@ def checkFormatFile(keyword):
                 reterr(4)
             elif (ch == '|' or ch == '.')  and i+1 >= klen: 
                 reterr(4)
-            elif ch == ')' and prelast != '%':
+            elif ch == ')' and i+1 >= klen:
                 brac -= 1
 
         prelast = last
@@ -342,7 +367,7 @@ def checkFormatFile(keyword):
 # vstup definice formatu, rozebrani formatu a zkontrolovani zda odpovida zadani
 def parseFormat(fmt_str):
     tags = \
-    re.compile('(bold){1}|(italic){1}|(underline){1}|(teletype){1}|(size)?:([1-7]{1}){1}|(color)?:([0-9A-Fa-f]{6}){1}')
+            re.compile('[\s]*(bold){1}\,{0,1}|[\s]*(italic){1}\,{0,1}|[\s]*(underline){1}\,{0,1}|[\s]*(teletype){1}\,{0,1}|[\s]*(size)[\s]*(:)[\s]*([1-7]{1})\,{0,1}|[\s]*(color)[\s]*(:)[\s]*([0-9A-Fa-f]{6})\,{0,1}|(.+\,{0,1})')
     matches = re.finditer(tags, fmt_str)
     return makeForml(matches)
 
@@ -350,54 +375,61 @@ def parseFormat(fmt_str):
 def makeForml(matches):
     forml = [[False,False,False,False,0,""],[ 0, 0, 0, 0, 0, 0]]
     pos = 1                     # position in format string
-    size = color = False
-#    print (matches)
-    ididsmth = False
-    for match in matches:                   # pro kazdy nalez
-        ididsmth = True
-        i = 0
-        for m in match.groups():            # pro kazdou zaznam v nalezu zjisti
-            i+=1
-            if m == "bold":
-                forml[0][0] = True
-                forml[1][0] = pos
-                pos += 1
-            elif m == "italic":
-                forml[0][1] = True
-                forml[1][1] = pos
-                pos += 1
-            elif m == "underline":
-                forml[0][2] = True
-                forml[1][2] = pos
-                pos += 1
-            elif m == "teletype":
-                forml[0][3] = True
-                forml[1][3] = pos
-                pos += 1
-            elif m == "size":               # pokud size tak dalsi bude velikost
-                size = True            
-            elif m == "color":              # pokud color tak dalsi bude barva
-                color = True            
-            elif m != None:
-                if size:                    #pokud receno ze dalsi ma byt barva
-                    if m != '':
-                        forml[0][4] = int(m)    # uloz velikost
-                        forml[1][4] = pos           
-                        pos += 1
-                        size = False
-                    else:
-                        reterr(4)               # pokud nenalezena velikost tak chyba 4
-                elif color:
-                    if m != '':
-                        forml[0][5] = m         # ulozeni barvy
+
+    for m in matches:                   # pro kazdy nalez
+#        print(m.groups())
+#            print(i, m)
+        ididsmth = False
+            
+        if m.group(1) == "bold":
+            forml[0][0] = True
+            forml[1][0] = pos
+            pos += 1
+            ididsmth = True
+        if m.group(2) == "italic":
+            forml[0][1] = True
+            forml[1][1] = pos
+            pos += 1
+            ididsmth = True
+        if m.group(3) == "underline":
+            forml[0][2] = True
+            forml[1][2] = pos
+            pos += 1
+            ididsmth = True
+        if m.group(4) == "teletype":
+            forml[0][3] = True
+            forml[1][3] = pos
+            pos += 1
+            ididsmth = True
+        if m.group(5) == "size":               # pokud size tak dalsi bude velikost
+            if m.group(6) == ':':
+                if m.group(7) != None:
+                    forml[0][4] = int(m.group(7))    # uloz velikost
+                    forml[1][4] = pos           
+                    pos += 1
+                    ididsmth = True
+                else:
+                    reterr(4)               # pokud nenalezena velikost tak chyba 4
+            else:
+                reterr(4)               # pokud nenalezena velikost tak chyba 4
+                    
+        if m.group(8) == "color":              # pokud color tak dalsi bude barva
+                if m.group(9) == ':':
+                    if m.group(10) != None:
+                        forml[0][5] = m.group(10)         # ulozeni barvy
                         forml[1][5] = pos
                         pos += 1
-                        color = False
+                        ididsmth = True
                     else:
                         reterr(4)               # pokud nenalezena barva tak chyba 4
-    if not ididsmth:                        # pokud nebylo neco nalezeno konci s chybou 4
-        reterr(4)
-    
+                else:
+                    reterr(4)               # pokud nenalezena barva tak chyba 4
+        if m.group(11) != None:     # pokud color tak dalsi bude barva
+            reterr(4)
+
+        if not ididsmth:
+            reterr(4)
+#    print(forml)    
     return forml
 
 # vstup jsou struktury s formatem, zpracovava vstupni soubor a vklada fomatovaci prvky
