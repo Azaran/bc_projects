@@ -7,6 +7,7 @@ import os
 import re
 from operator import itemgetter
 
+# vstup navratovy kod, vypis chyby na sterr na zaklade kodu a ukonreni programu s kodem
 def reterr(err):
     errnum = {
             1 : "spatny format nebo kombinace parametru",
@@ -17,6 +18,7 @@ def reterr(err):
     print(errnum[err],file=sys.stderr)
     sys.exit(err)
 
+# vypisuje --help informace
 def printHelp():
     help_msg = " prog= " +sys.argv[0] +"\n\
  ------------------------------------------------------------------------------\n\
@@ -28,6 +30,7 @@ def printHelp():
  ------------------------------------------------------------------------------"
     print (help_msg)
 
+# vstup nazev soubor, mode otevreni, vraci identifikator souboru pokud byl otevren
 def my_fopen(filename,omode):
 
     path = os.path.abspath(filename)
@@ -51,76 +54,73 @@ def my_fopen(filename,omode):
 #        print("soubor se nepovedlo otevrit")
         return None
 
+# kopirovani vstupu na vystup (pokud nebyl zadan validni soubor formatu)
 def copyFile(in_f,out_f):
     r = in_f.read()
     out_f.write(str(r))
 
+# vstup pocet aregumentu a jejich hodnoty, rozrad vstupni argumenty
 def parseArg(argc,argv):
-   # print ("argc = "+ str(argc))
     i = 1
     global infile,outfile,formatfile
-#    print (argv[i])
-    if argc <= 1:
+    if argc <= 1:           # pokud zadny argument
         return 0
-    if argv[1] == "--help":
+    if argv[1] == "--help":     # pokud je zadan pouze --help
         if argc == 2:
 #            printHelp();
             sys.exit(0)
         else:
             reterr(1)
-    while i < argc:
-#        print (str(i))
-        found = argv[i].find('=')
-        if found > -1:
+
+    while i < argc:             # pokud nebyl zadan --help zpracuj parametry
+        found = argv[i].find('=')       # najdi '=' at muzeme oddeli parametr a hodnotu
+        if found > -1:                  # pokud jsi nasel
             arg = argv[i][:found]
-            val = argv[i][found+1:]
-        else:
+            val = argv[i][found+1:]     
+        else:                           # jinak neobsahuje hodnotu
             arg = argv[i]
             val = None
-        if arg == "--input":
-            if args[arg]:
+        if arg == "--input":            
+            if args[arg]:                       # pokud uz by '--input' zadan
+                reterr(1)                       # konci s return 1
+            args[arg] = True                    # jinak uloz ze byl '--input' zadan
+            if val != "":                       # pokud byl zadan souboru
+                infile = my_fopen(val,'rt')     # pokus o otevreni
+            else:                               # pokud nebyl zadan konci s chybou
+                reterr(1)
+        elif arg == "--output":                 # stejne jak '--input'
+            if args[arg]:                   
                 reterr(1)
             args[arg] = True
             if val != "":
-#                print (val)
-                infile = my_fopen(val,'rt')
-            else:
-                reterr(1)
-        elif arg == "--output":
-            if args[arg]:
-                reterr(1)
-            args[arg] = True
-            if val != "":
-  #              print (val)
                 outfile = my_fopen(val,'wt')
             else:
                 reterr(1)
-        elif arg == "--format":
+        elif arg == "--format":                 # stejen jak '--input'
             if args[arg]:
                 reterr(1)
             if val != "":
- #               print (val)
-                formatfile = my_fopen(val,'r')
-                if formatfile != None:
-                    args[arg] = True
+                formatfile = my_fopen(val,'r')  
+                if formatfile != None:          # zde je zmena, neuspesne otereni se != chyba
+                    args[arg] = True            # pouze pokud byl oteren soubor
             else:
                 reterr(1)
-        elif arg == "--br":
+        elif arg == "--br":                     # byl zadan '--br'
             if args[arg]:
-                reterr(1)
-            args[arg] = True
+                reterr(1)       
+            args[arg] = True                    
         else:
             reterr(1)
         i+=1
-    return argc-1
+    return argc-1                               
 
+# zpracovani vstupniho souboru
 def processFile():
     global infile,outfile,args
     msg = None
     
     # modifikuj sobour podle formatu ve formatfile
     if args['--format']:
-#        checkFormatFile()
         format_s, format_o = getFormat()
         msg = applyFormat(format_s, format_o)
      
@@ -136,34 +136,36 @@ def processFile():
         else:
             msg = nl.sub("<br />\n",msg)
 
-    outfile.write(msg)
+    outfile.write(msg)                          # zapis na vystup
 
+# ziskani formatu ze souboru s formatem
 def getFormat():
     global formatfile
     format_s = [] 
     format_o = []
-    for line in formatfile:
-        reg_line = re.compile('^(.*?)([\t]+)(.+)[\s]*$')
+    for line in formatfile:                     # ber radek po radku
+        reg_line = re.compile('^(.*?)([\t]+)(.+)[\s]*$')    # hledej regex, oddeleni, format 
         parts = reg_line.match(line)
-        if parts == None:
-            empty_line = re.compile('^([\s]*)$')
-            if empty_line.match(line) == None:
+        if parts == None:                           # pokud jsi na radku nic nenasel
+            empty_line = re.compile('^([\s]*)$')    # kontrola zda je radek prazdny
+            if empty_line.match(line) == None:      # pokud ne konci s chybou 4
                 reterr(4)
         else:
-            keyword = parts.group(1)
-            fmt_str = parts.group(3)
+            keyword = parts.group(1)                # jinak uloz regex
+            fmt_str = parts.group(3)                #       uloz format
+
+            # kdyby nalezeny regex nebo format nebo oddelovac byly prazdne volej chybu 4
             if len(keyword) == 0 or len(fmt_str) == 0 or len(parts.group(2)) == 0:
                 reterr(4)
-            checkFormatFile(keyword)
-#            print("group1 = '"+keyword+"' group2 = "+fmt_str)
-            keyword = editKeyword(keyword)
-#            print ("keywords = "+keyword+", format = "+fmt_str)
-            fmt = parseFormat(fmt_str)
-            format_s.append([keyword, fmt])
-            format_o.append(keyword)
-#    print(format_s)
+            checkFormatFile(keyword)                # zkontroluj zda regex odpovida abcecede
+            keyword = editKeyword(keyword)          # preved regex do Python abecedy
+            fmt = parseFormat(fmt_str)              # rozeber format
+            format_s.append([keyword, fmt])         # uloz regex a format
+            format_o.append(keyword)                # uloz poradi regexu
+    
     return format_s, format_o
 
+# vstup klicove slovo (regex), prevadi regex ze vstupni abecedy do abecedy Pythonu 3
 def editKeyword(keyword):
     key = keyword
     keyword = re.sub(r'\\', '\\\\\\\\', keyword)
@@ -194,7 +196,7 @@ def editKeyword(keyword):
     keyword = re.sub('%%', '%', keyword)
     
     i = 0
-    while i < len(keyword):
+    while i < len(keyword):                     # slozitejsi prevody pomoci prochaze po znaku
         if keyword[i] == '.' and keyword[i-1] != '\\':
             keyword = keyword[:i] + keyword[i+1:]
         elif keyword[i] == '!' and keyword[i-1] == '%':
@@ -212,13 +214,13 @@ def editKeyword(keyword):
                 keyword = keyword[:i] + "[^\\" + keyword[i+2] + "]" + keyword[i+3:]
             else:
                 keyword = keyword[:i] + "[^" + keyword[i+1] + "]" + keyword[i+2:]
-
-
         i += 1 
 #    print (key+" -> "+keyword) 
     
     return keyword
 
+# vstup regex ve vstupni abecede, overeni zda se jedna o vyraz vstupni abecedy
+# a za odpovida zadanim definovane gramatice
 def checkFormatFile(keyword):
     i = 0
     special = False
@@ -226,9 +228,11 @@ def checkFormatFile(keyword):
     neg = False
     brac = 0
     klen = len(keyword)
-    while i < klen:
+    while i < klen:         # konecny automat
         ch = keyword[i]
 #        print("\'"+last+"\' -> \'"+ch+"\'")
+        if ord(ch) < 32:
+            reterr(4)
         if last == '%':
             if ch != 's'\
             and ch != 'a'\
@@ -330,32 +334,29 @@ def checkFormatFile(keyword):
         last = ch
 #        print(i,klen,brac)
         i += 1
-    if brac != 0:
+    if brac != 0:           # pokud bylo vice otevrenych nez zavrenych zavorek
         reterr(4)
-    if neg:
+    if neg:                 # pokud nebyla ukoncena negace vyrazu
         reterr(4)
-#    print('prezil jsem checkFormat')
 
+# vstup definice formatu, rozebrani formatu a zkontrolovani zda odpovida zadani
 def parseFormat(fmt_str):
     tags = \
     re.compile('(bold){1}|(italic){1}|(underline){1}|(teletype){1}|(size)?:([1-7]{1}){1}|(color)?:([0-9A-Fa-f]{6}){1}')
     matches = re.finditer(tags, fmt_str)
     return makeForml(matches)
 
-
+# vstup nalezena klicova slova formatu, prevod retezce na strukturu ulozenych a dat a poradi
 def makeForml(matches):
     forml = [[False,False,False,False,0,""],[ 0, 0, 0, 0, 0, 0]]
     pos = 1                     # position in format string
     size = color = False
 #    print (matches)
     ididsmth = False
-    for match in matches:
+    for match in matches:                   # pro kazdy nalez
         ididsmth = True
-#        print ("match = ",match)
         i = 0
-        for m in match.groups():
-#            if m != None:                   # testing purpose
-#                print (i," ",m ," starts at ",match.start())
+        for m in match.groups():            # pro kazdou zaznam v nalezu zjisti
             i+=1
             if m == "bold":
                 forml[0][0] = True
@@ -373,93 +374,88 @@ def makeForml(matches):
                 forml[0][3] = True
                 forml[1][3] = pos
                 pos += 1
-            elif m == "size":
+            elif m == "size":               # pokud size tak dalsi bude velikost
                 size = True            
-            elif m == "color":
+            elif m == "color":              # pokud color tak dalsi bude barva
                 color = True            
             elif m != None:
-                if size:
+                if size:                    #pokud receno ze dalsi ma byt barva
                     if m != '':
-                        forml[0][4] = int(m)
-                        forml[1][4] = pos
+                        forml[0][4] = int(m)    # uloz velikost
+                        forml[1][4] = pos           
                         pos += 1
                         size = False
                     else:
-                        reterr(4)
+                        reterr(4)               # pokud nenalezena velikost tak chyba 4
                 elif color:
                     if m != '':
-                        forml[0][5] = m
+                        forml[0][5] = m         # ulozeni barvy
                         forml[1][5] = pos
                         pos += 1
                         color = False
                     else:
-                        reterr(4)
-#    print("list =",forml[0])    
-#    print("pos =",forml[1])    
-    if not ididsmth:
+                        reterr(4)               # pokud nenalezena barva tak chyba 4
+    if not ididsmth:                        # pokud nebylo neco nalezeno konci s chybou 4
         reterr(4)
+    
     return forml
 
+# vstup jsou struktury s formatem, zpracovava vstupni soubor a vklada fomatovaci prvky
 def applyFormat(format_s, format_o):
     global infile
-#    print(format_s)
     msg = ""
-#    for line in infile:
-    orig_msg = infile.read()
-    added_l = []
-    tags_l = []   # [[start_of_tag,end_of_tag]]
-    rn = 0
-    scope = 0
-    prefixes =[]
-    surfixes = []
-    new_msg = ""
-    for r in range(0,len(format_o)):
-        rn += 1
-        if len(format_o) == 0:
-            continue
+    orig_msg = infile.read()                # nacti vstupni soubor
+    scope = 0                               # zanoreni tagu
+    prefixes =[]                            # seznam pocatecnich tagu
+    surfixes = []                           # seznam ukoncovacich tagu
+    new_msg = ""                            # vystupni zprava
+    for r in range(0,len(format_o)):        # pro kazdy regulerni vyraz
+#        if len(format_o) == 0:              
+#            continue
         
-        scope += 1
+        scope += 1                          # zvys zanoreni
 
-        lookfor = re.compile(format_o[r])
-        kworditer = lookfor.finditer(orig_msg)
-        for kword in kworditer:
+        lookfor = re.compile(format_o[r])           
+        kworditer = lookfor.finditer(orig_msg)      # najsi polozky odpovidajici rege
+        for kword in kworditer:                     # pro kazdou polozku
 #            print(kword,format_o[r])
-            start = kword.start()
+            start = kword.start()           
             end = kword.end()
-            if kword.group() != '':
+            if kword.group() != '':                 # pokud neni prazdna
                 prefix, surfix = addTags(orig_msg, kword.group(), \
-                        start, end, format_s[r][1])
-                prefixes.append([kword.group(),scope,kword.start(),prefix])
-                surfixes.append([kword.group(),scope,kword.end()-1,surfix])
-    prefixes.sort(key=itemgetter(1))                
-    prefixes.sort(key=itemgetter(2))                
-    surfixes.sort(key=itemgetter(1), reverse=True)                
-    surfixes.sort(key=itemgetter(2))  
+                        start, end, format_s[r][1])                     # dej mi tagy
+                prefixes.append([kword.group(),scope,kword.start(),prefix]) # vloz do seznamu
+                surfixes.append([kword.group(),scope,kword.end()-1,surfix]) # vloz do seznamu
+    prefixes.sort(key=itemgetter(1))                # razeni seznamu
+    prefixes.sort(key=itemgetter(2))                # pocatecnich tagu
+    surfixes.sort(key=itemgetter(1), reverse=True)  # razeni seznamu
+    surfixes.sort(key=itemgetter(2))                # ukoncovacich tagu
     
-    for i in range(0,len(orig_msg)):
+    for i in range(0,len(orig_msg)):            # projdi vstup znak po znaku
         p = 0
         s = 0
-        while p < len(prefixes):
-            if prefixes[p][2] == i:
-                new_msg += prefixes[p][3]
-            p += 1
-        new_msg += orig_msg[i]
-        while s < len(prefixes):
-            if surfixes[s][2] == i:
-                new_msg += surfixes[s][3]
+        while p < len(prefixes):                # pokud kazdy zaznam v seznamu
+            if prefixes[p][2] == i:             # zjisti zda se zaznam vaze k pozici
+                new_msg += prefixes[p][3]       # ano, vloz pocatcni tag
+            p += 1                          
+
+        new_msg += orig_msg[i]                  # pridej znak ze vstupu na vystup
+
+        while s < len(prefixes):                # pokud kazdy zaznam v seznamu
+            if surfixes[s][2] == i:             # zjisti zda se zaznam vaze k pozici
+                new_msg += surfixes[s][3]       # ano, vloz ukoncovaci tag
             s += 1
 
-#    print(new_msg) 
-                
     return new_msg 
 
+# vstup informace o nalezu + format dane skupiny, z formatu vytvari posloupnost tagu
 def addTags(line, group, start, end, format_t):
-    morder = max(format_t[1])
+    morder = max(format_t[1])           # kolik skupin formatu je definovano
     prefix = ""
     surfix = ""
-    for i in range(1,morder+1):
-        for j in range(0,len(format_t[0])):
-            if format_t[1][j] == i:
+    for i in range(1,morder+1):                 # poradi od 1 do max
+        for j in range(0,len(format_t[0])):     # pro kazdou polozku struktury
+            if format_t[1][j] == i:             
                 if j == 0 and format_t[0][j]:
                     prefix += "<b>" 
                     surfix = "</b>" + surfix
@@ -478,15 +474,14 @@ def addTags(line, group, start, end, format_t):
                 elif j == 5 and format_t[0][j] != "":
                     prefix += "<font color=#" + str(format_t[0][j]) + ">"
                     surfix = "</font>" + surfix
-#    line =  line[:start] + prefix + group + surfix + line[end:]
-#    print ("line"+str(i)+" = "+line)
-#    shift = len(prefix) + len(surfix)
     
-    return prefix, surfix
+    return prefix, surfix               # vrat pocatecni a ukoncovaci tagy
 
+# inicializace globalnich dat
 infile = None
 outfile = None
 formatfile = None
+#struktura pro ulozeni zadanych vstupnich argumentu
 args = { 
     '--input': False,
     '--output': False,
@@ -494,20 +489,22 @@ args = {
     '--br': False
     }
 
+# volani kontroly vstupni argumentu
 chkarg = parseArg(len(sys.argv),sys.argv)
 
-if not args['--input']:
+if not args['--input']:     # pokud neni definovan vstupni soubor, vstup = stdin
     infile = sys.stdin
-if not args['--output']:
+if not args['--output']:    # pokud neni definovan vystupni soubor, vystup = stdout
     outfile = sys.stdout
 
-if not args['--format'] and not args['--br']:
-    copyFile(infile,outfile)  # zkopiruj vstup na vystup pokud 0 argumentu
+if not args['--format'] and not args['--br']:   # pokud nijak neforamtuju text
+    copyFile(infile,outfile)                    # zkopiruj vstup na vystup
 else:
-    processFile()               # proved operace nad vstupem
-    if infile!= sys.stdin:      # pokud jsme necetli ze stdin zavri soubor
+    processFile()                               # proved operace nad vstupem
+    if infile!= sys.stdin:                      # pokud jsme necetli ze stdin zavri soubor
         infile.close()
-    if outfile != sys.stdin:    # pokud jsme necetli ze stdout zavri soubor
+    if outfile != sys.stdin:                    # pokud jsme necetli ze stdout zavri soubor
         outfile.close()
-    if formatfile != None:      # pokud byl zadan soubor s formatem zavri soubor
+    if formatfile != None:              # pokud byl zadan soubor s formatem zavri soubor
         formatfile.close()
+
