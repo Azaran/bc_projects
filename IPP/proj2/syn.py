@@ -143,10 +143,10 @@ def getFormat():
     format_s = [] 
     format_o = []
     for line in formatfile:
-        reg_line = re.compile(u'^(.*?)([\t]+)(.+)[\s]*$')
+        reg_line = re.compile('^(.*?)([\t]+)(.+)[\s]*$')
         parts = reg_line.match(line)
         if parts == None:
-            empty_line = re.compile(u'^([\s]*)$')
+            empty_line = re.compile('^([\s]*)$')
             if empty_line.match(line) == None:
                 reterr(4)
         else:
@@ -154,6 +154,7 @@ def getFormat():
             fmt_str = parts.group(3)
             if len(keyword) == 0 or len(fmt_str) == 0 or len(parts.group(2)) == 0:
                 reterr(4)
+            checkFormatFile(keyword)
 #            print("group1 = '"+keyword+"' group2 = "+fmt_str)
             keyword = editKeyword(keyword)
 #            print ("keywords = "+keyword+", format = "+fmt_str)
@@ -165,32 +166,32 @@ def getFormat():
 
 def editKeyword(keyword):
     key = keyword
-    keyword = re.sub(r'\\', u'\\\\\\\\', keyword)
-    keyword = re.sub(r'\[', u'\\[', keyword)
-    keyword = re.sub(r'\]', u'\\]', keyword)
-    keyword = re.sub(r'\{', u'\\{', keyword)
-    keyword = re.sub(r'\}', u'\\}', keyword)
-    keyword = re.sub(r'\^', u'\\^', keyword)
-    keyword = re.sub(r'\$', u'\\$', keyword)
-    keyword = re.sub(r'\\n', u'\\\\n', keyword)
-    keyword = re.sub(r'\\t', u'\\\\t', keyword)
-    keyword = re.sub(r'\?', u'\\\\?', keyword)
-    keyword = re.sub('%s', u'\\s', keyword)
-    keyword = re.sub('%a', u'[\s\S]', keyword)
-    keyword = re.sub('%d', u'\\d', keyword)
-    keyword = re.sub('%l', u'[a-z]', keyword)
-    keyword = re.sub('%L', u'[A-Z]', keyword)
-    keyword = re.sub('%w', u'[a-zA-Z]', keyword)
-    keyword = re.sub('%W', u'[a-zA-Z0-9]', keyword)
-    keyword = re.sub('%t', u'\\\\t', keyword)
-    keyword = re.sub('%n', u'\\\\n', keyword)
-    keyword = re.sub('%\.', u'\\.', keyword)
-    keyword = re.sub('%\|', u'\\|', keyword)
-    keyword = re.sub('%\*', u'\\*', keyword)
-    keyword = re.sub('%\+', u'\\+', keyword)
-    keyword = re.sub('%\(', u'\\(', keyword)
-    keyword = re.sub('%\)', u'\\)', keyword)
-    keyword = re.sub('%%', u'%', keyword)
+    keyword = re.sub(r'\\', '\\\\\\\\', keyword)
+    keyword = re.sub(r'\[', '\\[', keyword)
+    keyword = re.sub(r'\]', '\\]', keyword)
+    keyword = re.sub(r'\{', '\\{', keyword)
+    keyword = re.sub(r'\}', '\\}', keyword)
+    keyword = re.sub(r'\^', '\\^', keyword)
+    keyword = re.sub(r'\$', '\\$', keyword)
+    keyword = re.sub(r'\\n', '\\\\n', keyword)
+    keyword = re.sub(r'\\t', '\\\\t', keyword)
+    keyword = re.sub(r'\?', '\\\\?', keyword)
+    keyword = re.sub('%s', '\\s', keyword)
+    keyword = re.sub('%a', '[\s\S]', keyword)
+    keyword = re.sub('%d', '\\d', keyword)
+    keyword = re.sub('%l', '[a-z]', keyword)
+    keyword = re.sub('%L', '[A-Z]', keyword)
+    keyword = re.sub('%w', '[a-zA-Z]', keyword)
+    keyword = re.sub('%W', '[a-zA-Z0-9]', keyword)
+    keyword = re.sub('%t', '\\\\t', keyword)
+    keyword = re.sub('%n', '\\\\n', keyword)
+    keyword = re.sub('%\.', '\\.', keyword)
+    keyword = re.sub('%\|', '\\|', keyword)
+    keyword = re.sub('%\*', '\\*', keyword)
+    keyword = re.sub('%\+', '\\+', keyword)
+    keyword = re.sub('%\(', '\\(', keyword)
+    keyword = re.sub('%\)', '\\)', keyword)
+    keyword = re.sub('%%', '%', keyword)
     
     i = 0
     while i < len(keyword):
@@ -218,11 +219,127 @@ def editKeyword(keyword):
     
     return keyword
 
+def checkFormatFile(keyword):
+    i = 0
+    special = False
+    last = ''
+    neg = False
+    brac = 0
+    klen = len(keyword)
+    while i < klen:
+        ch = keyword[i]
+#        print("\'"+last+"\' -> \'"+ch+"\'")
+        if last == '%':
+            if ch != 's'\
+            and ch != 'a'\
+            and ch != 'd'\
+            and ch != 'l'\
+            and ch != 'L'\
+            and ch != 'w'\
+            and ch != 'W'\
+            and ch != 't'\
+            and ch != 'n'\
+            and ch != '['\
+            and ch != ']'\
+            and ch != '{'\
+            and ch != '}'\
+            and ch != '$'\
+            and ch != '^'\
+            and ch != '?'\
+            and ch != '\\'\
+            and ch != '/'\
+            and ch != '%'\
+            and ch != '.'\
+            and ch != '|'\
+            and ch != '!'\
+            and ch != '+'\
+            and ch != '('\
+            and ch != ')'\
+            and ch != '*':
+                reterr(4)
+        elif last == '.':
+            if i == klen:
+                reterr(4)
+            elif ch == '.' or ch == '*' or ch == '+' or ch == '|':
+                reterr(4)
+        elif last == '+':
+            if neg:
+                neg = False
+        elif last == '!':
+            if i == klen:
+                reterr(4)
+            elif (ch == '!' or ch == '.' or ch == '|' or ch == '+' or ch == '*'):
+                if prelast != '%':
+                    reterr(4)
+                elif i+1 >=klen:
+                    reterr(4)
+            else:
+                neg = False
+        elif last == ')':
+            if prelast != '%' and brac < 1:
+                reterr(4)
+            elif prelast != '%':
+                brac -= 1
+            if neg:
+                neg = False
+
+        elif last == '(':
+            if i+2 >= klen:
+                reterr(4)
+            if prelast != '%':
+                brac += 1 
+
+        elif last == '|':
+            if i == klen:
+                reterr(4)
+            elif ch == '.' or ch == '|' or ch == '!':
+                if prelast != '%':
+                    reterr(4)
+                elif i+1 >=klen:
+                    reterr(4)
+
+        elif last == '*':
+            if neg:
+                neg = False
+        
+        elif last == '':
+            if i == klen:
+                reterr(4)
+            elif ch == '(' and i+2 >= klen:   # (x) ma velikost 3 cokoliv mensiho je chyba
+                reterr(4)
+            elif ch == '|' or ch == '*' or ch == '+' or ch == '.' or ch == ')':
+                reterr(4)
+            elif ch == '!':
+                neg = True
+
+        else:
+#            print('anychar')
+            if ch == '!':
+                if i+1 >= klen:
+                    reterr(4)
+                else:
+                    neg = True
+            elif ch == '(' and i+2 >= klen: 
+                reterr(4)
+            elif (ch == '|' or ch == '.')  and i+1 >= klen: 
+                reterr(4)
+            elif ch == ')' and prelast != '%':
+                brac -= 1
+
+        prelast = last
+        last = ch
+#        print(i,klen,brac)
+        i += 1
+    if brac != 0:
+        reterr(4)
+    if neg:
+        reterr(4)
+#    print('prezil jsem checkFormat')
+
 def parseFormat(fmt_str):
     tags = \
-    re.compile(u'(bold){1}|(italic){1}|(underline){1}|(teletype){1}|(size)?:([1-7]{1}){1}|(color)?:([0-9A-Fa-f]{6}){1}')
+    re.compile('(bold){1}|(italic){1}|(underline){1}|(teletype){1}|(size)?:([1-7]{1}){1}|(color)?:([0-9A-Fa-f]{6}){1}')
     matches = re.finditer(tags, fmt_str)
-   # print (matches)
     return makeForml(matches)
 
 
@@ -230,7 +347,10 @@ def makeForml(matches):
     forml = [[False,False,False,False,0,""],[ 0, 0, 0, 0, 0, 0]]
     pos = 1                     # position in format string
     size = color = False
+#    print (matches)
+    ididsmth = False
     for match in matches:
+        ididsmth = True
 #        print ("match = ",match)
         i = 0
         for m in match.groups():
@@ -276,6 +396,8 @@ def makeForml(matches):
                         reterr(4)
 #    print("list =",forml[0])    
 #    print("pos =",forml[1])    
+    if not ididsmth:
+        reterr(4)
     return forml
 
 def applyFormat(format_s, format_o):
