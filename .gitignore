@@ -6,9 +6,6 @@
 *.in
 *.err
 
-## txt
-*.txt
-
 ## LaTeX additional files
 *.dvi
 *.aux
