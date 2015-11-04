@@ -50,7 +50,7 @@ void openLogFile(std::ofstream& logfile, char *file);
 void sendToTunnel(unsigned char **buf, int size, char **remote, char **wan);
 void encapsPkt(int sck, unsigned char **buf, int *buf_size, char **remote, 
 	char **wan, unsigned char*& sendbuf);
-void catchIPv6Traffic(sockaddr *lan_ip, char **remote, char **wan);
+void catchIPv6Traffic(struct sockaddr *lan_ip, char **lan, char **remote, char **wan);
 void print_ip_header(unsigned char *Buffer, int Size);
 void estabTunel(char *wan_ip);
 unsigned short cksum(struct iphdr *ip, int len);
@@ -75,7 +75,7 @@ int main (int argc, char **argv)
     
     inet_ntop(AF_INET, &(((struct sockaddr_in *)&wan_ip)->sin_addr), wan_ip_ptr, INET_ADDRSTRLEN);
     cout << "wan_ip_ptr: " << wan_ip_ptr << endl;
-    catchIPv6Traffic(&lan_ip, &remote, &wan);
+    catchIPv6Traffic(&lan_ip, &lan, &remote, &wan);
      
     openLogFile(logfile, log);
    
@@ -89,29 +89,51 @@ int main (int argc, char **argv)
 /**
  *  Odchytavani IPv6 komunikace na LAN rozhrani
  */
-void catchIPv6Traffic(struct sockaddr *lan_ip, char **remote, char **wan)
+void catchIPv6Traffic(struct sockaddr *lan_ip, char **lan, char **remote, char **wan)
 {
     int sniffsck, buf_len = 65536, rcv_len;
     unsigned int lan_ip_size = sizeof lan_ip;
+    
+    struct sockaddr_ll lan_bind;
+
 
     unsigned char *buf = new unsigned char[buf_len];
     if((sniffsck = socket(AF_PACKET,SOCK_DGRAM,htons(ETH_P_ALL))) == -1){
-	cerr << strerror(errno) << endl;
+	perror("socket(): ");
 	exit(errno);
     }
     
+    struct ifreq if_id;
+    // Index LAN rozhrani pro umozneni bindu
+    // bindujeme aby sniff nechytal i odeslane packet a nedelal tak nekonecnou smicku
+    memset(&if_id, 0, sizeof(struct ifreq));
+    strncpy(if_id.ifr_name, *lan, IFNAMSIZ-1);
+    if (ioctl(sniffsck, SIOCGIFINDEX, &if_id) < 0)
+	perror("SIOCGIFINDEX");
+    lan_bind.sll_family = AF_PACKET;
+    lan_bind.sll_protocol = htons(ETH_P_ALL);
+    lan_bind.sll_ifindex = if_id.ifr_ifru.ifru_ivalue; 
+
+    if (bind(sniffsck, (struct sockaddr*) &lan_bind, sizeof(struct sockaddr_ll)) == -1){
+	perror("bind() failed: ");
+	exit(errno);
+    }
+
     int i = 0;
     
-    while(i < 1)
+    while(1)
     {
-	rcv_len = recvfrom(sniffsck, buf, buf_len, 0, lan_ip, &lan_ip_size); 
+	memset(buf,0,buf_len);
+	rcv_len = recvfrom(sniffsck, buf, buf_len, 0, lan_ip, &lan_ip_size);
 	if (rcv_len < 0){
-	    cerr << strerror(errno) << endl;
+	    perror("recvfrom() failed: ");
 	    exit(errno);
 	}
 	//parsePkt(buf, rcv_len);
 	i++;
+	cout << "Prijaty packet" << endl;
 	print_ip_header(buf, rcv_len);
+	cout << "Odeslany packet" << endl;
 	sendToTunnel(&buf,rcv_len,remote,wan);
     }
     delete[] buf;
@@ -124,7 +146,7 @@ void sendToTunnel(unsigned char **buf, int size, char **remote, char **wan)
 {
     struct sockaddr_in remote_addr;
    // if (inet_pton(AF_INET, *remote, &(remote_addr.sa_data)) == -1){
-//	cerr << strerror(errno) << endl;
+//	perror("iner_pton() failed: ");
 //	exit(errno);
   //  }
     remote_addr.sin_addr.s_addr = inet_addr(*remote);
@@ -136,6 +158,7 @@ void sendToTunnel(unsigned char **buf, int size, char **remote, char **wan)
 	perror("socket() failed: ");
 	exit(errno);
     }
+    
 
     unsigned char *sendbuf={0};
     encapsPkt(sendsck, buf, &size, remote, wan, sendbuf);
@@ -285,7 +308,7 @@ void openLogFile(std::ofstream& logfile, char *file)
 {
     logfile.open(file, ios::app | ios::out);
     if (!logfile.is_open()){
-	cerr << strerror(errno) << endl;
+	perror("open() failed: ");
 	exit(errno);
     }
     logfile << "Takto vypada hlavicka logu:\n DateTime SourceIP DestinationIP Proto SrcPort \
@@ -299,7 +322,7 @@ void getAddrFromName(char *intf_name, struct sockaddr *ip, socklen_t ip_len)
 {
     struct ifaddrs *allintfs, *intf;
     if(getifaddrs(&allintfs) == -1){
-	cerr << strerror(errno) << endl;
+	perror("getifaddrs() failed: ");
 	exit(errno);
     }
     
