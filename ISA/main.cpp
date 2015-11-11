@@ -34,6 +34,7 @@
 #define LAN 0
 #define WAN 1
 
+bool sig_int = false;
 
 const std::string help = "./sixtunel \n\
 ------------------------------------------------------------------------------ \n\
@@ -53,6 +54,7 @@ void encapsPkt(int sck, unsigned char **buf, int *buf_size, char **remote,
 void catchIPv6Traffic(struct sockaddr *lan_ip, char **lan, char **remote, char **wan);
 void print_ip_header(unsigned char *Buffer, int Size);
 void estabTunel(char *wan_ip);
+void catchSignal(int signum);
 unsigned short cksum(struct iphdr *ip, int len);
 using namespace std;
 
@@ -93,17 +95,16 @@ void catchIPv6Traffic(struct sockaddr *lan_ip, char **lan, char **remote, char *
 {
     int sniffsck, buf_len = 65536, rcv_len;
     unsigned int lan_ip_size = sizeof lan_ip;
-    
+    struct ifreq if_id;
     struct sockaddr_ll lan_bind;
-
-
     unsigned char *buf = new unsigned char[buf_len];
+
+    // nastav odpooslouchavaci socket
     if((sniffsck = socket(AF_PACKET,SOCK_DGRAM,htons(ETH_P_ALL))) == -1){
 	perror("socket(): ");
 	exit(errno);
     }
     
-    struct ifreq if_id;
     // Index LAN rozhrani pro umozneni bindu
     // bindujeme aby sniff nechytal i odeslane packet a nedelal tak nekonecnou smicku
     memset(&if_id, 0, sizeof(struct ifreq));
@@ -119,8 +120,6 @@ void catchIPv6Traffic(struct sockaddr *lan_ip, char **lan, char **remote, char *
 	exit(errno);
     }
 
-    int i = 0;
-    
     while(1)
     {
 	memset(buf,0,buf_len);
@@ -135,6 +134,8 @@ void catchIPv6Traffic(struct sockaddr *lan_ip, char **lan, char **remote, char *
 	print_ip_header(buf, rcv_len);
 	cout << "Odeslany packet" << endl;
 	sendToTunnel(&buf,rcv_len,remote,wan);
+	if (sig_int)   // kdyz prijde SGIINT ukonci korektne program
+		break;
     }
     delete[] buf;
 }
@@ -390,6 +391,9 @@ void checkParams(int argc, char **argv, char **lan, char **wan, char **remote, c
 	    case 'd': *log = optarg; break;
 	}
     }
+}
+void catchSignal(int signum){
+	sig_int	= true;
 }
 
 
