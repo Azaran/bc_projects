@@ -3,6 +3,7 @@
 #include <unistd.h>
 #include <getopt.h>
 #include <cstring>
+#include <csignal>
 #include <string>
 #include <vector>
 #include <err.h>
@@ -60,6 +61,7 @@ using namespace std;
 
 int main (int argc, char **argv)
 {
+    signal(SIGINT, catchSignal);
     char *lan,*wan,*remote, *log, *lan_ip_ptr, *wan_ip_ptr; 
     ofstream logfile;
     struct sockaddr lan_ip, wan_ip;
@@ -129,13 +131,12 @@ void catchIPv6Traffic(struct sockaddr *lan_ip, char **lan, char **remote, char *
 	    exit(errno);
 	}
 	//parsePkt(buf, rcv_len);
-	i++;
 	cout << "Prijaty packet" << endl;
 	print_ip_header(buf, rcv_len);
 	cout << "Odeslany packet" << endl;
 	sendToTunnel(&buf,rcv_len,remote,wan);
-	if (sig_int)   // kdyz prijde SGIINT ukonci korektne program
-		break;
+	if (sig_int)   // kdyz prijde SIGINT ukonci korektne program
+	    break;
     }
     delete[] buf;
 }
@@ -393,7 +394,8 @@ void checkParams(int argc, char **argv, char **lan, char **wan, char **remote, c
     }
 }
 void catchSignal(int signum){
-	sig_int	= true;
+    cout << "Prisel signal " << signum << endl;
+    sig_int = true;
 }
 
 
