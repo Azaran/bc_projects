@@ -6,7 +6,7 @@
 #include <csignal>
 #include <string>
 #include <vector>
-#include <err.h>
+#include <thread>
 
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -26,7 +26,8 @@
 
 #include <linux/if_link.h>
 
-
+#include <err.h>
+#include <unistd.h>
 #include <ifaddrs.h>
 #include <netdb.h>
 
@@ -53,15 +54,16 @@ void sendToTunnel(unsigned char **buf, int size, char **remote, char **wan);
 void encapsPkt(int sck, unsigned char **buf, int *buf_size, char **remote, 
 	char **wan, unsigned char*& sendbuf);
 void catchIPv6Traffic(struct sockaddr *lan_ip, char **lan, char **remote, char **wan);
+void decapFromTunnel();
 void print_ip_header(unsigned char *Buffer, int Size);
 void estabTunel(char *wan_ip);
-void catchSignal(int signum);
+void handleSignal(int signum);
 unsigned short cksum(struct iphdr *ip, int len);
 using namespace std;
 
 int main (int argc, char **argv)
 {
-    signal(SIGINT, catchSignal);
+    signal(SIGINT, handleSignal);
     char *lan,*wan,*remote, *log, *lan_ip_ptr, *wan_ip_ptr; 
     ofstream logfile;
     struct sockaddr lan_ip, wan_ip;
@@ -75,13 +77,21 @@ int main (int argc, char **argv)
 
     getAddrFromName(wan, &wan_ip, INET_ADDRSTRLEN);
     getAddrFromName(lan, &lan_ip, INET6_ADDRSTRLEN);
+   
+
+    openLogFile(logfile, log);
 
     
     inet_ntop(AF_INET, &(((struct sockaddr_in *)&wan_ip)->sin_addr), wan_ip_ptr, INET_ADDRSTRLEN);
-    cout << "wan_ip_ptr: " << wan_ip_ptr << endl;
-    catchIPv6Traffic(&lan_ip, &lan, &remote, &wan);
-     
-    openLogFile(logfile, log);
+    
+    thread encap(catchIPv6Traffic, &lan_ip, &lan, &remote, &wan);
+    thread decap(decapFromTunnel);
+    
+    encap.join();
+    decap.join();
+
+    cout << "Vlakna ukoncena" << endl;
+
    
 
     delete lan_ip_ptr;
@@ -122,7 +132,7 @@ void catchIPv6Traffic(struct sockaddr *lan_ip, char **lan, char **remote, char *
 	exit(errno);
     }
 
-    while(1)
+    while(!sig_int)
     {
 	memset(buf,0,buf_len);
 	rcv_len = recvfrom(sniffsck, buf, buf_len, 0, lan_ip, &lan_ip_size);
@@ -135,8 +145,6 @@ void catchIPv6Traffic(struct sockaddr *lan_ip, char **lan, char **remote, char *
 	print_ip_header(buf, rcv_len);
 	cout << "Odeslany packet" << endl;
 	sendToTunnel(&buf,rcv_len,remote,wan);
-	if (sig_int)   // kdyz prijde SIGINT ukonci korektne program
-	    break;
     }
     delete[] buf;
 }
@@ -268,14 +276,11 @@ void encapsPkt(int sck, unsigned char **buf, int *buf_size, char **remote, char 
 
 }
 
-
-/**
- *  Vytvoreni tunelu na WAN rozhrani
- */
-void estabTunel(char *wan_ip)
+void decapFromTunnel()
 {
-
+    while (!sig_int);
 }
+
 void print_ip_header(unsigned char *Buffer, int Size)
 {
     struct iphdr *iph = (struct iphdr *)Buffer;
@@ -393,11 +398,10 @@ void checkParams(int argc, char **argv, char **lan, char **wan, char **remote, c
 	}
     }
 }
-void catchSignal(int signum){
-    cout << "Prisel signal " << signum << endl;
+
+void handleSignal(int signum){
     sig_int = true;
 }
-
 
 /* 
 * Copyright (c) 1982, 1986, 1988, 1990, 1993, 1994

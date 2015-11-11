@@ -5,9 +5,9 @@ PROJECT_SOURCES  = main.cpp
 
 DEFINES         = 
 
-CFLAGS          =  -g3 -Wall -Wno-unused-function 
+CFLAGS          =  -g3 -Wall -Wno-unused-function -pthread 
 
-LIBRARIES       = #-llibrary_name 
+LIBRARIES       = -lpthread #-llibrary_name  
 
 CC              = g++ -std=c++11
 PROJECT_OBJECTS  = $(PROJECT_SOURCES:.cpp=.o)
