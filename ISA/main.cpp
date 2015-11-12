@@ -1,12 +1,11 @@
 #include <iostream>
 #include <fstream>
-#include <unistd.h>
-#include <getopt.h>
 #include <cstring>
 #include <csignal>
 #include <string>
 #include <vector>
 #include <thread>
+#include <chrono>
 
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -14,6 +13,7 @@
 
 #include <netinet/in.h>
 #include <netinet/ip.h>
+#include <netinet/ip6.h>
 #include <netinet/if_ether.h>
 #include <netinet/ether.h>
 
@@ -26,15 +26,17 @@
 
 #include <linux/if_link.h>
 
+#include <unistd.h>
+#include <getopt.h>
 #include <err.h>
 #include <unistd.h>
 #include <ifaddrs.h>
 #include <netdb.h>
 
 
-#define DEBUG 2
 #define LAN 0
 #define WAN 1
+#define DEBUG 0
 
 bool sig_int = false;
 
@@ -47,16 +49,18 @@ const std::string help = "./sixtunel \n\
 | --log [cesta_k_souboru]   - Zadejte cestu k log. souboru \n\
 ------------------------------------------------------------------------------";
 
+void catchTraffic(struct sockaddr *if1_ip, char **if1_name, char **remote, char **if2_name,
+	bool mode);
+void decapsPkt(unsigned char **buf, int *size, char **remote, char **if2_name, unsigned char*& sendbuf);
+void sendToDest(unsigned char **buf, int size, char **dest);
+void sendToTnl(unsigned char **buf, int size, char **remote, char **if2_name, bool mode);
+void encapsPkt(int sck, unsigned char **buf, int *buf_size, char **remote, 
+	char **wan, unsigned char*& sendbuf);
+void decapFromTunnel();
+void print_ip4_header(unsigned char *Buffer, int Size);
 void checkParams(int argc, char **argv, char **lan, char **wan, char **remote, char **log);
 void getAddrFromName(char *dev_name, struct sockaddr *ip, socklen_t ip_len);
 void openLogFile(std::ofstream& logfile, char *file);
-void sendToTunnel(unsigned char **buf, int size, char **remote, char **wan);
-void encapsPkt(int sck, unsigned char **buf, int *buf_size, char **remote, 
-	char **wan, unsigned char*& sendbuf);
-void catchIPv6Traffic(struct sockaddr *lan_ip, char **lan, char **remote, char **wan);
-void decapFromTunnel();
-void print_ip_header(unsigned char *Buffer, int Size);
-void estabTunel(char *wan_ip);
 void handleSignal(int signum);
 unsigned short cksum(struct iphdr *ip, int len);
 using namespace std;
@@ -73,125 +77,203 @@ int main (int argc, char **argv)
     checkParams(argc, argv, &lan, &wan, &remote, &log);  
     cout << "remote = \"" << remote << "\"" << endl;
     cout << "log = \"" << log<< "\"" << endl;
-
+    
+    openLogFile(logfile, log);
 
     getAddrFromName(wan, &wan_ip, INET_ADDRSTRLEN);
     getAddrFromName(lan, &lan_ip, INET6_ADDRSTRLEN);
    
 
-    openLogFile(logfile, log);
-
-    
     inet_ntop(AF_INET, &(((struct sockaddr_in *)&wan_ip)->sin_addr), wan_ip_ptr, INET_ADDRSTRLEN);
     
-    thread encap(catchIPv6Traffic, &lan_ip, &lan, &remote, &wan);
-    thread decap(decapFromTunnel);
+    thread encap(catchTraffic, &lan_ip, &lan, &remote, &wan, true);
+//    thread decap(catchTraffic, &wan_ip, &wan, &remote, &lan, false);
+    
     
     encap.join();
-    decap.join();
-
+//    decap.join();
     cout << "Vlakna ukoncena" << endl;
-
-   
-
     delete lan_ip_ptr;
     delete wan_ip_ptr;
-
     return 0;
 }
 
 /**
- *  Odchytavani IPv6 komunikace na LAN rozhrani
+ *  Odchytavani IPv4 komunikace z tunelu na WAN
  */
-void catchIPv6Traffic(struct sockaddr *lan_ip, char **lan, char **remote, char **wan)
+void decapsPkt(unsigned char **buf, int size, char **remote, char **if2_name, unsigned char
+	*&sendbuf)
 {
-    int sniffsck, buf_len = 65536, rcv_len;
-    unsigned int lan_ip_size = sizeof lan_ip;
+    struct iphdr *iph = (struct iphdr *)buf;
+    struct sockaddr_in source,dest; 
+
+    memset(&source, 0, sizeof(source));
+    source.sin_addr.s_addr = iph->saddr;
+    memset(&dest, 0, sizeof(dest));
+    dest.sin_addr.s_addr = iph->daddr;
+
+    printf("   |-source ip        : %s\n",inet_ntoa(source.sin_addr));
+    printf("   |-destination ip   : %s\n",inet_ntoa(dest.sin_addr));
+    
+    unsigned long rmt_addr, if2_addr; // IP adresa v RAW forme 
+    rmt_addr = inet_addr(*remote);
+    if2_addr = inet_addr(*if2_name);
+
+    if (source.sin_addr.s_addr == rmt_addr && dest.sin_addr.s_addr == if2_addr)
+    {
+	// odpoj IPv4 hlavicku
+	int iphdr_len = sizeof(struct iphdr); // delka IPv4 hlavicky
+	int data_len = size - iphdr_len;
+	// posun se o delku hlavicky a odecti ji od celkove delky
+	sendbuf = new unsigned char[data_len];
+	memcpy(sendbuf, (*buf+iphdr_len), data_len); 
+    }
+    else
+	sendbuf = NULL;
+    
+
+}
+
+/**
+ *  Odchytavani komunikace na rozhrani if1_name
+ */
+void catchTraffic(struct sockaddr *if1_ip, char **if1_name, char **remote, char **if2_name, bool
+	mode)
+{
+    int insck, buf_len = 65536, rcv_len;
+    unsigned int if1_ip_size = sizeof if1_ip;
     struct ifreq if_id;
-    struct sockaddr_ll lan_bind;
+    struct sockaddr_ll if1_bind;
     unsigned char *buf = new unsigned char[buf_len];
 
+    // pro uvolneni socketu
+    const int       optVal = 1;
+    const socklen_t optLen = sizeof(optVal);
+
     // nastav odpooslouchavaci socket
-    if((sniffsck = socket(AF_PACKET,SOCK_DGRAM,htons(ETH_P_ALL))) == -1){
+    if((insck = socket(AF_PACKET,SOCK_DGRAM | SOCK_NONBLOCK, htons(41))) == -1){
 	perror("socket(): ");
 	exit(errno);
     }
     
-    // Index LAN rozhrani pro umozneni bindu
-    // bindujeme aby sniff nechytal i odeslane packet a nedelal tak nekonecnou smicku
+    // Index if1_name rozhrani pro umozneni bindu
+    // bindujeme aby nechytal i odesilane packet a nedelal tak nekonecnou smicku
     memset(&if_id, 0, sizeof(struct ifreq));
-    strncpy(if_id.ifr_name, *lan, IFNAMSIZ-1);
-    if (ioctl(sniffsck, SIOCGIFINDEX, &if_id) < 0)
+    strncpy(if_id.ifr_name, *if1_name, IFNAMSIZ-1);
+    if (ioctl(insck, SIOCGIFINDEX, &if_id) < 0)
 	perror("SIOCGIFINDEX");
-    lan_bind.sll_family = AF_PACKET;
-    lan_bind.sll_protocol = htons(ETH_P_ALL);
-    lan_bind.sll_ifindex = if_id.ifr_ifru.ifru_ivalue; 
+    if1_bind.sll_family = AF_PACKET;
+    if1_bind.sll_protocol = htons(ETH_P_ALL);
+    if1_bind.sll_ifindex = if_id.ifr_ifru.ifru_ivalue; 
 
-    if (bind(sniffsck, (struct sockaddr*) &lan_bind, sizeof(struct sockaddr_ll)) == -1){
+    if (bind(insck, (struct sockaddr*) &if1_bind, sizeof(struct sockaddr_ll)) == -1){
 	perror("bind() failed: ");
 	exit(errno);
     }
-
+    if (!mode)
+	cout << "Ahooj jsem tu a muj sock je #"<< insck << endl;
+    else 
+	cout << "Ahooj jsem tu a i ja muj sock je #"<< insck << endl;
     while(!sig_int)
     {
 	memset(buf,0,buf_len);
-	rcv_len = recvfrom(sniffsck, buf, buf_len, 0, lan_ip, &lan_ip_size);
-	if (rcv_len < 0){
+	rcv_len = recvfrom(insck, buf, buf_len, 0, if1_ip, &if1_ip_size);
+	if (rcv_len < 0 && errno != EWOULDBLOCK){
 	    perror("recvfrom() failed: ");
 	    exit(errno);
 	}
-	//parsePkt(buf, rcv_len);
-	cout << "Prijaty packet" << endl;
-	print_ip_header(buf, rcv_len);
-	cout << "Odeslany packet" << endl;
-	sendToTunnel(&buf,rcv_len,remote,wan);
+	else if (errno == EWOULDBLOCK)
+	    // pokud neprecetl zadny data uspi vlakno na 50ms (snizeni zatizeni CPU)
+	    this_thread::sleep_for(chrono::milliseconds(50));
+	if (rcv_len > 0)	
+	{
+	    cout << "Prijaty packet" << endl;
+	    print_ip4_header(buf, rcv_len);
+	    cout << "Odesif1_namey packet" << endl;
+	    sendToTnl(&buf, rcv_len, remote, if2_name, mode);
+	}
     }
+    // jen si po sobe poklid
     delete[] buf;
+    setsockopt(insck, SOL_SOCKET, SO_REUSEADDR, (void*) &optVal, optLen);
+    close(insck);
+}
+
+/**
+ *  Ziskej IPv6 adresu z hlavicky packetu ulozeneho v SENDBUF
+ */
+void getIPv6Addr(unsigned char *sendbuf, unsigned char **dest_ip)
+{
+    struct ip6_hdr *ip6h = (struct ip6_hdr *)sendbuf;
+    *dest_ip = ip6h->ip6_dst.s6_addr; 
 }
 
 /**
  *  Odeslani 6in4 skrze WAN rozhrani
  */
-void sendToTunnel(unsigned char **buf, int size, char **remote, char **wan)
+void sendToTnl(unsigned char **buf, int size, char **remote, char **if2_name, bool mode)
 {
-    struct sockaddr_in remote_addr;
-   // if (inet_pton(AF_INET, *remote, &(remote_addr.sa_data)) == -1){
-//	perror("iner_pton() failed: ");
-//	exit(errno);
-  //  }
-    remote_addr.sin_addr.s_addr = inet_addr(*remote);
-    remote_addr.sin_family = AF_INET;
-    remote_addr.sin_port = 0x00;
     int sendsck;
-    socklen_t ra_size = sizeof(remote_addr);
+    unsigned char *sendbuf={0};
+    void *target_addr; // aby si sendto nestezoval a ja mohl specifikovat typ az v podmince
+    socklen_t ta_size; 
     if((sendsck = socket(AF_INET, SOCK_RAW, IPPROTO_RAW)) == -1){
 	perror("socket() failed: ");
 	exit(errno);
     }
-    
-
-    unsigned char *sendbuf={0};
-    encapsPkt(sendsck, buf, &size, remote, wan, sendbuf);
-   
-    
-    print_ip_header(sendbuf, sizeof(*sendbuf));
-    cout << "sizeof: " << sizeof(*sendbuf) << ", char_traits: " << char_traits<unsigned
-	char>::length(sendbuf) << ", size: " << size << endl;
-    
-    
-    if ((sendto(sendsck, sendbuf, size, 0, (struct sockaddr *)&remote_addr, ra_size)) == -1){ 
-	perror("sendto() failed: ");
-	exit(errno);
+    // posilas skrz tunel nebo konecnymu zarizeni?
+    if (mode)
+    {
+	encapsPkt(sendsck, buf, &size, remote, if2_name, sendbuf);
+	
+	target_addr = new (struct sockaddr_in);
+	struct sockaddr_in *ta = ((struct sockaddr_in *)target_addr);
+	memset(ta, 0, sizeof(struct sockaddr_in));
+	ta->sin_addr.s_addr = inet_addr(*remote);
+	ta->sin_family = AF_INET;
+	ta->sin_port = 0x00;
+	ta_size = sizeof(*ta);
     }
-    cout << "Odeslano" << endl;
+    else
+    {
+	decapsPkt(buf, size, remote, if2_name, sendbuf);
+	
+	target_addr = new (struct sockaddr_in6);
+	struct sockaddr_in6 *ta = ((struct sockaddr_in6 *)target_addr);
+	memset(ta, 0, sizeof(struct sockaddr_in6));
+	getIPv6Addr(sendbuf, (unsigned char **)&ta->sin6_addr.s6_addr);
+	ta->sin6_family = AF_INET6;
+	ta->sin6_port = 0x00;
+	ta_size = sizeof(*ta);
+    }
+
+
+    // mam co poslat? zahozeni nechtenych paketu z rozhrani kde je tunel
+    if (sendbuf != NULL)
+    {
+	print_ip4_header(sendbuf, size);
+	cout << "sizeof: " << sizeof(*sendbuf) << ", char_traits: " << char_traits<unsigned
+	    char>::length(sendbuf) << ", size: " << size << "mode: " << mode << endl;
+
+	if ((sendto(sendsck,sendbuf,size,0,((struct sockaddr *)target_addr),ta_size)) == -1){ 
+	    perror("sendto() failed: ");
+	    exit(errno);
+	}
+	cout << "Odeslano" << endl;
+    }
+    if(mode)
+        delete (struct sockaddr_in *)target_addr;
+    else
+	delete (struct sockaddr_in6 *)target_addr;
     delete[] sendbuf;
+    close(sendsck);
 }
 
 
 /**
  *  Zapouzdreni IPv6 packetu IPv4 hlavickou
  */
-void encapsPkt(int sck, unsigned char **buf, int *buf_size, char **remote, char **wan,
+void encapsPkt(int sck, unsigned char **buf, int *buf_size, char **remote, char **if2_name,
 	unsigned char*& sendbuf)
 {
     /**
@@ -203,51 +285,26 @@ void encapsPkt(int sck, unsigned char **buf, int *buf_size, char **remote, char 
     **/
     struct ifreq if_idx;
 
-    // Index WAN rozhrani
+    // Index if2_name rozhrani
     memset(&if_idx, 0, sizeof(struct ifreq));
-    strncpy(if_idx.ifr_name, *wan, IFNAMSIZ-1);
+    strncpy(if_idx.ifr_name, *if2_name, IFNAMSIZ-1);
     if (ioctl(sck, SIOCGIFINDEX, &if_idx) < 0)
 	perror("SIOCGIFINDEX");
-    // MAC WAN rozhrani
-    struct ifreq if_mac;
-    memset(&if_mac, 0, sizeof(struct ifreq));
-    strncpy(if_mac.ifr_name, *wan, IFNAMSIZ-1);
-    if (ioctl(sck, SIOCGIFHWADDR, &if_mac) < 0)
-	perror("SIOCGIFHWADDR");
-    // IP WAN rozhrani 
+    // IP if2_name rozhrani 
     struct ifreq if_ip;
     memset(&if_ip, 0, sizeof(struct ifreq));
-    strncpy(if_ip.ifr_name, *wan, IFNAMSIZ-1);
+    strncpy(if_ip.ifr_name, *if2_name, IFNAMSIZ-1);
     if (ioctl(sck, SIOCGIFADDR, &if_ip) < 0)
 	perror("SIOCGIFADDR");
 
     // Delka etherne hlavicky + IP hlavicky + delka prijateho paketu
     int pkt_len = 0, sbs;
     sbs = sizeof(struct iphdr) + *buf_size;
-    //sbs = sizeof(struct ether_header) + sizeof(struct iphdr) + *buf_size;
     sendbuf = new unsigned char[sbs];
     memset(sendbuf, 0, sbs);
-    /*
-    // Ethernet hlavicka
-    struct ether_header *eh = (struct ether_header *) sendbuf;
-    eh->ether_shost[0] = ((uint8_t *)&if_mac.ifr_hwaddr.sa_data)[0];
-    eh->ether_shost[1] = ((uint8_t *)&if_mac.ifr_hwaddr.sa_data)[1];
-    eh->ether_shost[2] = ((uint8_t *)&if_mac.ifr_hwaddr.sa_data)[2];
-    eh->ether_shost[3] = ((uint8_t *)&if_mac.ifr_hwaddr.sa_data)[3];
-    eh->ether_shost[4] = ((uint8_t *)&if_mac.ifr_hwaddr.sa_data)[4];
-    eh->ether_shost[5] = ((uint8_t *)&if_mac.ifr_hwaddr.sa_data)[5];
-    eh->ether_dhost[0] = 0xff;
-    eh->ether_dhost[1] = 0xff;
-    eh->ether_dhost[2] = 0xff;
-    eh->ether_dhost[3] = 0xff;
-    eh->ether_dhost[4] = 0xff;
-    eh->ether_dhost[5] = 0xff;
-    eh->ether_type = htons(ETH_P_IP);
-    pkt_len += sizeof(struct ether_header);
-*/
+    
     // IP hlavicka
     struct iphdr *iph = (struct iphdr *)sendbuf;
-    //struct iphdr *iph = (struct iphdr *)(sendbuf + sizeof(struct ether_header));
     iph->ihl = 5;
     iph->version = 4;
     iph->tos = 0;
@@ -258,33 +315,24 @@ void encapsPkt(int sck, unsigned char **buf, int *buf_size, char **remote, char 
     iph->daddr = inet_addr(*remote);
     pkt_len += sizeof(struct iphdr);
 
-    // Pridej puvodni data za hlavicky z BUF
+    // Pridej puvodni data z BUF za hlavicky v SENDBUF
     memcpy((sendbuf+sizeof(struct iphdr)), *buf, *buf_size);
-    //memcpy((sendbuf+sizeof(struct iphdr)+sizeof(struct ether_header)), *buf, *buf_size);
     pkt_len += *buf_size;
+//    iph->tot_len = htons(pkt_len); 
 
-    iph->tot_len = htons(pkt_len); 
-    //iph->tot_len = htons(pkt_len-sizeof(struct ether_header)); 
-    unsigned short checksum = cksum(iph,sizeof(struct iphdr));
-    iph->check = checksum;
-
+//    unsigned short checksum = cksum(iph,sizeof(struct iphdr));
+//    iph->check = checksum;
 
     *buf_size = pkt_len;
-    cout << "pkt_len: "<< pkt_len<< endl;
-    print_ip_header(sendbuf, pkt_len);
 
+    //print_ip4_header(sendbuf, *buf_size);
 
 }
 
-void decapFromTunnel()
-{
-    while (!sig_int);
-}
 
-void print_ip_header(unsigned char *Buffer, int Size)
+void print_ip4_header(unsigned char *buffer, int Size)
 {
-    struct iphdr *iph = (struct iphdr *)Buffer;
-    //struct iphdr *iph = (struct iphdr *)(Buffer + sizeof(struct ether_header));
+    struct iphdr *iph = (struct iphdr *)buffer;
     struct sockaddr_in source,dest; 
     memset(&source, 0, sizeof(source));
     source.sin_addr.s_addr = iph->saddr;
@@ -293,18 +341,23 @@ void print_ip_header(unsigned char *Buffer, int Size)
     dest.sin_addr.s_addr = iph->daddr;
 
     printf("\n");
-    printf("IP Header\n");
-    printf("   |-IP Version        : %d\n",(unsigned int)iph->version);
-    printf("   |-IP Header Length  : %d DWORDS or %d Bytes\n",(unsigned int)iph->ihl,((unsigned
+    printf("ip header\n");
+    printf("   |-ip version        : %d\n",(unsigned int)iph->version);
+    printf("   |-ip header length  : %d dwords or %d bytes\n",(unsigned int)iph->ihl,((unsigned
 		    int)(iph->ihl))*4);
-    printf("   |-Type Of Service   : %d\n",(unsigned int)iph->tos);
-    printf("   |-IP Total Length   : %d  Bytes(Size of Packet)\n",ntohs(iph->tot_len));
-    printf("   |-Identification :%d\n",ntohs(iph->id));
-    printf("   |-TTL : %d\n",(unsigned int)iph->ttl);
-    printf("   |-Protocol : %d\n",(unsigned int)iph->protocol);
-    printf("   |-Checksum : %d\n",ntohs(iph->check));
-    printf("   |-Source IP        : %s\n",inet_ntoa(source.sin_addr));
-    printf("   |-Destination IP   : %s\n",inet_ntoa(dest.sin_addr));
+    printf("   |-type of service   : %d\n",(unsigned int)iph->tos);
+    printf("   |-ip total length   : %d  bytes(size of packet)\n",ntohs(iph->tot_len));
+    printf("   |-identification :%d\n",ntohs(iph->id));
+    printf("   |-ttl : %d\n",(unsigned int)iph->ttl);
+    printf("   |-protocol : %d\n",(unsigned int)iph->protocol);
+    printf("   |-checksum : %d\n",ntohs(iph->check));
+    printf("   |-source ip        : %s\n",inet_ntoa(source.sin_addr));
+    printf("   |-destination ip   : %s\n",inet_ntoa(dest.sin_addr));
+    long hdr_len = sizeof(struct iphdr)+sizeof(struct ip6_hdr);
+    unsigned char* data = buffer+hdr_len;
+    cout << "size: " << Size << " hdr_len: " << hdr_len << endl;
+    if (Size > hdr_len) 
+        printf("Data: %s\n", data);
 }
 
 
