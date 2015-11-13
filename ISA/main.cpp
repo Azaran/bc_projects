@@ -38,6 +38,13 @@
 #define WAN 1
 #define DEBUG 0
 
+typedef struct ifnamenaddr{
+    char *name;
+    struct sockaddr ip;
+} ifnamenaddr;
+
+using namespace std;
+
 bool sig_int = false;
 
 const std::string help = "./sixtunel \n\
@@ -48,79 +55,72 @@ const std::string help = "./sixtunel \n\
 | --remote [IP_adresa]      - IPv4 adresa konce tunelu \n\
 | --log [cesta_k_souboru]   - Zadejte cestu k log. souboru \n\
 ------------------------------------------------------------------------------";
+struct ifnamenaddr lan_ip, wan_ip;
+ofstream logfile;
 
-void catchTraffic(struct sockaddr *if1_ip, char **if1_name, char **remote, char **if2_name,
-	bool mode);
-void decapsPkt(unsigned char **buf, int *size, char **remote, char **if2_name, unsigned char*& sendbuf);
+void catchTraffic(char **remote, bool mode);
+void decapsPkt(unsigned char **buf, int *size, char **remote, unsigned char*& sendbuf);
 void sendToDest(unsigned char **buf, int size, char **dest);
-void sendToTnl(unsigned char **buf, int size, char **remote, char **if2_name, bool mode);
-void encapsPkt(int sck, unsigned char **buf, int *buf_size, char **remote, 
-	char **wan, unsigned char*& sendbuf);
+void sendToTnl(unsigned char **buf, int size, char **remote, bool mode);
+void encapsPkt(int sck, unsigned char **buf, int *buf_size, char **remote, unsigned char*& sendbuf);
 void decapFromTunnel();
 void print_ip4_header(unsigned char *Buffer, int Size);
 void checkParams(int argc, char **argv, char **lan, char **wan, char **remote, char **log);
-void getAddrFromName(char *dev_name, struct sockaddr *ip, socklen_t ip_len);
+void getAddrFromName(struct ifnamenaddr *ifstruct, socklen_t ip_len);
 void openLogFile(std::ofstream& logfile, char *file);
 void handleSignal(int signum);
 unsigned short cksum(struct iphdr *ip, int len);
-using namespace std;
 
 int main (int argc, char **argv)
 {
     signal(SIGINT, handleSignal);
-    char *lan,*wan,*remote, *log, *lan_ip_ptr, *wan_ip_ptr; 
-    ofstream logfile;
-    struct sockaddr lan_ip, wan_ip;
-    lan_ip_ptr = new char [INET6_ADDRSTRLEN];
-    wan_ip_ptr = new char [INET_ADDRSTRLEN];
+    
+    char *lan, *wan, *remote, *log; 
 
     checkParams(argc, argv, &lan, &wan, &remote, &log);  
     cout << "remote = \"" << remote << "\"" << endl;
     cout << "log = \"" << log<< "\"" << endl;
     
     openLogFile(logfile, log);
-
-    getAddrFromName(wan, &wan_ip, INET_ADDRSTRLEN);
-    getAddrFromName(lan, &lan_ip, INET6_ADDRSTRLEN);
+    wan_ip.name = wan;
+    lan_ip.name = lan;
+    getAddrFromName(&wan_ip, INET_ADDRSTRLEN);
+    getAddrFromName(&lan_ip, INET6_ADDRSTRLEN);
    
 
-    inet_ntop(AF_INET, &(((struct sockaddr_in *)&wan_ip)->sin_addr), wan_ip_ptr, INET_ADDRSTRLEN);
-    
-    thread encap(catchTraffic, &lan_ip, &lan, &remote, &wan, true);
-//    thread decap(catchTraffic, &wan_ip, &wan, &remote, &lan, false);
-    
+    thread encap(catchTraffic, &remote, true);
+    thread decap(catchTraffic, &remote, false);
     
     encap.join();
-//    decap.join();
+    decap.join();
     cout << "Vlakna ukoncena" << endl;
-    delete lan_ip_ptr;
-    delete wan_ip_ptr;
     return 0;
 }
 
 /**
  *  Odchytavani IPv4 komunikace z tunelu na WAN
  */
-void decapsPkt(unsigned char **buf, int size, char **remote, char **if2_name, unsigned char
-	*&sendbuf)
+void decapsPkt(unsigned char **buf, int size, char **remote, unsigned char *&sendbuf)
 {
-    struct iphdr *iph = (struct iphdr *)buf;
+    struct iphdr *iph = (struct iphdr *)*buf;
     struct sockaddr_in source,dest; 
-
+    struct sockaddr_in *wan = (struct sockaddr_in *)&(wan_ip.ip);
     memset(&source, 0, sizeof(source));
     source.sin_addr.s_addr = iph->saddr;
     memset(&dest, 0, sizeof(dest));
     dest.sin_addr.s_addr = iph->daddr;
 
-    printf("   |-source ip        : %s\n",inet_ntoa(source.sin_addr));
-    printf("   |-destination ip   : %s\n",inet_ntoa(dest.sin_addr));
-    
-    unsigned long rmt_addr, if2_addr; // IP adresa v RAW forme 
+    unsigned long rmt_addr; // IP adresa v RAW forme 
     rmt_addr = inet_addr(*remote);
-    if2_addr = inet_addr(*if2_name);
-
-    if (source.sin_addr.s_addr == rmt_addr && dest.sin_addr.s_addr == if2_addr)
+    cout << "saddr:   "<< source.sin_addr.s_addr << endl;
+    cout << "rmtaddr: "<< rmt_addr << endl;
+    cout << "daddr:   "<< dest.sin_addr.s_addr << endl;
+    cout << "wanaddr: "<< wan_ip.ip.sa_data << endl;
+    cout << "wanaddr: "<< wan_ip.name << endl;
+    
+    if (source.sin_addr.s_addr == rmt_addr && dest.sin_addr.s_addr == wan->sin_addr.s_addr)
     {
+	cout << "Je to packet z tunnelu" << endl;
 	// odpoj IPv4 hlavicku
 	int iphdr_len = sizeof(struct iphdr); // delka IPv4 hlavicky
 	int data_len = size - iphdr_len;
@@ -130,54 +130,54 @@ void decapsPkt(unsigned char **buf, int size, char **remote, char **if2_name, un
     }
     else
 	sendbuf = NULL;
-    
-
 }
 
 /**
- *  Odchytavani komunikace na rozhrani if1_name
+ *  Odchytavani komunikace na rozhrani lan_ip.name
  */
-void catchTraffic(struct sockaddr *if1_ip, char **if1_name, char **remote, char **if2_name, bool
-	mode)
+void catchTraffic(char **remote, bool mode)
 {
     int insck, buf_len = 65536, rcv_len;
-    unsigned int if1_ip_size = sizeof if1_ip;
+    unsigned int lan_ip_size, wan_ip_size;
     struct ifreq if_id;
-    struct sockaddr_ll if1_bind;
+    struct sockaddr_ll if_bind;
     unsigned char *buf = new unsigned char[buf_len];
 
     // pro uvolneni socketu
     const int       optVal = 1;
     const socklen_t optLen = sizeof(optVal);
 
+    lan_ip_size = sizeof (lan_ip.ip);
+    wan_ip_size = sizeof (wan_ip.ip);
     // nastav odpooslouchavaci socket
     if((insck = socket(AF_PACKET,SOCK_DGRAM | SOCK_NONBLOCK, htons(41))) == -1){
 	perror("socket(): ");
 	exit(errno);
     }
     
-    // Index if1_name rozhrani pro umozneni bindu
+    // Index lan_ip.name rozhrani pro umozneni bindu
     // bindujeme aby nechytal i odesilane packet a nedelal tak nekonecnou smicku
     memset(&if_id, 0, sizeof(struct ifreq));
-    strncpy(if_id.ifr_name, *if1_name, IFNAMSIZ-1);
+    strncpy(if_id.ifr_name, (mode ? lan_ip.name : wan_ip.name), IFNAMSIZ-1);
     if (ioctl(insck, SIOCGIFINDEX, &if_id) < 0)
 	perror("SIOCGIFINDEX");
-    if1_bind.sll_family = AF_PACKET;
-    if1_bind.sll_protocol = htons(ETH_P_ALL);
-    if1_bind.sll_ifindex = if_id.ifr_ifru.ifru_ivalue; 
+    if_bind.sll_family = AF_PACKET;
+    if_bind.sll_protocol = htons(ETH_P_ALL);
+    if_bind.sll_ifindex = if_id.ifr_ifru.ifru_ivalue; 
 
-    if (bind(insck, (struct sockaddr*) &if1_bind, sizeof(struct sockaddr_ll)) == -1){
+    if (bind(insck, (struct sockaddr*) &if_bind, sizeof(struct sockaddr_ll)) == -1){
 	perror("bind() failed: ");
 	exit(errno);
     }
-    if (!mode)
-	cout << "Ahooj jsem tu a muj sock je #"<< insck << endl;
-    else 
-	cout << "Ahooj jsem tu a i ja muj sock je #"<< insck << endl;
     while(!sig_int)
     {
+	rcv_len = 0;
+	errno = 0;
 	memset(buf,0,buf_len);
-	rcv_len = recvfrom(insck, buf, buf_len, 0, if1_ip, &if1_ip_size);
+	if (mode)
+	    rcv_len = recvfrom(insck, buf, buf_len, 0, &lan_ip.ip, &lan_ip_size);
+	else
+	    rcv_len = recvfrom(insck, buf, buf_len, 0, &wan_ip.ip, &wan_ip_size);
 	if (rcv_len < 0 && errno != EWOULDBLOCK){
 	    perror("recvfrom() failed: ");
 	    exit(errno);
@@ -187,10 +187,10 @@ void catchTraffic(struct sockaddr *if1_ip, char **if1_name, char **remote, char 
 	    this_thread::sleep_for(chrono::milliseconds(50));
 	if (rcv_len > 0)	
 	{
-	    cout << "Prijaty packet" << endl;
+	    sendToTnl(&buf, rcv_len, remote, mode);
+
 	    print_ip4_header(buf, rcv_len);
-	    cout << "Odesif1_namey packet" << endl;
-	    sendToTnl(&buf, rcv_len, remote, if2_name, mode);
+	    cout << "Odeslany packet" << endl;
 	}
     }
     // jen si po sobe poklid
@@ -211,20 +211,20 @@ void getIPv6Addr(unsigned char *sendbuf, unsigned char **dest_ip)
 /**
  *  Odeslani 6in4 skrze WAN rozhrani
  */
-void sendToTnl(unsigned char **buf, int size, char **remote, char **if2_name, bool mode)
+void sendToTnl(unsigned char **buf, int size, char **remote, bool mode)
 {
     int sendsck;
     unsigned char *sendbuf={0};
     void *target_addr; // aby si sendto nestezoval a ja mohl specifikovat typ az v podmince
     socklen_t ta_size; 
-    if((sendsck = socket(AF_INET, SOCK_RAW, IPPROTO_RAW)) == -1){
-	perror("socket() failed: ");
-	exit(errno);
-    }
     // posilas skrz tunel nebo konecnymu zarizeni?
     if (mode)
     {
-	encapsPkt(sendsck, buf, &size, remote, if2_name, sendbuf);
+	if((sendsck = socket(AF_INET, SOCK_RAW, IPPROTO_RAW)) == -1){
+	    perror("socket() failed: ");
+	    exit(errno);
+	}
+	encapsPkt(sendsck, buf, &size, remote, sendbuf);
 	
 	target_addr = new (struct sockaddr_in);
 	struct sockaddr_in *ta = ((struct sockaddr_in *)target_addr);
@@ -236,7 +236,12 @@ void sendToTnl(unsigned char **buf, int size, char **remote, char **if2_name, bo
     }
     else
     {
-	decapsPkt(buf, size, remote, if2_name, sendbuf);
+	if((sendsck = socket(AF_INET6, SOCK_RAW, IPPROTO_RAW)) == -1){
+	    perror("socket() failed: ");
+	    exit(errno);
+	}
+	cout << "Socket made" << endl; 
+	decapsPkt(buf, size, remote, sendbuf);
 	
 	target_addr = new (struct sockaddr_in6);
 	struct sockaddr_in6 *ta = ((struct sockaddr_in6 *)target_addr);
@@ -259,7 +264,6 @@ void sendToTnl(unsigned char **buf, int size, char **remote, char **if2_name, bo
 	    perror("sendto() failed: ");
 	    exit(errno);
 	}
-	cout << "Odeslano" << endl;
     }
     if(mode)
         delete (struct sockaddr_in *)target_addr;
@@ -273,8 +277,7 @@ void sendToTnl(unsigned char **buf, int size, char **remote, char **if2_name, bo
 /**
  *  Zapouzdreni IPv6 packetu IPv4 hlavickou
  */
-void encapsPkt(int sck, unsigned char **buf, int *buf_size, char **remote, char **if2_name,
-	unsigned char*& sendbuf)
+void encapsPkt(int sck, unsigned char **buf, int *buf_size, char **remote, unsigned char*& sendbuf)
 {
     /**
      *	inspirovano: 
@@ -285,15 +288,15 @@ void encapsPkt(int sck, unsigned char **buf, int *buf_size, char **remote, char 
     **/
     struct ifreq if_idx;
 
-    // Index if2_name rozhrani
+    // Index wan_ip.name rozhrani
     memset(&if_idx, 0, sizeof(struct ifreq));
-    strncpy(if_idx.ifr_name, *if2_name, IFNAMSIZ-1);
+    strncpy(if_idx.ifr_name, wan_ip.name, IFNAMSIZ-1);
     if (ioctl(sck, SIOCGIFINDEX, &if_idx) < 0)
 	perror("SIOCGIFINDEX");
-    // IP if2_name rozhrani 
+    // IP wan_ip.name rozhrani 
     struct ifreq if_ip;
     memset(&if_ip, 0, sizeof(struct ifreq));
-    strncpy(if_ip.ifr_name, *if2_name, IFNAMSIZ-1);
+    strncpy(if_ip.ifr_name, wan_ip.name, IFNAMSIZ-1);
     if (ioctl(sck, SIOCGIFADDR, &if_ip) < 0)
 	perror("SIOCGIFADDR");
 
@@ -378,8 +381,9 @@ void openLogFile(std::ofstream& logfile, char *file)
 /**
  *  Prevedeni jmena rozhrani na IP adresu
  */ 
-void getAddrFromName(char *intf_name, struct sockaddr *ip, socklen_t ip_len)
+void getAddrFromName(struct ifnamenaddr *ifstruct, socklen_t ip_len)
 {
+    char *intf_name = ifstruct->name;
     struct ifaddrs *allintfs, *intf;
     if(getifaddrs(&allintfs) == -1){
 	perror("getifaddrs() failed: ");
@@ -393,16 +397,16 @@ void getAddrFromName(char *intf_name, struct sockaddr *ip, socklen_t ip_len)
 	{
 	    int family = intf->ifa_addr->sa_family;
 	    if (ip_len == INET_ADDRSTRLEN && family == AF_INET)
-		*ip = *intf->ifa_addr;
+		ifstruct->ip = *intf->ifa_addr;
 		//inet_ntop(AF_INET, &(((struct sockaddr_in *) 
 		//		intf->ifa_addr)->sin_addr), *ip, INET_ADDRSTRLEN);
 	    else if (ip_len == INET6_ADDRSTRLEN && family == AF_INET6)
-		*ip = *intf->ifa_addr;
+		memcpy(&(ifstruct->ip), *intf->ifa_addr, sizeof(intf->ifa_addr));
 		//inet_ntop(AF_INET6,&(((struct sockaddr_in6 *)
 		//		intf->ifa_addr)->sin6_addr), *ip, INET6_ADDRSTRLEN);
-	    //cout << "\t adrress: [" << family << "] ip: <"<< *ip << ">" << endl;
 	}
     }
+    cout << "ifaddr: " << ifstruct->ip.sa_data << endl;
     // nacetl jsi zarizeni tak je zase uvolni
     freeifaddrs(allintfs);
     
