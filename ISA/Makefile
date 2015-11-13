@@ -1,13 +1,13 @@
 # Makefile for client/server example
 # see 'man make' for more details
-PROJECT          = sixtunel
+PROJECT          = sixtunnel
 PROJECT_SOURCES  = main.cpp
 
 DEFINES         = 
 
-CFLAGS          =  -g3 -Wall -Wno-unused-function -pthread 
+CFLAGS          =-g3 -Wall -Wextra -Wno-unused-function -pedantic -pthread 
 
-LIBRARIES       = -lpthread #-llibrary_name  
+LIBRARIES       =-lpthread #-llibrary_name  
 
 CC              = g++ -std=c++11
 PROJECT_OBJECTS  = $(PROJECT_SOURCES:.cpp=.o)
