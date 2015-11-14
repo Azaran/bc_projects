@@ -1,0 +1,92 @@
+\documentclass[12pt,a4paper,onecolumn]{article}
+\usepackage[left=2cm,text={17cm,24cm},top=2.5cm]{geometry}
+\usepackage[czech]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage{times}
+\usepackage{setspace}
+\onehalfspacing
+\begin{document}
+\begin{titlepage}
+    \begin{center}
+        \textsc{\Huge Vysoké učení technické v~Brně\\\huge Fakulta informačních technologií}\\
+        \vspace{\stretch{0.382}}\LARGE Síťové aplikace a správa sítí\\
+        \Huge Tunelování protokolem 6in4 se záznamem toků\\
+        \large Zadavatel: Ing. Martin Kmeť\vspace{\stretch{0.618}}\\
+    \end{center}
+    {\Large\today\hfill Vojtěch Večeřa }
+\end{titlepage}
+\tableofcontents
+\newpage
+\section{Úvod}
+Jedním z největších problémů současného internetu je nedostatek IPv4 adres. Tento problém již má
+své řešení a tím je IPv6 adresace. S příchodem IPv6 se ovšem objevuje úplně nový problém, který
+akutně potřebuje řešení a to je společná existence IPv6 a IPv4 na síti a zajištění jejich
+vzájemného propojení. Řešení typu tak zrušíme IPv4 a bude jen IPv6 není bohužel možné a to hlavně
+kvůli hardwarovým zařízením, které si s IPv6 neumí poradit. Taktéž překonfigurování všech
+již vytvořených internetových sítí na IPv6 by nebylo triviální a obecně realizovatelné. Je tedy
+potřeba zajistit vzájemnou kompatibilitu tam, kde je to možné. Jedním z řešeních je využití
+tunelování IPv6 komunikace skrze IPv4.\\
+\indent Aplikace musí umět pracovat s parametry \textit{lan, wan, remote, log} a implementovat
+tunelování protokolem 6in4 na základě RFC 4213 pouze s využitím BSD socketů s použítím pouze
+základních a systémových knihoven jazyků C nebo C++. 
+
+\section{Návrh aplikace}
+Je třeba rozdělit aplikaci na dvě části, které spolu nikterak nekomunikují, k zajištění
+zabalení IPv6 paket do paketu ve tvaru definovaném 6in4 protokolem na jedné straně tunelu a
+zajištění rozbalení paketu a zformování původního IPv6 paketu na straně druhé.\\
+\indent Jako vstup první části aplikace je braná odchycená komunikace na rozhraní definovaném
+parametrem\textit{lan}, které je připojeno do IPv6 sítě. Takto odchycenou komunikaci je potřeba
+zabalit do IPv4 paketu, tedy vytvořit IPv4 hlavičku ve standardní formě definované v sekci 3.5.
+RFC 4213, nastavit v ní adresu cíle na adresu uvedenou v \textit{remote}, vzít přijatý paket bez
+ethernetové hlavičky a připojit ho za takto vytvořenou hlavičku a předat paket
+rozhraní\textit{wan}.\\
+\indent Vstupem druhé části je odchycená komunikace na rozhraní \textit{wan}, které je rozhraním
+specifikovaným jako koncový bod tunelu. Od takto odchycených paketů odstraníme ethernetovou
+hlavičku a IPv4 hlavičku a tento IPv6 paket předáme na rozhraní \textit{lan}.\\
+\indent Výstupy aplikace je výpis na stdin a do logovacího souboru definovaného parametrem
+\textit{log}. Formát obou výpisů je definován zadáním a je identický.
+
+\section{Implementační detaily}
+Pro implementaci aplikace jsem si vybral jazyk C++. K rozdělení aplikace na více paralelně
+fungujících částí lze využít buďto rozdělení na procesy nebo na výpočetní vlákna. Já jsem si v
+tomto případě vybral rozdělení na výpočetní vlákna, kvůli jednodušímu předání společných dat oboum
+vláknům a také kvůli snažšímu zpracování ukončovacího signálu SIGINT.\\
+\indent Jak již jsem zmínil aplikace má pro komunikaci využívat pouze BSD sockety. Každá část
+aplikace má dva sockety. Jeden je pro naslouchání na rozhraní a druhý pro odesílání zpracovaných
+přijatých dat. Od poslouchavaci je nastaven jako \textit{SOCK\_DGRAM} \textbar
+\textit{ SOCK\_NONBLOCK} a je svázán s rozhraní, na kterém má poslouchat pomocí funkce
+\textit{bind()}, kdežto odesílací jako \textit{SOCK\_RAW}.\\
+\indent Pro samotné čtení dat ze socketu jsem použil funkci \textit{recvfrom()}, která při
+nalezení čekajícího paketu ve frontě socketu načte tento paket do bufferu. Pokud je fronta prázdná
+tak se daná výpočetní vlákno na 50ms uspí. Toto je pouze kvůli snížení počtu dotazů na socket,
+které by mohly dopadnout stejně, tedy nebyla by načtena žádná data do bufferu.\\
+\indent Odesílání dat je realizováno funkcí \textit{sendto()}.
+
+\section{Informace o aplikaci}
+Aplikace se jmenuje \textit{sixtunnel}. Pro své úspěšné spuštění potřebuje chod čtyři parametry a
+to následující:
+\begin{itemize}
+    \item \textit{\--\--lan} -- definuje rozhraní, kterým je stanice připojena do IPv6 sítě
+    \item \textit{\--\--wan} -- definuje royhraní, kterým je stanice připojena do IPV4 sítě
+    \item \textit{\--\--remote} -- definuje IP adresu druhého konce tunelu, na kterou se mají
+        zabalená data posílat
+    \item \textit{\--\--log} -- definuje cestu k logovacímu souboru
+\end{itemize}
+\indent Bezpečnostní politika systémů neumožňuje jen tak někomu získávat přímý přístup k libovolné
+komunikaci na rozhraních, které systém obsluhuje a je tedy zapotřebí buďto nastavit uživateli tato
+speciální práva nebo, jako i v případě testovací stanice, spouštět aplikace s právy administrátora
+\textit{sudo}.
+
+\section{Použití}
+Spuštění aplikace by mělo vypadat podobně jako níže uvedený příklad spouštění. Konkrétní hodnoty
+parametrů ovšem záleží na topologii sítě, do které jsou stanice připojeny a na dostupných
+rozhraních na stanici, kde má aplikace běžet.
+\indent Pro dosáhnutí požadované funkcionality musíme aplikaci spusti na dvouch stanicích,
+které budou sloužit jako koncové body tunelu a které se jsou připojeny do obou dvou typů
+sítí. Příklad spouštění (hodnoty jsou pouze demonstrační):\\ \\
+\textbf{Stanice1} \\
+\textit{sudo ./sixtunnel \--\--lan eth0 \--\--wan eth1 \--\--remote 192.168.57.101 \--\--log gw1\_sixtunnel.log}\\
+\textbf{Stanice2} \\
+\textit{sudo ./sixtunnel \--\--lan eth0 \--\--wan eth1 \--\--remote 192.168.57.100 \--\--log gw2\_sixtunnel.log}
+
+\end{document}

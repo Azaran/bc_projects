@@ -15,6 +15,7 @@ INCLUDES        = #-I.
 LIBDIRS         = 
 LDFLAGS         = $(LIBDIRS) $(LIBRARIES)
 
+DOC		= manual
 ###########################################
 
 .SUFFIXES: .cpp .o
@@ -31,6 +32,15 @@ rebuild:	clean all
 $(PROJECT):	$(PROJECT_OBJECTS)
 		$(CC) $(PROJECT_OBJECTS) $(LDFLAGS) -o $@
 
+###########################################
+
+doc:		$(DOC)
+$(DOC):$(DOC).tex
+	latex $(DOC).tex
+	latex $(DOC).tex
+	dvips $(DOC).dvi
+	ps2pdf -sPAPERSIZE=a4 $(DOC).ps $(DOC).pdf
+	rm $(DOC).aux $(DOC).log $(DOC).ps $(DOC).dvi
 
 ###########################################
 
