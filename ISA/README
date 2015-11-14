@@ -1,0 +1,47 @@
+############################################################
+
+Informace o aplikaci
+
+Aplikace se jmenuje sixtunnel. Pro své úspěšné spuštění potřebuje chod čtyři parametry a
+to následující:
+    --lan    -- definuje rozhraní, kterým je stanice připojena do IPv6 sítě
+    --wan    -- definuje royhraní, kterým je stanice připojena do IPV4 sítě
+    --remote -- definuje IP adresu druhého konce tunelu, na kterou se mají zabalená data posílat
+    --log    -- definuje cestu k logovacímu souboru
+
+Bezpečnostní politika systémů neumožňuje jen tak někomu získávat přímý přístup k libovolné
+komunikaci na rozhraních, které systém obsluhuje a je tedy zapotřebí buďto nastavit uživateli tato
+speciální práva nebo, jako i v případě testovací stanice, spouštět aplikace s právy administrátora
+'sudo'.
+
+############################################################
+
+Použití
+
+Spuštění aplikace by mělo vypadat podobně jako níže uvedený příklad spouštění. Konkrétní hodnoty
+parametrů ovšem záleží na topologii sítě, do které jsou stanice připojeny a na dostupných
+rozhraních na stanici, kde má aplikace běžet.
+
+Pro dosáhnutí požadované funkcionality musíme aplikaci spusti na dvouch stanicích,
+které budou sloužit jako koncové body tunelu a které se jsou připojeny do obou dvou typů
+sítí. Příklad spouštění (hodnoty jsou pouze demonstrační):
+
+Stanice1
+sudo ./sixtunnel --lan eth0 --wan eth1 --remote 192.168.57.101 --log gw1_sixtunnel.log
+
+Stanice2
+sudo ./sixtunnel --lan eth0 --wan eth1 --remote 192.168.57.100 --log gw2_sixtunnel.log}
+
+###############################################################
+
+Seznam souboru:
+
+    Makefile
+    main.cpp
+    manual.pdf
+    README
+
+
+Omenzeni oproti zadani:
+
+Zpracovana rozsireni:
