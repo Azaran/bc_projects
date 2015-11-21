@@ -1,7 +1,7 @@
 # Makefile for client/server example
 # see 'man make' for more details
 PROJECT          = sixtunnel
-PROJECT_SOURCES  = main.cpp
+PROJECT_SOURCES  = sixtunnel.cpp 
 
 DEFINES         = 
 
@@ -9,7 +9,7 @@ CFLAGS          =-g3 -Wall -Wextra -Wno-unused-function -pedantic -pthread
 
 LIBRARIES       =-lpthread #-llibrary_name  
 
-CC              = g++ -std=c++11
+CC              = g++ -std=c++0x
 PROJECT_OBJECTS  = $(PROJECT_SOURCES:.cpp=.o)
 INCLUDES        = #-I.
 LIBDIRS         = 
