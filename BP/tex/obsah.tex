@@ -13,14 +13,14 @@ zvolení správného hesla má vliv je¹tì vìt¹í. Pokud pou¾ijete slabou ¹ifru a siln
 se k Va¹im datù dostane je o dost men¹í ne¾ kdy¾ to udìláte naopak.\\ 
 \indent Èasto chceme sdílet nebo zabezpeèit více jak jeden soubor s informacemi. Obecnì se pro
 spojení více souborù, rùzného typu, do jednoho celku pou¾ívají archivy. Jedním z nejroz¹íøenìj¹ích
-typù souborových archivù jsou formáty ZIP a 7zip. \\
+typù souborových archivù jsou formáty .ZIP a .7z.\\
 \indent V této práci se pøevá¾nì zabývám analýzou pou¾ívaných metod zabezpeèení a ¹ifrovacích
 algoritmù u tìchto formátù a následnì získáváním hesel k takto zabezpeèeným souborùm. Výsledky
 tìchto analýz jsou pou¾ity pro návrh roz¹iøujících modulù nástroje {\it Wrathion}. Práce ale také obsahuje pøedstavení technologie OpenCL. 
 
 \chapter{Nástroj Wrathion}
 Jedná se o nástroj vytvoøený Janem Shmiedem v roce 2014 v rámci jeho diplomové
-práci\cite{Schmied}. Nástroj byl vytvoøen pro pou¾ití v projektu {\it Moderní prostøedky pro 
+práci~\cite{Schmied}. Nástroj byl vytvoøen pro pou¾ití v projektu {\it Moderní prostøedky pro 
 boj s kybernetickou kriminalitou na Internetu nové generace, MV, VG20102015022}.\\
 \section{Hlavní èásti Wrathionu}
 Nástroj slou¾í ke obnovování hesel pomocí brute-force útokù na tato hesla. Nástroj má dvì hlavní
@@ -50,27 +50,43 @@ Druhou èástí jsou samotné crackery bì¾ící na:
     pøímo vygenerují, èím¾ zvý¹íme rychlost celého programu
 \end{itemize}
 
-\section{Moduly}
+\subsection{Moduly}
 Nástroj je navr¾en s velkým dùrazem na modularitu. V souèasné dobì obsahuje moduly pro práci s DOC
 dokument, PDF dokumenty a ZIP archivù a to s podporou rùzných ¹ifrovacích algoritmù a
 bezpeènostních revizí (napø. PDF revize 1-5).
 
-\subsection{Modul ZIP}
+\subsubsection{Modul ZIP}
 V této práci nás nejvíce zajímá modul ZIP. Ten v pùvodním návrhu obsahuje pouze ¹ifrování PKZIP,
 AES-128, AES-192, AES-256, co¾ zanechává prostor pro implementaci dal¹í podporovaných ¹ifrování
-formátem ZIP. Napøíklad:
-{\it \begin{itemize}
-    \item DES, 3DES(112-bit and 168-bit)
-    \item RC2 (40-bit, 64-bit and 168-bit)
-    \item RC4 (40-bit, 64-bit and 168-bit)
-    \item CAST5 (128-bit)
-    \item IDEA
-\end{itemize} }
+formátem ZIP. 
 
-\section{Popis formátù ZIP a 7zip}
-\subsection{Formát ZIP}
-\subsection{Formát 7zip}
-\subsection{Srovnání}
+\chapter{Popis formátù .ZIP a .7z}
+\section{Formát .ZIP}
+Jedná se o jeden z prvních formátù souborových archivù, který podporoval kompresy dat. V roce 1989
+vytvoøil Phil Katz program PKZIP v rámci nìho¾ byl pøedstaven samotnýho nový formát .ZIP.
+Specifikace formátu .ZIP byla publikován pod veøejnou doménou. Tímto krokem pomohl
+formátu se stát celosvìtovým otevøeným standardem~\cite{PKWARE:2015}. V roce 2015 byl formát, ve své
+specifikaci 6.3.3 z roku 2012, pøijat Mezinárodní orgranizací pro normalizaci (ISO) a Mezinárodní
+elektrotechnickou komísí (IEC) jako¾to standard definovaný dokumentem ISO/IEC
+21320-1:2015~\cite{ISOIEC:2015}.\\
+\indent Formát podporuje velké mno¾ství rùzný komprimaèních algoritmù: Store(bez komprese),
+UnShrinking, Expanding, Imploding, Tokenizing, Deflating, Enhanced Deflating, BZIP2, LZMA, WavPack
+a PPMd~\cite{PKWARE:2014}.\\ 
+\indent Obdobnì je to i s podporou rùzných ¹ifrovacích algoritmù:
+\begin{itemize}
+    \item {\it PKWARE ¹ifrování} -- prvotní ¹ifrování 
+    \item {\it DES, 3DES(112-bit and 168-bit)} -- podporováno od verze 5.0 z roku 2002
+    \item {\it RC2 (40-bit, 64-bit a 168-bit)} -- podporováno od verze 5.0 z roku 2002
+    \item {\it RC4 (40-bit, 64-bit a 168-bit)} -- podporováno od verze 5.0 z roku 2002
+    \item {\it AES (128-bit, 192-bit a 256-bit)} -- podporováno od verze 5.2 z roku 2003
+\end{itemize}
+
+\subsection{Struktura souboru}
+
+
+\section{Formát .7z}
+\subsection{Struktura souboru}
+\section{Srovnání}
 
 
 \section{Návrh modulu}
