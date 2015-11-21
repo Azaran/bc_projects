@@ -1,3 +1,10 @@
+/**
+ *  Soubor:  sixtunnel.c
+ *  Datum:   21.11.2015
+ *  Autor:   Vojtech Vecera, xvecer18@stud.fit.vutbr.cz
+ *  Projekt: Tunelovani protokolem 6in4 so záznamem toku
+ *  Popis:   Program umoznujici zabaleni a rozbaleni IPv6 packetu IPv4 hlavickou.
+ */
 #include "sixtunnel.h"
 
 int main (int argc, char **argv)
@@ -8,7 +15,6 @@ int main (int argc, char **argv)
 
     checkParams(argc, argv, &lan, &wan, &rmt, &log);  
     
-    openLogFile(logfile, log);
     lan_ip = new ifnameaddr;
     wan_ip = new ifnameaddr;
     wan_ip->name = new char[strlen(wan)+1];
@@ -19,6 +25,8 @@ int main (int argc, char **argv)
 
     getIntfFromName(wan_ip, INET_ADDRSTRLEN);
     getIntfFromName(lan_ip, INET6_ADDRSTRLEN);
+    
+    openLogFile(logfile, log);
    
 
     thread encap(catchTraffic, &rmt, true);	    // LAN => WAN
@@ -75,7 +83,7 @@ void catchTraffic(char **rmt, bool mode)
 	
 	if (bind(insck, (struct sockaddr *)&ifbind, sizeof(ifbind)) == -1)
 	{  
-	    perror("setsockopt() failed: ");
+	    perror("bind() failed: ");
 	    exit(errno);
 	}
 

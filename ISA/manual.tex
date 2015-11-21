@@ -26,7 +26,7 @@ kvůli hardwarovým zařízením, které si s IPv6 neumí poradit. Taktéž pře
 již vytvořených internetových sítí na IPv6 by nebylo triviální a obecně realizovatelné. Je tedy
 potřeba zajistit vzájemnou kompatibilitu tam, kde je to možné. Jedním z řešeních je využití
 tunelování IPv6 komunikace skrze IPv4.\\
-\indent Aplikace musí umět pracovat s parametry \textit{lan, wan, remote, log} a implementovat
+\indent Aplikace musí umět pracovat s parametry {\it lan, wan, remote, log} a implementovat
 tunelování protokolem 6in4 na základě RFC 4213 pouze s využitím BSD socketů s použítím pouze
 základních a systémových knihoven jazyků C nebo C++. 
 
@@ -35,16 +35,16 @@ Je třeba rozdělit aplikaci na dvě části, které spolu nikterak nekomunikuj�
 zabalení IPv6 paket do paketu ve tvaru definovaném 6in4 protokolem na jedné straně tunelu a
 zajištění rozbalení paketu a zformování původního IPv6 paketu na straně druhé.\\
 \indent Jako vstup první části aplikace je braná odchycená komunikace na rozhraní definovaném
-parametrem\textit{lan}, které je připojeno do IPv6 sítě. Takto odchycenou komunikaci je potřeba
+parametrem{\it lan}, které je připojeno do IPv6 sítě. Takto odchycenou komunikaci je potřeba
 zabalit do IPv4 paketu, tedy vytvořit IPv4 hlavičku ve standardní formě definované v sekci 3.5.
-RFC 4213, nastavit v ní adresu cíle na adresu uvedenou v \textit{remote}, vzít přijatý paket bez
+RFC 4213, nastavit v ní adresu cíle na adresu uvedenou v {\it remote}, vzít přijatý paket bez
 ethernetové hlavičky a připojit ho za takto vytvořenou hlavičku a předat paket
-rozhraní\textit{wan}.\\
-\indent Vstupem druhé části je odchycená komunikace na rozhraní \textit{wan}, které je rozhraním
+rozhraní{\it wan}.\\
+\indent Vstupem druhé části je odchycená komunikace na rozhraní {\it wan}, které je rozhraním
 specifikovaným jako koncový bod tunelu. Od takto odchycených paketů odstraníme ethernetovou
-hlavičku a IPv4 hlavičku a tento IPv6 paket předáme na rozhraní \textit{lan}.\\
+hlavičku a IPv4 hlavičku a tento IPv6 paket předáme na rozhraní {\it lan}.\\
 \indent Výstupy aplikace je výpis na stdin a do logovacího souboru definovaného parametrem
-\textit{log}. Formát obou výpisů je definován zadáním a je identický.
+{\it log}. Formát obou výpisů je definován zadáním a je identický.
 
 \section{Implementační detaily}
 Pro implementaci aplikace jsem si vybral jazyk C++. K rozdělení aplikace na více paralelně
@@ -53,29 +53,39 @@ tomto případě vybral rozdělení na výpočetní vlákna, kvůli jednoduším
 vláknům a také kvůli snažšímu zpracování ukončovacího signálu SIGINT.\\
 \indent Jak již jsem zmínil aplikace má pro komunikaci využívat pouze BSD sockety. Každá část
 aplikace má dva sockety. Jeden je pro naslouchání na rozhraní a druhý pro odesílání zpracovaných
-přijatých dat. Od poslouchavaci je nastaven jako \textit{SOCK\_DGRAM} \textbar
-\textit{ SOCK\_NONBLOCK} a je svázán s rozhraní, na kterém má poslouchat pomocí funkce
-\textit{bind()}, kdežto odesílací jako \textit{SOCK\_RAW}.\\
-\indent Pro samotné čtení dat ze socketu jsem použil funkci \textit{recvfrom()}, která při
+přijatých dat. Odposlouchávací je nastaven jako {\it SOCK\_RAW} \textbar {\it 
+SOCK\_NONBLOCK} a je svázán s rozhraní, na kterém má poslouchat pomocí funkce {\it bind()}. Pro
+odesílání jsem použil {\it SOCK\_RAW} v režimech {\it AF\_INET} a {\it AF\_INET6} podle toho
+jestli posíláme do IPv4 nebo IPv6 sítě.\\
+\indent Pro samotné čtení dat ze socketu jsem použil funkci {\it recvfrom()}, která při
 nalezení čekajícího paketu ve frontě socketu načte tento paket do bufferu. Pokud je fronta prázdná
 tak se daná výpočetní vlákno na 50ms uspí. Toto je pouze kvůli snížení počtu dotazů na socket,
 které by mohly dopadnout stejně, tedy nebyla by načtena žádná data do bufferu.\\
-\indent Odesílání dat je realizováno funkcí \textit{sendto()}.
+\indent Odesílání dat je realizováno funkcí {\it sendto()}, které předávám buffer s nastaveným
+packetem (od síťové vrstvy výše). Generování ethernetové hlavičky nechávám na kernelu.
 
 \section{Informace o aplikaci}
-Aplikace se jmenuje \textit{sixtunnel}. Pro své úspěšné spuštění potřebuje chod čtyři parametry a
+Aplikace se jmenuje {\it sixtunnel}. Pro své úspěšné spuštění potřebuje chod čtyři parametry a
 to následující:
 \begin{itemize}
-    \item \textit{\--\--lan} -- definuje rozhraní, kterým je stanice připojena do IPv6 sítě
-    \item \textit{\--\--wan} -- definuje royhraní, kterým je stanice připojena do IPV4 sítě
-    \item \textit{\--\--remote} -- definuje IP adresu druhého konce tunelu, na kterou se mají
+    \item {\it \--\--lan} -- definuje rozhraní, kterým je stanice připojena do IPv6 sítě
+    \item {\it \--\--wan} -- definuje rozhraní, kterým je stanice připojena do IPV4 sítě
+    \item {\it \--\--remote} -- definuje IP adresu druhého konce tunelu, na kterou se mají
         zabalená data posílat
-    \item \textit{\--\--log} -- definuje cestu k logovacímu souboru
+    \item {\it \--\--log} -- definuje cestu k logovacímu souboru
 \end{itemize}
 \indent Bezpečnostní politika systémů neumožňuje jen tak někomu získávat přímý přístup k libovolné
 komunikaci na rozhraních, které systém obsluhuje a je tedy zapotřebí buďto nastavit uživateli tato
 speciální práva nebo, jako i v případě testovací stanice, spouštět aplikace s právy administrátora
-\textit{sudo}.
+{\it sudo}.
+
+\subsection{Metrika programu}
+\begin{itemize}
+    \item Počet funkcí: 14
+    \item Počet řádků: 581 + 81 = 662
+    \item Staticka data: 30473 Bajtů 
+    \item Velikost binárky: 307987 Bajtů = 308,0 kB
+\end{itemize}
 
 \section{Použití}
 Spuštění aplikace by mělo vypadat podobně jako níže uvedený příklad spouštění. Konkrétní hodnoty
@@ -85,8 +95,10 @@ rozhraních na stanici, kde má aplikace běžet.
 které budou sloužit jako koncové body tunelu a které se jsou připojeny do obou dvou typů
 sítí. Příklad spouštění (hodnoty jsou pouze demonstrační):\\ \\
 \textbf{Stanice1} \\
-\textit{sudo ./sixtunnel \--\--lan eth0 \--\--wan eth1 \--\--remote 192.168.57.101 \--\--log gw1\_sixtunnel.log}\\
+{\it sudo ./sixtunnel \--\--lan eth0 \--\--wan eth1 \--\--remote 192.168.57.101 \--\--log gw1\_sixtunnel.log}\\
 \textbf{Stanice2} \\
-\textit{sudo ./sixtunnel \--\--lan eth0 \--\--wan eth1 \--\--remote 192.168.57.100 \--\--log gw2\_sixtunnel.log}
+{\it sudo ./sixtunnel \--\--lan eth0 \--\--wan eth1 \--\--remote 192.168.57.100 \--\--log gw2\_sixtunnel.log}
 
+
+\section{Literatura}
 \end{document}

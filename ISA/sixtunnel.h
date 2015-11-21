@@ -1,3 +1,10 @@
+/**
+ *  Soubor:  sixtunnel.h
+ *  Datum:   21.11.2015
+ *  Autor:   Vojtech Vecera, xvecer18@stud.fit.vutbr.cz
+ *  Projekt: Tunelovani protokolem 6in4 so záznamem toku
+ *  Popis:   Program umoznujici zabaleni a rozbaleni IPv6 packetu IPv4 hlavickou.
+ */
 #ifndef SIXTUNNEL_H
 #define SIXTUNNEL_H
 
