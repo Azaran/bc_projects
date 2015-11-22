@@ -76,6 +76,4 @@ void checkParams(int argc, char **argv, char **lan, char **wan, char **rmt, char
 void openLogFile(std::ofstream& logfile, char *file);
 void handleSignal(int signum);
 
-bool isItForMe(unsigned char **buf, bool mode);
-
 #endif /** SIXTUNNEL_H */

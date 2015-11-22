@@ -46,5 +46,11 @@ $(DOC):$(DOC).tex
 
 ###########################################
 
+pack: clean
+	tar -cf xvecer18.tar sixtunnel.cpp sixtunnel.h manual.pdf README Makefile
+
+
+###########################################
+
 clean:
 	rm -fr core* *~ $(PROJECT_OBJECTS) $(PROJECT) .make.state .sb

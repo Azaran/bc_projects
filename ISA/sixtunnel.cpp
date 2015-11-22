@@ -148,8 +148,7 @@ void catchTraffic(char **rmt, bool mode)
 	else if (rcv_len > 0)	
 	{
 	    rmEtherHeader(&buf, rcv_len);
-	//    if (!isItForMe(&buf, mode))
-		sendToTnl(sendsck, &buf, rcv_len-sizeof(ethhdr), rmt, mode);
+	    sendToTnl(sendsck, &buf, rcv_len-sizeof(ethhdr), rmt, mode);
 	}
     }
     
@@ -160,34 +159,6 @@ void catchTraffic(char **rmt, bool mode)
     setsockopt(sendsck, SOL_SOCKET, SO_REUSEADDR, (void*) &optVal, optLen);
     close(insck);
     close(sendsck);
-}
-
-/**
- *  Kontrola jestli paket neni urceny pro jedno moje prijimaci rozhrani
- *      - porovnava adresu cile z packetu s adresou na ktery prijima packet
- */
-bool isItForMe(unsigned char **buf, bool mode)
-{
-    if (mode)
-    {
-	char addr[INET6_ADDRSTRLEN];
-	struct ip6_hdr *ip6;
-	ip6 = (struct ip6_hdr *)*buf;
-	inet_ntop(AF_INET6,&(ip6->ip6_dst), addr, INET6_ADDRSTRLEN);
-	if (strcmp(lan_ip->ipr, addr) == 0)
-	    return true;
-    }
-    else
-    {
-	char addr[INET_ADDRSTRLEN];
-	struct iphdr *ip;
-	ip = (struct iphdr *)*buf;
-	inet_ntop(AF_INET,&(ip->daddr), addr, INET_ADDRSTRLEN);
-	
-        if ((strcmp(wan_ip->ipr, addr) == 0) && ((unsigned int)ip->protocol != 41))     // 41 => IPv6 protocol
-	    return true;
-    }
-    return false;   // defaultne nejde jen na interface
 }
 
 /**
@@ -598,4 +569,3 @@ void handleSignal(int signum)
     if (signum == SIGINT)   // kvuli pouziti signum aby kompilator nekricel
         sig_int = true;
 }
-
