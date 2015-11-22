@@ -30,18 +30,22 @@ Stanice1
 sudo ./sixtunnel --lan eth0 --wan eth1 --remote 192.168.57.101 --log gw1_sixtunnel.log
 
 Stanice2
-sudo ./sixtunnel --lan eth0 --wan eth1 --remote 192.168.57.100 --log gw2_sixtunnel.log}
+sudo ./sixtunnel --lan eth0 --wan eth1 --remote 192.168.57.100 --log gw2_sixtunnel.log
 
 ###############################################################
 
 Seznam souboru:
 
     Makefile
-    main.cpp
+    sixtunnel.cpp
+    sixtunnel.h
     manual.pdf
     README
 
 
-Omenzeni oproti zadani:
-
+Omezeni oproti zadani:
+    Pri testovanni se v tunelu objevovaly ICMP Destination Unreachable (Protocol Unreachable), v
+    lokalnich IPv6 sitich se generovalo velkem mnozstvi IPv6 packetu, ktere ale nesly do tunelu
+    takze neovlivnuji vystupni log
 Zpracovana rozsireni:
+    ZADNA

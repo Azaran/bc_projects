@@ -507,6 +507,9 @@ void print_ip6_header(unsigned char *buf)
  */
 void print_ip4_header(unsigned char *buf, int Size)
 {
+    // inspirovano:
+    //          http://www.binarytides.com/packet-sniffer-code-c-linux/
+    
     // nastaveni struktur
     struct iphdr *iph = (struct iphdr *)buf;
     struct sockaddr_in source,dest; 

@@ -36,11 +36,13 @@ $(PROJECT):	$(PROJECT_OBJECTS)
 
 doc:		$(DOC)
 $(DOC):$(DOC).tex
-	latex $(DOC).tex
-	latex $(DOC).tex
+	latex $(DOC)
+	bibtex $(DOC) 
+	latex $(DOC)
+	latex $(DOC)
 	dvips $(DOC).dvi
 	ps2pdf -sPAPERSIZE=a4 $(DOC).ps $(DOC).pdf
-	rm $(DOC).aux $(DOC).log $(DOC).ps $(DOC).dvi
+	ls | grep -v 'manual.pdf' | grep -v 'manual.tex' | grep -Z manual | xargs rm
 
 ###########################################
 
