@@ -16,9 +16,11 @@ spojení více souborù, rùzného typu, do jednoho celku pou¾ívají archivy. Jedním z
 typù souborových archivù jsou formáty .ZIP a .7z.\\
 \indent V této práci se pøevá¾nì zabývám analýzou pou¾ívaných metod zabezpeèení a ¹ifrovacích
 algoritmù u tìchto formátù a následnì získáváním hesel k takto zabezpeèeným souborùm. Výsledky
-tìchto analýz jsou pou¾ity pro návrh roz¹iøujících modulù nástroje {\it Wrathion}. Práce ale také obsahuje pøedstavení technologie OpenCL. 
+tìchto analýz jsou pou¾ity pro návrh roz¹iøujících modulù nástroje {\it Wrathion}. Práce se také
+zabývá pøibli¾ením paralelismu a problémù s ním spojených a také úvedením do standardu a
+frameworku OpenCL.
 
-\chapter{Úvod do OpenCL}
+\chapter{Úvod do paralelismu}
 V dne¹ní dobì se v¹echny architektury výpoèetních jednotek sna¾í poskytnout paralelní zpracování
 úloh. Jedná se o cestu otevírající dveøe k znatelnému zvý¹ení výkonu takovýchto jednotek. Dnes je
 ji¾ normální, ¾e máme více--jádrové procesory, které vyu¾ívají paralelismu. Ov¹em jedním z
@@ -35,13 +37,13 @@ závislé na platformì, výrobci nebo hardwaru.\\
 \indent Takovýto vývoj obecnì pou¾itelných aplikací by byl nereálný, proto¾e bychom museli
 aplikaci vyvynout ve desítkách ne--li stovkách verzí pro rùzné platformy, výrobce atd. Proto se
 vyskytla potøeba vytvoøit nìjaké univerzální rozhraní. Takovýmto rozhraním je napø.: OpenCL.
-\section{OpenCL}
+\section{OpenCL\cite{Khronos:2015}\cite{AMD:2011}}
 Jedná se o otevøený bezplatný standard urèený k zjednodu¹ení a zefektivnìní programování
 paralelních aplikací na CPU, GPU a dal¹ích faralelních zaøízeních. OpenCL vyu¾ívá rozhraní, které
 pracuje na úrovni velmi blízké samotným fyzickým souèástkám, èím¾ dosohuje vysoké efektivity. Nad
 tímto rozhraním je pak vytvoøena vrstva pro paralelní výpoèty, jen¾ obsahuje pracovní prostøedky
 nezávislé na platformì. Hlavní síla OpenCL je zkombinování paralelních výpoètù aplikace
-se zøetìzeným rendrováním grafických prvkù\cite{Khronos:2015}.\\
+se zøetìzeným rendrováním grafických prvkù.\\
 Standard:
 \begin{itemize}
     \item podporuje datovì i úlohovì zalo¾ené paralelní programovací modely
@@ -49,6 +51,7 @@ Standard:
     \item definuje konfiguraèní profil pro pøenosná zaøízení a vestavìné systémy
     \item zaji¹»uje efektivní souèinnost s OpenGL, OpenGL SE a dal¹ími grafickými rozhraními
 \end{itemize}
+
 Nejedná se pouze o standard pro psaní paralelních aplikací, ale o i framework, který
 je na tomto standardu postaven. Framework OpenCL ahrnuje programovací jazyk, rozhraní pro
 programování aplikací (API), knihovny a runtimový systém pro ulehèení vývoje.
@@ -60,6 +63,7 @@ Architektura OpenCL architektury lze popsat hieararchyckým modelem následovnì:
     \item Model pamìti
     \item Programovací model
 \end{itemize}
+
 \subsubsection{Model platformy}
 Tento model se kládá z hostitele a jednoho nebo více OpenCL zaøízení, která je rozdìleno na jedno
 nebo více výpoèetních jednotek, které jsou dále dìleny na jedno nebo vice výpoèetních prvkù, kde
@@ -82,16 +86,54 @@ kterém bude kernel provádìt operace. Prostøedí obsahuje tyto polo¾ky:
     \item Objekty programu
     \item Objekty pamìti
 \end{itemize}
+
 \indent Hostitel se zaøízením komunikuje pomocí fronty pøíkazù, které se na zaøízení rozøadí podle
 typu operace. Jednotlivé pøíkazy ve frontì se provádí relativnì k ostatním pøíkazùm. Poøadí
 provádìní je definováno tìmito modely:
 \begin{itemize}
-	\item In-order -- pøíkazy se provádí a mají efekt tak jak do fronty pøisly
-	\item Out-of-order -- poøadí provedení pøíkazù je omezeno pouze explicitnì uvedenými
+    \item {\it In-order} -- pøíkazy se provádí a mají efekt tak jak do fronty pøisly
+    \item {\it Out-of-order} -- poøadí provedení pøíkazù je omezeno pouze explicitnì uvedenými
 	    synchronizaèními body nebo explicitnì definovanými závislostmi na událostech
 \end{itemize}
--- pokraèuj OpenCL strana 29, deleni na instance kernelu atd.
-\subsection{OpenCl C}
+
+\subsubsection{Model pamìti}
+Práce s pamìtí v OpenCL se znaènì li¹í od klasického pøístupu, který známe ze standardních
+aplikací urèených pro bìh pouze na CPU. Pamì»ový model OpenCL popisuje obsah, strukturu a chování
+pamìti pou¾ívané v platformì vytvoøené tímto frameworkem.
+\indent Pro ka¾dou aplikaci je tøeba pøesnì definovat jak budou jednotlivé pamìti v pamìti vypadat.
+Model dìlíme na ètyøi èásti:
+\begin{itemize}
+    \item {\it Oblasti pamìti} -- definuje se kterými oblastmi pamìti hostitel a zaøízení ve
+	stejném kontextu mohou pracovat
+    \item {\it Objekty pamìti} -- jsou definované v OpenCL API, o správu se stará hostitel i
+	zaøízení
+    \item {\it Sdílenou virtuální pamì»} -- jedná se o virtuální adresový prostor pøístupný obìma
+	èástem aplikace
+    \item {\it Model konzistence} -- definuje pravidla pro oblasti pamìti, které jsou pou¾ívané
+	více jednotkami zaráz a zaruèuje, ¾e je dodr¾eno poøadí operací s pamìtí a ¾e jsou data po
+	celou dobu validní. Takté¾ definuje synchronizaci nad tìmito oblastmi.
+\end{itemize}
+
+\indent Pro nás je nejdùle¾itìj¹í pochopit jak je pamì» strukturována a jak na sebe navazují
+jednotlivé oblasti. Pamì» je do oblastí rozdìlena takto:
+\begin{itemize}
+    \item Pamì» hostitele (RAM apod.)
+    \item Pamì» zaøízení
+    \begin{itemize}
+	\item {\it Globální pamì»} -- oblast je pøístupná pro ètení i zápis v¹em jednotkám v
+	    kontextu nezávisle na zaøízení
+	\item {\it Pamì» konstant} -- pøed zahájením výpoètu je alokovaná a inicializována
+	    hostitelem a v prùbìhu výpoètu se tato oblast nemìní výpoètu
+	\item {\it Lokální pamì»} -- oblast je pøístupná v¹em pracovním polo¾kám ve
+	    stejné pracovní skupinì
+	\item {\it Soukromá pamì»} -- oblast je pøístupná pouze jedné pracovní polo¾ce 
+    \end{itemize}
+\end{itemize}
+------- obrazek struktury pameti ------------------------
+\subsubsection{Programovací model}
+Tento model lze také nazvat jako OpenCL Framework. Framework se skládá ze tøech komponentù. Zde za
+zmínkud stojí OpenCL kompilátor. Ten podporuje pokroèilý jazyk SPIR-V a jazyk OpenCL C. Dal¹í
+jazyky mohou být podporovány nìkterými implementacemi kompilátoru.
 
 \chapter{Nástroj Wrathion}
 Jedná se o nástroj vytvoøený Janem Shmiedem v roce 2014 v rámci jeho diplomové
@@ -105,16 +147,21 @@ První jsou generátory hesel pro útoky. Jednáse se esenciální funkcionalitu. Bez
 vygenerovaných hesel nemù¾eme na útoky vùbec myslet. V nástroji jsou momentálnì implementovány tøi
 typ generátorù:
 \begin{itemize}
-    \item {\it Brute-force} -- postupnì generuje v¹echny mo¾né permutace ze zadaných znakù.
-    \item {\it Rule-based} -- velmi podobný pøedchozí variantì ov¹em umo¾òuje specifikovat rùzná podpùrná
-    pravidla pro generování hesel. Napøíklad, ¾e má být první písmeno velké, druhé má být 'a' a
-    ¾e poslední 2 znaky jsou èíslice. Toto umo¾òuje zù¾ení poètu permutací a tedy sni¾eje èas
-    potøebný k vygenerování v¹ech jejich variant.
-\item {\it Dictionary} -- slovníkový generátor, vyu¾ívá externí soubory s èasto pou¾ívanými hesly.
+    \item {\it Brute-force} -- postupnì generuje v¹echny mo¾né permutace ze zadaných znakù
+    \item {\it Rule-based} -- velmi podobný pøedchozí variantì ov¹em umo¾òuje specifikovat rùzná
+	podpùrná pravidla pro generování hesel. Napøíklad, ¾e má být první písmeno velké, druhé má
+	být 'a' a ¾e poslední 2 znaky jsou èíslice. Toto umo¾òuje zù¾ení poètu permutací a tedy
+	sni¾uje èas potøebný k vygenerování v¹ech jejich variant (tento typ generátoru je vyvýjen v
+	rámci jiné bakaláøské  práce).
+    \item {\it Unicode} -- jedná o jistou formu rule-based generátoru ov¹em v tomto pøípadì je
+	pouze nastavena vstupní abeceda na v¹echny Unicode znaky a znich jsou generovány mo¾né
+	permutace hesel
+    \item {\it Dictionary} -- slovníkový generátor, vyu¾ívá externí soubory s èasto pou¾ívanými
+	hesly
+\end{itemize}
 
 Nejèastìji pou¾ívaným generátor je brute-force, který je ov¹em výpoèetnì nároèný ov¹em vhodný
 pro paralelizaci, proto je pøíhodnì implementován i jako program bì¾ící na GPU.
-\end{itemize}
 \subsection{Crackery}
 Druhou èástí jsou samotné crackery bì¾ící na:
 \begin{itemize}
