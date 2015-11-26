@@ -18,9 +18,84 @@ typù souborových archivù jsou formáty .ZIP a .7z.\\
 algoritmù u tìchto formátù a následnì získáváním hesel k takto zabezpeèeným souborùm. Výsledky
 tìchto analýz jsou pou¾ity pro návrh roz¹iøujících modulù nástroje {\it Wrathion}. Práce ale také obsahuje pøedstavení technologie OpenCL. 
 
+\chapter{Úvod do OpenCL}
+V dne¹ní dobì se v¹echny architektury výpoèetních jednotek sna¾í poskytnout paralelní zpracování
+úloh. Jedná se o cestu otevírající dveøe k znatelnému zvý¹ení výkonu takovýchto jednotek. Dnes je
+ji¾ normální, ¾e máme více--jádrové procesory, které vyu¾ívají paralelismu. Ov¹em jedním z
+hlavních pøedstavitelù toho trendu jsou grafické výpoèetní èipy. Tyto fakta vyús»ují v potøebu
+umìt s takovýmito zaøízeními komunikovat a programovat je za úèelem vyu¾ití celého jejich
+potenciálu.\\
+\indent Programování aplikace vyu¾ívající paralelismù mù¾e být znaènì nároèné. Je zde i velký
+rozdíl v programovacích technikách pokud chceme programovat CPU nebo GPU. Programování CPU
+vychází ze za¾itých standardù co se týèe adresování pamìti apod., zatímco programování GPU se od
+tìchto standardù velmi li¹í. Vytváøení obecnì pou¾itelné GPU aplikace je nároèné hlavnì z hlediska
+odli¹ného pøístupù do pamìti, kde tento typ vyu¾ívá hiearchické èlenìní pamìti, a také
+vyu¾ívání vektorových operací. Nejvìt¹ím problémem, ale je, ¾e v¹echny zmínìné vìci jsou je¹tì
+závislé na platformì, výrobci nebo hardwaru.\\ 
+\indent Takovýto vývoj obecnì pou¾itelných aplikací by byl nereálný, proto¾e bychom museli
+aplikaci vyvynout ve desítkách ne--li stovkách verzí pro rùzné platformy, výrobce atd. Proto se
+vyskytla potøeba vytvoøit nìjaké univerzální rozhraní. Takovýmto rozhraním je napø.: OpenCL.
+\section{OpenCL}
+Jedná se o otevøený bezplatný standard urèený k zjednodu¹ení a zefektivnìní programování
+paralelních aplikací na CPU, GPU a dal¹ích faralelních zaøízeních. OpenCL vyu¾ívá rozhraní, které
+pracuje na úrovni velmi blízké samotným fyzickým souèástkám, èím¾ dosohuje vysoké efektivity. Nad
+tímto rozhraním je pak vytvoøena vrstva pro paralelní výpoèty, jen¾ obsahuje pracovní prostøedky
+nezávislé na platformì. Hlavní síla OpenCL je zkombinování paralelních výpoètù aplikace
+se zøetìzeným rendrováním grafických prvkù\cite{Khronos:2015}.\\
+Standard:
+\begin{itemize}
+    \item podporuje datovì i úlohovì zalo¾ené paralelní programovací modely
+    \item definuje konzistentní numerické po¾adavky vycházející z IEEE 754
+    \item definuje konfiguraèní profil pro pøenosná zaøízení a vestavìné systémy
+    \item zaji¹»uje efektivní souèinnost s OpenGL, OpenGL SE a dal¹ími grafickými rozhraními
+\end{itemize}
+Nejedná se pouze o standard pro psaní paralelních aplikací, ale o i framework, který
+je na tomto standardu postaven. Framework OpenCL ahrnuje programovací jazyk, rozhraní pro
+programování aplikací (API), knihovny a runtimový systém pro ulehèení vývoje.
+\subsection{Architektura OpenCL}
+Architektura OpenCL architektury lze popsat hieararchyckým modelem následovnì:
+\begin{itemize}
+    \item Model platformy
+    \item Model provedení
+    \item Model pamìti
+    \item Programovací model
+\end{itemize}
+\subsubsection{Model platformy}
+Tento model se kládá z hostitele a jednoho nebo více OpenCL zaøízení, která je rozdìleno na jedno
+nebo více výpoèetních jednotek, které jsou dále dìleny na jedno nebo vice výpoèetních prvkù, kde
+u¾ se provádí samotná výpoèetní operace.\\
+\indent Rozdìlení na hostitele a zaøízení vy¾aduje implementovat aplikaci pro obì èásti. Tedy
+vytvoøit kód pro hostitele a pro kernel zaøízení. Vezmeme--li si jako pøíklad standardní poèítaè
+tak hostitel je CPU a zaøízení je GPU, pøípadnì více GPU.\\
+
+---------------- sem prijde obrazek platformy --------------------------
+\subsubsection{Model provedení}
+Jak ji¾ bylo zmínìno aplikace se dìlí na dvì èásti. Zde hovoøíme o kernelech a o hostovském
+programu, pøièem¾ kernel je ten, kdo provádí výpoèty. Tato ``práce'' je provádìna pomocí
+pracovních polo¾ek ({\it work-item}) jen¾ mù¾eme sdru¾ovat do pracovních skupin ({\it
+work-group}).\\
+\indent Hostitel má za úkol spravovat kontext aplikace a na základì nìho nastavovat prostøedí ve
+kterém bude kernel provádìt operace. Prostøedí obsahuje tyto polo¾ky:
+\begin{itemize}
+    \item Zaøízení
+    \item Objekty kernelu
+    \item Objekty programu
+    \item Objekty pamìti
+\end{itemize}
+\indent Hostitel se zaøízením komunikuje pomocí fronty pøíkazù, které se na zaøízení rozøadí podle
+typu operace. Jednotlivé pøíkazy ve frontì se provádí relativnì k ostatním pøíkazùm. Poøadí
+provádìní je definováno tìmito modely:
+\begin{itemize}
+	\item In-order -- pøíkazy se provádí a mají efekt tak jak do fronty pøisly
+	\item Out-of-order -- poøadí provedení pøíkazù je omezeno pouze explicitnì uvedenými
+	    synchronizaèními body nebo explicitnì definovanými závislostmi na událostech
+\end{itemize}
+-- pokraèuj OpenCL strana 29, deleni na instance kernelu atd.
+\subsection{OpenCl C}
+
 \chapter{Nástroj Wrathion}
 Jedná se o nástroj vytvoøený Janem Shmiedem v roce 2014 v rámci jeho diplomové
-práci~\cite{Schmied}. Nástroj byl vytvoøen pro pou¾ití v projektu {\it Moderní prostøedky pro 
+práci\cite{Schmied}. Nástroj byl vytvoøen pro pou¾ití v projektu {\it Moderní prostøedky pro 
 boj s kybernetickou kriminalitou na Internetu nové generace, MV, VG20102015022}.\\
 \section{Hlavní èásti Wrathionu}
 Nástroj slou¾í ke obnovování hesel pomocí brute-force útokù na tato hesla. Nástroj má dvì hlavní
@@ -65,13 +140,13 @@ formátem ZIP.
 Jedná se o jeden z prvních formátù souborových archivù, který podporoval kompresy dat. V roce 1989
 vytvoøil Phil Katz program PKZIP v rámci nìho¾ byl pøedstaven samotnýho nový formát .ZIP.
 Specifikace formátu .ZIP byla publikován pod veøejnou doménou. Tímto krokem pomohl
-formátu se stát celosvìtovým otevøeným standardem~\cite{PKWARE:2015}. V roce 2015 byl formát, ve své
+formátu se stát celosvìtovým otevøeným standardem\cite{PKWARE:2015}. V roce 2015 byl formát, ve své
 specifikaci 6.3.3 z roku 2012, pøijat Mezinárodní orgranizací pro normalizaci (ISO) a Mezinárodní
 elektrotechnickou komísí (IEC) jako¾to standard definovaný dokumentem ISO/IEC
-21320-1:2015~\cite{ISOIEC:2015}.\\
+21320-1:2015\cite{ISOIEC:2015}.\\
 \indent Formát podporuje velké mno¾ství rùzný komprimaèních algoritmù: Store(bez komprese),
 UnShrinking, Expanding, Imploding, Tokenizing, Deflating, Enhanced Deflating, BZIP2, LZMA, WavPack
-a PPMd~\cite{PKWARE:2014}.\\ 
+a PPMd\cite{PKWARE:2014}.\\ 
 \indent Obdobnì je to i s podporou rùzných ¹ifrovacích algoritmù:
 \begin{itemize}
     \item {\it PKWARE ¹ifrování} -- prvotní ¹ifrování 
