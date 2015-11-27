@@ -140,8 +140,15 @@ Jedná se o nástroj vytvoøený Janem Shmiedem v roce 2014 v rámci jeho diplomové
 práci\cite{Schmied}. Nástroj byl vytvoøen pro pou¾ití v projektu {\it Moderní prostøedky pro 
 boj s kybernetickou kriminalitou na Internetu nové generace, MV, VG20102015022}.\\
 \section{Hlavní èásti Wrathionu}
-Nástroj slou¾í ke obnovování hesel pomocí brute-force útokù na tato hesla. Nástroj má dvì hlavní
-funkcionální èásti:
+Nástroj slou¾í ke obnovování hesel pomocí brute-force útokù na tato hesla. Skládá se za ze tøí
+èástí:
+\begin{itemize}
+	\item Jádra
+	\item Modulù
+	\item Aplikace
+\end{itemize}
+
+Nástroj je z pohledu obnovování hesel rozdìlen na dvì stì¾ejní èásti:
 \subsection{Generátory hesel}
 První jsou generátory hesel pro útoky. Jednáse se esenciální funkcionalitu. Bez
 vygenerovaných hesel nemù¾eme na útoky vùbec myslet. V nástroji jsou momentálnì implementovány tøi
@@ -160,27 +167,57 @@ typ generátorù:
 	hesly
 \end{itemize}
 
-Nejèastìji pou¾ívaným generátor je brute-force, který je ov¹em výpoèetnì nároèný ov¹em vhodný
-pro paralelizaci, proto je pøíhodnì implementován i jako program bì¾ící na GPU.
+Nejèastìji pou¾ívaným generátor je brute-force, který je ov¹em výpoèetnì nároèný. Jedná se v¹ak
+o snadno paralelizovatelný, proto je pøíhodnì implementován i jako kernel bì¾ící na GPU.
 \subsection{Crackery}
-Druhou èástí jsou samotné crackery bì¾ící na:
-\begin{itemize}
-    \item {\it CPU} -- zde není ¾ádný problém s generováním ani následným ovìøováním hesel
+Druhou èástí jsou samotné crackery, které se dìlí podle toho, kdo provádí generování hesel a
+kdo provádí porovnávání hesel:
+\subsubsection{CPU cracker}
+Zde se standardnì spustí ji¾ pøedkompilovaný cracker napsaný v C++. Není zde ¾ádný vìt¹í problém s
+generováním ani následným ovìøováním hesel. Ov¹em výpoèetní síla u paralelizovatelných algoritmù
+není CPU ani zdaleka tak vysoká jako na GPU. Proto, pokud je to mo¾né, volíme druhou variantu
+crackeru.
+------ diagram CPU crackeru
 
-    \item {\it GPU} -- v tomto pøípadì se prvnì inicializuje OpenCL systém, vytvoøí se kontext, frontu
-    pøíkazù a naèíte se a pøelo¾í se samotný program. Poté se data nahrají do GPU nebo se v ní
-    pøímo vygenerují, èím¾ zvý¹íme rychlost celého programu
-\end{itemize}
+\subsubsection{GPU cracker}
+Cracker mù¾e pracovat ve dvouch re¾imech. Prvním je, ¾e hesla generujeme na CPU a pak je posíláme
+do pamìti GPU, kde jsou crackerem zpracována. To má ov¹em velkou nevýhodu v tom, ¾e musíme poøád
+posílat data z pamìti hostitele (CPU) do privátní pamìti výpoèetního prvku (vypoèetní jednotka
+na GPU).\\
+------ diagram GPU crackeru s generovanim na CPU
+\indent Druhou a efektivnìj¹í mo¾ností je generovat hesla pøímo na GPU do privátních pamìtí èím
+minimalizujeme mno¾ství dat, které musí putovat od hostitele k zaøízení, èím¾ sní¾íme výslednou
+prodlevu výpoètù.
+------ diagram GPU crackeru s generovanim na GPU
+\indent V obou pøípadech je nutné pøed zahájením jakýchkoliv operací GPU inicializovat OpenCL
+systém. Tedy vytvoøit kontext, fronty pøíkazù, naèíst se a pøelo¾it po¾adovaný kernel a a¾ poté
+nahrát nebo vygenerovat data do/na GPU.
 
 \subsection{Moduly}
-Nástroj je navr¾en s velkým dùrazem na modularitu. V souèasné dobì obsahuje moduly pro práci s DOC
-dokument, PDF dokumenty a ZIP archivù a to s podporou rùzných ¹ifrovacích algoritmù a
-bezpeènostních revizí (napø. PDF revize 1-5).
+Nástroj je navr¾en s velkým dùrazem na modularitu. V souèasné dobì obsahuje pouze tøi moduly.
+Roz¹íøení poètu implementovaných modulù má za úkol nejen tato práce, ale dvì dal¹í práce vypsané v
+leto¹ním roce.
 
 \subsubsection{Modul ZIP}
-V této práci nás nejvíce zajímá modul ZIP. Ten v pùvodním návrhu obsahuje pouze ¹ifrování PKZIP,
-AES-128, AES-192, AES-256, co¾ zanechává prostor pro implementaci dal¹í podporovaných ¹ifrování
-formátem ZIP. 
+V této práci nás nejvíce zajímá modul ZIP. Ten v pùvodním návrhu obsahuje pouze ¹ifrování
+obnovování hesel z archívù ¹ifrovaných algoritmy PKZIP, AES-128, AES-192, AES-256, co¾ zanechává
+prostor pro implementaci dal¹í, formátem ZIP, podporovaných metod. Zajímavostí je, ¾e tento modul
+byl schopný v dobì svého vzniku obnovit heslo ¹ifrovaných {\it .docx} souborù, av¹ak tento
+nedostatek u zabezpeèení formátu {\it .docx} byl pozdìji odstranìn a tento modul ji¾ tedy není
+schopen heslo, u souborù vytvoøených po zmínìn aktualizaci, obnovit.
+
+\subsubsection{Modul DOC}
+Dal¹í modul pracuje s formátem {\it .doc}, který byl pokládán za základní formát aplikace MS Word z
+balíku MS Office. Tento formát byl s pøíchodem MS Office 2007 nahrazen {\it .docx}. Nástroj ve své
+pùvodní podobì obsahuje pouze podporu pro {\it .doc} formátu. Tvorba modulù pro novìj¹í formát
+{\it .docx} spolu s formáty pou¾ívanými v jiných aplikacích balíku MS Office jsou tématem
+jedné, soubì¾nì s touto prací spracovávané, bakaláøské práce.
+
+\subsubsection{Modul PDF}
+Prozatím posledním ji¾ vytvoøeným modulem je modul pracující s formátem {\it .pdf}. Zde jsou ji¾
+implementovány bezpeènostní revize 1-5. Nástroj poèítá i s implementací revize 6 ta ale není
+nikterak urgentní, proto¾e souborù pou¾ívajících revizí 5 a 6 je velice málo.
+
 
 \chapter{Popis formátù .ZIP a .7z}
 \section{Formát .ZIP}
@@ -202,6 +239,10 @@ a PPMd\cite{PKWARE:2014}.\\
     \item {\it RC4 (40-bit, 64-bit a 168-bit)} -- podporováno od verze 5.0 z roku 2002
     \item {\it AES (128-bit, 192-bit a 256-bit)} -- podporováno od verze 5.2 z roku 2003
 \end{itemize}
+
+\indent Nastává zde ale problém. Je prakticky nemo¾né najít nástroje umo¾òující vytvoøení archívù
+se ¹ifrováním DES, RC2 a RC4. V dùsledku toho je pravdìpodobnost výskytu archívù ¹ifrovaných
+tìmito metodami minimální respektive skoro nulová.
 
 \subsection{Struktura souboru}
 
