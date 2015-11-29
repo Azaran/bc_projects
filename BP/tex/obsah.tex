@@ -21,29 +21,38 @@ zabývá pøibli¾ením paralelismu a problémù s ním spojených a také úvedením do sta
 frameworku OpenCL.
 
 \chapter{Úvod do paralelismu}
-V dne¹ní dobì se v¹echny architektury výpoèetních jednotek sna¾í poskytnout paralelní zpracování
-úloh. Jedná se o cestu otevírající dveøe k znatelnému zvý¹ení výkonu takovýchto jednotek. Dnes je
-ji¾ normální, ¾e máme více--jádrové procesory, které vyu¾ívají paralelismu. Ov¹em jedním z
-hlavních pøedstavitelù toho trendu jsou grafické výpoèetní èipy. Tyto fakta vyús»ují v potøebu
-umìt s takovýmito zaøízeními komunikovat a programovat je za úèelem vyu¾ití celého jejich
-potenciálu.\\
-\indent Programování aplikace vyu¾ívající paralelismù mù¾e být znaènì nároèné. Je zde i velký
-rozdíl v programovacích technikách pokud chceme programovat CPU nebo GPU. Programování CPU
-vychází ze za¾itých standardù co se týèe adresování pamìti apod., zatímco programování GPU se od
-tìchto standardù velmi li¹í. Vytváøení obecnì pou¾itelné GPU aplikace je nároèné hlavnì z hlediska
-odli¹ného pøístupù do pamìti, kde tento typ vyu¾ívá hiearchické èlenìní pamìti, a také
-vyu¾ívání vektorových operací. Nejvìt¹ím problémem, ale je, ¾e v¹echny zmínìné vìci jsou je¹tì
-závislé na platformì, výrobci nebo hardwaru.\\ 
+Dne¹ním trendem ve vývoji architektur pro výpoèetní zaøízení je umo¾nìní paralelního provádìní úloh.
+Jedná se o architektury otevírající dveøe k znatelnému zvý¹ení výkonu u zaøízeních na nich
+postavených. Dnes ji¾ pova¾ujeme za normální, ¾e máme více--jádrové procesory (CPU), které
+podporují paralelní zpracování. Ov¹em jedním z hlavních pøedstavitelù toho trendu jsou grafické 
+výpoèetní jednotky (GPU). Existence tìchto typù zaøízení ús»í v potøebu mít prostøedky jak s tìmito
+zaøízeními komunikovat a programovat je.\\
+\indent U paralelních aplikací je na¹í nejvìt¹í prioritou efektivnost vyu¾ití zdrojù. Dùvodem je
+vysoká poøizovací cena a èasto i vysoké provozní náklady. Dal¹ím dùvodem je také nároènost aplikací
+na nich bì¾ících. Ty jsou ve vìt¹inì pøípadù èasovì velmi nároèné. Návrh i programování aplikace
+vyu¾ívající paralelismù mù¾e být znaènì nároèné. Je zde velký rozdíl v programovacích technikách.
+Programování paralelních aplikací pro CPU vychází ze za¾itých standardù pou¾ívaných pro vývoj
+klasických aplikací. Oproti tomu programování GPU a jiných specializovanìj¹ích zaøízení se od tìchto
+standardù velmi li¹í. Napøíklad vytváøení obecnì pou¾itelné aplikace urèené pro bìh na GPU je
+nároèné hlavnì z hlediska odli¹ného pamì»ovému modelu a jinou ¹kálou funkcí pro práci s ní. GPU
+ve znaèné míøe vyu¾ívá operace pro práci s vektory. Nejvìt¹ím problémem spojeným s programováním
+tìchto zaøízení je ¹kála rùzných pou¾ívaných architektur. Faktem je, ¾e v¹echny modely pro práci se
+zaøízeními (pamì»ový model, model provádìní atd.) se mohou mìnit a to v závislosti na platformì,
+výrobci èi pou¾itím hardwaru.\\
 \indent Takovýto vývoj obecnì pou¾itelných aplikací by byl nereálný, proto¾e bychom museli
-aplikaci vyvynout ve desítkách ne--li stovkách verzí pro rùzné platformy, výrobce atd. Proto se
-vyskytla potøeba vytvoøit nìjaké univerzální rozhraní. Takovýmto rozhraním je napø.: OpenCL.
-\section{OpenCL\cite{Khronos:2015}\cite{AMD:2011}}
-Jedná se o otevøený bezplatný standard urèený k zjednodu¹ení a zefektivnìní programování
-paralelních aplikací na CPU, GPU a dal¹ích faralelních zaøízeních. OpenCL vyu¾ívá rozhraní, které
-pracuje na úrovni velmi blízké samotným fyzickým souèástkám, èím¾ dosohuje vysoké efektivity. Nad
-tímto rozhraním je pak vytvoøena vrstva pro paralelní výpoèty, jen¾ obsahuje pracovní prostøedky
-nezávislé na platformì. Hlavní síla OpenCL je zkombinování paralelních výpoètù aplikace
-se zøetìzeným rendrováním grafických prvkù.\\
+aplikaci vyvynout ve desítkách ne--li stovkách verzí pro jednotlivá konkrétní zaøízení, na kterých
+bychom chtìli aplikaci provozovat. Proto se vyskytla potøeba vytvoøit univerzální rozhraní, jen¾ by
+nad specifickými pøístupy k programování jednotlivých zaøízení vytvoøilo univerzální programovací
+vrstvu, její¾ instrukce by následnì byly interpretovány do instrukèní sady specifického zaøízení.
+Takovýmto rozhraním je napø.: CUDA nebo OpenCL.
+
+\section{OpenCL}
+Jedná se o otevøený nezpoplatnìný standard slou¾ící k zjednodu¹ení a zefektivnìní programování
+paralelních aplikací. OpenCL vyu¾ívá rozhraní, které pracuje na velmi nízké úrovni, tedy skoro na
+úrovni samotných fyzických souèástek, èím¾ dosahuje vysoké efektivity. Nad tímto rozhraním následnì
+vytváøí vrstvu pro výpoèty, jen¾ obsahuje pracovní prostøedky nezávislé na platformì. Hlavní síla
+OpenCL je zkombinování paralelních výpoètù aplikace na GPU se zøetìzeným rendrováním grafických
+prvkù.\\
 Standard:
 \begin{itemize}
     \item podporuje datovì i úlohovì zalo¾ené paralelní programovací modely
@@ -52,11 +61,11 @@ Standard:
     \item zaji¹»uje efektivní souèinnost s OpenGL, OpenGL SE a dal¹ími grafickými rozhraními
 \end{itemize}
 
-Nejedná se pouze o standard pro psaní paralelních aplikací, ale o i framework, který
-je na tomto standardu postaven. Framework OpenCL ahrnuje programovací jazyk, rozhraní pro
+Nejedná se pouze o standard pro psaní paralelních aplikací, ale i o stejnojmenný framework, který
+je na tomto standardu postaven. Framework OpenCL zahrnuje programovací jazyky, rozhraní pro
 programování aplikací (API), knihovny a runtimový systém pro ulehèení vývoje.
 \subsection{Architektura OpenCL}
-Architektura OpenCL architektury lze popsat hieararchyckým modelem následovnì:
+Struktura OpenCL architektury lze popsat hieararchyckým modelem následovnì:
 \begin{itemize}
     \item Model platformy
     \item Model provedení
@@ -65,21 +74,21 @@ Architektura OpenCL architektury lze popsat hieararchyckým modelem následovnì:
 \end{itemize}
 
 \subsubsection{Model platformy}
-Tento model se kládá z hostitele a jednoho nebo více OpenCL zaøízení, která je rozdìleno na jedno
-nebo více výpoèetních jednotek, které jsou dále dìleny na jedno nebo vice výpoèetních prvkù, kde
-u¾ se provádí samotná výpoèetní operace.\\
+Tento model se skládá z hostitele a jednoho nebo více OpenCL zaøízení, která je rozdìleno na jedno
+nebo více výpoèetních jednotek, které jsou dále dìleny na jeden nebo více výpoèetních prvkù.
+Na jednotlivých prvcích se pak provádí výpoèetní operace.\\
 \indent Rozdìlení na hostitele a zaøízení vy¾aduje implementovat aplikaci pro obì èásti. Tedy
 vytvoøit kód pro hostitele a pro kernel zaøízení. Vezmeme--li si jako pøíklad standardní poèítaè
 tak hostitel je CPU a zaøízení je GPU, pøípadnì více GPU.\\
 
----------------- sem prijde obrazek platformy --------------------------
+---------------- sem prijde obrazek platformy --------------------------\\
 \subsubsection{Model provedení}
-Jak ji¾ bylo zmínìno aplikace se dìlí na dvì èásti. Zde hovoøíme o kernelech a o hostovském
+Jak ji¾ bylo zmínìno aplikace se dìlí na dvì èásti. Zde hovoøíme o kernelech a o hostitelovì
 programu, pøièem¾ kernel je ten, kdo provádí výpoèty. Tato ``práce'' je provádìna pomocí
 pracovních polo¾ek ({\it work-item}) jen¾ mù¾eme sdru¾ovat do pracovních skupin ({\it
 work-group}).\\
-\indent Hostitel má za úkol spravovat kontext aplikace a na základì nìho nastavovat prostøedí ve
-kterém bude kernel provádìt operace. Prostøedí obsahuje tyto polo¾ky:
+\indent Hostitel má za úkol spravovat kontext aplikace a na základì nìho nastavovat prostøedí, ve
+kterém bude kernel provádìt operace. V prostøedí musíme specifikovat a nastavit tyto polo¾ky:
 \begin{itemize}
     \item Zaøízení
     \item Objekty kernelu
@@ -87,11 +96,11 @@ kterém bude kernel provádìt operace. Prostøedí obsahuje tyto polo¾ky:
     \item Objekty pamìti
 \end{itemize}
 
-\indent Hostitel se zaøízením komunikuje pomocí fronty pøíkazù, které se na zaøízení rozøadí podle
+\indent Hostitel se zaøízením komunikuje pomocí front pøíkazù, do nich¾ se pøíkazy rozøadí podle
 typu operace. Jednotlivé pøíkazy ve frontì se provádí relativnì k ostatním pøíkazùm. Poøadí
 provádìní je definováno tìmito modely:
 \begin{itemize}
-    \item {\it In-order} -- pøíkazy se provádí a mají efekt tak jak do fronty pøisly
+    \item {\it In-order} -- pøíkazy se provádí a mají efekt tak, jak do fronty pøisly
     \item {\it Out-of-order} -- poøadí provedení pøíkazù je omezeno pouze explicitnì uvedenými
 	    synchronizaèními body nebo explicitnì definovanými závislostmi na událostech
 \end{itemize}
@@ -115,7 +124,7 @@ Model dìlíme na ètyøi èásti:
 \end{itemize}
 
 \indent Pro nás je nejdùle¾itìj¹í pochopit jak je pamì» strukturována a jak na sebe navazují
-jednotlivé oblasti. Pamì» je do oblastí rozdìlena takto:
+jednotlivé oblast to je nejlépe patrné z obrázku \#\#\#. Popis struktury:
 \begin{itemize}
     \item Pamì» hostitele (RAM apod.)
     \item Pamì» zaøízení
@@ -129,11 +138,12 @@ jednotlivé oblasti. Pamì» je do oblastí rozdìlena takto:
 	\item {\it Soukromá pamì»} -- oblast je pøístupná pouze jedné pracovní polo¾ce 
     \end{itemize}
 \end{itemize}
-------- obrazek struktury pameti ------------------------
+------- obrazek struktury pameti ------------------------\\
 \subsubsection{Programovací model}
 Tento model lze také nazvat jako OpenCL Framework. Framework se skládá ze tøech komponentù. Zde za
 zmínkud stojí OpenCL kompilátor. Ten podporuje pokroèilý jazyk SPIR-V a jazyk OpenCL C. Dal¹í
 jazyky mohou být podporovány nìkterými implementacemi kompilátoru.
+
 
 \chapter{Nástroj Wrathion}
 Jedná se o nástroj vytvoøený Janem Shmiedem v roce 2014 v rámci jeho diplomové
@@ -184,11 +194,11 @@ Cracker mù¾e pracovat ve dvouch re¾imech. Prvním je, ¾e hesla generujeme na CPU 
 do pamìti GPU, kde jsou crackerem zpracována. To má ov¹em velkou nevýhodu v tom, ¾e musíme poøád
 posílat data z pamìti hostitele (CPU) do privátní pamìti výpoèetního prvku (vypoèetní jednotka
 na GPU).\\
------- diagram GPU crackeru s generovanim na CPU
+------ diagram GPU crackeru s generovanim na CPU\\
 \indent Druhou a efektivnìj¹í mo¾ností je generovat hesla pøímo na GPU do privátních pamìtí èím
 minimalizujeme mno¾ství dat, které musí putovat od hostitele k zaøízení, èím¾ sní¾íme výslednou
-prodlevu výpoètù.
------- diagram GPU crackeru s generovanim na GPU
+prodlevu výpoètù.\\
+------ diagram GPU crackeru s generovanim na GPU\\
 \indent V obou pøípadech je nutné pøed zahájením jakýchkoliv operací GPU inicializovat OpenCL
 systém. Tedy vytvoøit kontext, fronty pøíkazù, naèíst se a pøelo¾it po¾adovaný kernel a a¾ poté
 nahrát nebo vygenerovat data do/na GPU.
@@ -201,16 +211,16 @@ leto¹ním roce.
 \subsubsection{Modul ZIP}
 V této práci nás nejvíce zajímá modul ZIP. Ten v pùvodním návrhu obsahuje pouze ¹ifrování
 obnovování hesel z archívù ¹ifrovaných algoritmy PKZIP, AES-128, AES-192, AES-256, co¾ zanechává
-prostor pro implementaci dal¹í, formátem ZIP, podporovaných metod. Zajímavostí je, ¾e tento modul
-byl schopný v dobì svého vzniku obnovit heslo ¹ifrovaných {\it .docx} souborù, av¹ak tento
-nedostatek u zabezpeèení formátu {\it .docx} byl pozdìji odstranìn a tento modul ji¾ tedy není
+prostor pro implementaci dal¹í, formátem {\it .ZIP}, podporovaných metod. Zajímavostí je, ¾e tento modul
+byl schopný v dobì svého vzniku obnovit heslo ¹ifrovaných {\it .DOCX} souborù, av¹ak tento
+nedostatek u zabezpeèení formátu {\it .DOCX} byl pozdìji odstranìn a tento modul ji¾ tedy není
 schopen heslo, u souborù vytvoøených po zmínìn aktualizaci, obnovit.
 
 \subsubsection{Modul DOC}
-Dal¹í modul pracuje s formátem {\it .doc}, který byl pokládán za základní formát aplikace MS Word z
-balíku MS Office. Tento formát byl s pøíchodem MS Office 2007 nahrazen {\it .docx}. Nástroj ve své
-pùvodní podobì obsahuje pouze podporu pro {\it .doc} formátu. Tvorba modulù pro novìj¹í formát
-{\it .docx} spolu s formáty pou¾ívanými v jiných aplikacích balíku MS Office jsou tématem
+Dal¹í modul pracuje s formátem {\it .DOC}, který byl pokládán za základní formát aplikace MS Word z
+balíku MS Office. Tento formát byl s pøíchodem MS Office 2007 nahrazen formátem {\it .DOCX}. Nástroj ve své
+pùvodní podobì obsahuje pouze podporu pro {\it .DOC} formátu. Tvorba modulù pro novìj¹í formát
+{\it .DOCX} spolu s formáty pou¾ívanými v jiných aplikacích balíku MS Office jsou tématem
 jedné, soubì¾nì s touto prací spracovávané, bakaláøské práce.
 
 \subsubsection{Modul PDF}
@@ -241,13 +251,39 @@ a PPMd\cite{PKWARE:2014}.\\
 \end{itemize}
 
 \indent Nastává zde ale problém. Je prakticky nemo¾né najít nástroje umo¾òující vytvoøení archívù
-se ¹ifrováním DES, RC2 a RC4. V dùsledku toho je pravdìpodobnost výskytu archívù ¹ifrovaných
-tìmito metodami minimální respektive skoro nulová.
+se ¹ifrováním DES, RC2 a RC4. Z toho tedy plyne, ¾e pravdìpodobnost výskytu archívù ¹ifrovaných
+tìmito metodami je minimální respektive témìø nulová.
 
 \subsection{Struktura souboru}
+Soubor se skládá z kombinace rùzných typù hlavièek s pevnou délkou, dat souborù v komprimované /
+nekomprimované a ¹ifrované / ne¹ifrované podobì a ve vìt¹inì pøípadù i popisovaè dat o velikosti 12
+bajtù. Konkrétní struktura je na obrazku XY.\\
+-------- obrazek skladani hlavicek
+\indent Hlavièka, roz¹íøená o metadata, ka¾dého souboru pak musí být obsa¾ena v nìkteré ze "Central
+Directory" sekcí zapoèaté pomocí vlo¾ení {\it Central Directory Header} a ukonèené dal¹í buïto dal¹í
+hlavièkou nebo pomocí {\it End of Central Directory Record}. Soubor musí v¾dy obsahovat alespoò
+jednu {\it Central Directory Header}. Jednotlivé sekce reprezentují adresáøe a hlavièky souborù
+reprezentují pùvodní organizaci souborù pøed vytvoøením archívu.\\
+
+\indent Pro tuto práci je ale nejdùle¾itìj¹í hlavièka {\it Encryption Header} nacházející se za
+hlavièkou souboru. Proto¾e ka¾dý soubor archívu mù¾e být ¹ifrován jinou metodou a s jiný klíèem, tak
+musíme hlavièku ¹ifrování vlo¾it pøed samotná data. Z teto hlavicky musim ziskat informace z polozky
+{\it AlgID}, v ní¾ nás zajímají hodnoty 0x6609 a 0x6603 (3DES 112 a 168). Dal¹í pro nás dùle¾itou polo¾kou
+jsou {\it Flags}
 
 
 \section{Formát .7z}
+Vznik tohoto formátu se datuje do roku 1999 a jeho autorem je Igor Pavlov. Stejnì tak jako aplikace
+7-zip a nástrojù spojených s tímto formátem. Formát se proslavil hlavnì svojí otevøeností a
+modulární strukturou. Ta umo¾òuje skládání libovolných kompresní, konverzních a ¹ifrovacích metod.\\
+
+\indent Jako výchozí kompresní metoda se bere LZMA. Výhody této metody jsou:
+\begin{itemize}
+    \item Vysoký kompresní koeficient
+    \item Promìnná velikost slovníku
+    \item Malé nároky na pamì» pøi dekompresi
+    \item Podpora zpracování pomocí multi-threading a hyper-threading
+\end{itemize}
 \subsection{Struktura souboru}
 \section{Srovnání}
 
