@@ -21,8 +21,8 @@ zabývá pøibli¾ením paralelismu a problémù s ním spojených a také úvedením do sta
 frameworku OpenCL.
 
 \chapter{Úvod do paralelismu}
-Dne¹ním trendem ve vývoji architektur pro výpoèetní zaøízení je umo¾nìní paralelního provádìní úloh.
-Jedná se o architektury otevírající dveøe k znatelnému zvý¹ení výkonu u zaøízeních na nich
+Dne¹ním trendem ve vývoji architektur pro výpoèetní zaøízení je umo¾nìní paralelního provádìní
+úloh. Jedná se o architektury otevírající dveøe k znatelnému zvý¹ení výkonu u zaøízeních na nich
 postavených. Dnes ji¾ pova¾ujeme za normální, ¾e máme více--jádrové procesory (CPU), které
 podporují paralelní zpracování. Ov¹em jedním z hlavních pøedstavitelù toho trendu jsou grafické 
 výpoèetní jednotky (GPU). Existence tìchto typù zaøízení ús»í v potøebu mít prostøedky jak s tìmito
@@ -32,9 +32,9 @@ vysoká poøizovací cena a èasto i vysoké provozní náklady. Dal¹ím dùvodem je také
 na nich bì¾ících. Ty jsou ve vìt¹inì pøípadù èasovì velmi nároèné. Návrh i programování aplikace
 vyu¾ívající paralelismù mù¾e být znaènì nároèné. Je zde velký rozdíl v programovacích technikách.
 Programování paralelních aplikací pro CPU vychází ze za¾itých standardù pou¾ívaných pro vývoj
-klasických aplikací. Oproti tomu programování GPU a jiných specializovanìj¹ích zaøízení se od tìchto
-standardù velmi li¹í. Napøíklad vytváøení obecnì pou¾itelné aplikace urèené pro bìh na GPU je
-nároèné hlavnì z hlediska odli¹ného pamì»ovému modelu a jinou ¹kálou funkcí pro práci s ní. GPU
+klasických aplikací. Oproti tomu programování GPU a jiných specializovanìj¹ích zaøízení se od
+tìchto standardù velmi li¹í. Napøíklad vytváøení obecnì pou¾itelné aplikace urèené pro bìh na GPU
+je nároèné hlavnì z hlediska odli¹ného pamì»ovému modelu a jinou ¹kálou funkcí pro práci s ní. GPU
 ve znaèné míøe vyu¾ívá operace pro práci s vektory. Nejvìt¹ím problémem spojeným s programováním
 tìchto zaøízení je ¹kála rùzných pou¾ívaných architektur. Faktem je, ¾e v¹echny modely pro práci se
 zaøízeními (pamì»ový model, model provádìní atd.) se mohou mìnit a to v závislosti na platformì,
@@ -80,8 +80,15 @@ Na jednotlivých prvcích se pak provádí výpoèetní operace.\\
 \indent Rozdìlení na hostitele a zaøízení vy¾aduje implementovat aplikaci pro obì èásti. Tedy
 vytvoøit kód pro hostitele a pro kernel zaøízení. Vezmeme--li si jako pøíklad standardní poèítaè
 tak hostitel je CPU a zaøízení je GPU, pøípadnì více GPU.\\
-
----------------- sem prijde obrazek platformy --------------------------\\
+\begin{figure}[h]
+    \begin{center}
+	\scalebox{1}{
+	    \includegraphics{../img/opencl_platform_model}
+	}
+    \end{center}
+    \caption{Model OpenCL platformy}
+    \label{platform}
+\end{figure}
 \subsubsection{Model provedení}
 Jak ji¾ bylo zmínìno aplikace se dìlí na dvì èásti. Zde hovoøíme o kernelech a o hostitelovì
 programu, pøièem¾ kernel je ten, kdo provádí výpoèty. Tato ``práce'' je provádìna pomocí
@@ -124,7 +131,7 @@ Model dìlíme na ètyøi èásti:
 \end{itemize}
 
 \indent Pro nás je nejdùle¾itìj¹í pochopit jak je pamì» strukturována a jak na sebe navazují
-jednotlivé oblast to je nejlépe patrné z obrázku \#\#\#. Popis struktury:
+jednotlivé oblast to je nejlépe patrné z obrázku \ref{memory}. Popis struktury:
 \begin{itemize}
     \item Pamì» hostitele (RAM apod.)
     \item Pamì» zaøízení
@@ -138,7 +145,15 @@ jednotlivé oblast to je nejlépe patrné z obrázku \#\#\#. Popis struktury:
 	\item {\it Soukromá pamì»} -- oblast je pøístupná pouze jedné pracovní polo¾ce 
     \end{itemize}
 \end{itemize}
-------- obrazek struktury pameti ------------------------\\
+\begin{figure}[h]
+    \begin{center}
+	\scalebox{0.7}{
+	    \includegraphics{../img/opencl_figure5small1}
+	}
+    \end{center}
+    \caption{Struktura pamìti OpenCL}
+    \label{memory}
+\end{figure}
 \subsubsection{Programovací model}
 Tento model lze také nazvat jako OpenCL Framework. Framework se skládá ze tøech komponentù. Zde za
 zmínkud stojí OpenCL kompilátor. Ten podporuje pokroèilý jazyk SPIR-V a jazyk OpenCL C. Dal¹í
@@ -148,7 +163,7 @@ jazyky mohou být podporovány nìkterými implementacemi kompilátoru.
 \chapter{Nástroj Wrathion}
 Jedná se o nástroj vytvoøený Janem Shmiedem v roce 2014 v rámci jeho diplomové
 práci\cite{Schmied}. Nástroj byl vytvoøen pro pou¾ití v projektu {\it Moderní prostøedky pro 
-boj s kybernetickou kriminalitou na Internetu nové generace, MV, VG20102015022}.\\
+boj s kybernetickou kriminalitou na Internetu nové generace, MV, VG20102015022}.
 \section{Hlavní èásti Wrathionu}
 Nástroj slou¾í ke obnovování hesel pomocí brute-force útokù na tato hesla. Skládá se za ze tøí
 èástí:
@@ -177,8 +192,8 @@ typ generátorù:
 	hesly
 \end{itemize}
 
-Nejèastìji pou¾ívaným generátor je brute-force, který je ov¹em výpoèetnì nároèný. Jedná se v¹ak
-o snadno paralelizovatelný, proto je pøíhodnì implementován i jako kernel bì¾ící na GPU.
+\indent Nejèastìji pou¾ívaným generátor je brute-force, který je ov¹em výpoèetnì nároèný. Jedná se
+v¹ak o snadno paralelizovatelný, proto je pøíhodnì implementován i jako kernel bì¾ící na GPU.
 \subsection{Crackery}
 Druhou èástí jsou samotné crackery, které se dìlí podle toho, kdo provádí generování hesel a
 kdo provádí porovnávání hesel:
@@ -186,19 +201,43 @@ kdo provádí porovnávání hesel:
 Zde se standardnì spustí ji¾ pøedkompilovaný cracker napsaný v C++. Není zde ¾ádný vìt¹í problém s
 generováním ani následným ovìøováním hesel. Ov¹em výpoèetní síla u paralelizovatelných algoritmù
 není CPU ani zdaleka tak vysoká jako na GPU. Proto, pokud je to mo¾né, volíme druhou variantu
-crackeru.
------- diagram CPU crackeru
+crackeru.\\
+\begin{figure}[h]
+    \begin{center}
+	\scalebox{0.6}{
+	    \includegraphics{../img/proces.png}
+	}
+    \end{center}
+    \caption{Proces generování a ovìøování hesel na CPU}
+    \label{CPU}
+\end{figure}
 
 \subsubsection{GPU cracker}
 Cracker mù¾e pracovat ve dvouch re¾imech. Prvním je, ¾e hesla generujeme na CPU a pak je posíláme
 do pamìti GPU, kde jsou crackerem zpracována. To má ov¹em velkou nevýhodu v tom, ¾e musíme poøád
 posílat data z pamìti hostitele (CPU) do privátní pamìti výpoèetního prvku (vypoèetní jednotka
 na GPU).\\
------- diagram GPU crackeru s generovanim na CPU\\
+\begin{figure}[h]
+    \begin{center}
+	\scalebox{0.7}{
+	    \includegraphics{../img/generovani_na_CPU}
+	}
+    \end{center}
+    \caption{Proces generování hesel na CPU a ovìøování na GPU}
+    \label{CPUGPU}
+\end{figure}
 \indent Druhou a efektivnìj¹í mo¾ností je generovat hesla pøímo na GPU do privátních pamìtí èím
 minimalizujeme mno¾ství dat, které musí putovat od hostitele k zaøízení, èím¾ sní¾íme výslednou
 prodlevu výpoètù.\\
------- diagram GPU crackeru s generovanim na GPU\\
+\begin{figure}[h]
+    \begin{center}
+	\scalebox{0.7}{
+	    \includegraphics{../img/generovani_na_GPU}
+	}
+    \end{center}
+    \caption{Procese generování a ovìøování hesel na GPU}
+    \label{GPU}
+\end{figure}
 \indent V obou pøípadech je nutné pøed zahájením jakýchkoliv operací GPU inicializovat OpenCL
 systém. Tedy vytvoøit kontext, fronty pøíkazù, naèíst se a pøelo¾it po¾adovaný kernel a a¾ poté
 nahrát nebo vygenerovat data do/na GPU.
@@ -257,40 +296,60 @@ tìmito metodami je minimální respektive témìø nulová.
 \subsection{Struktura souboru}
 Soubor se skládá z kombinace rùzných typù hlavièek s pevnou délkou, dat souborù v komprimované /
 nekomprimované a ¹ifrované / ne¹ifrované podobì a ve vìt¹inì pøípadù i popisovaè dat o velikosti 12
-bajtù. Konkrétní struktura je na obrazku XY.\\
--------- obrazek skladani hlavicek
+bajtù. Konkrétní struktura je na obrazku \ref{zipstruct}.\\
+\begin{figure}[h]
+    \begin{center}
+	\scalebox{0.5}{
+	    \includegraphics{../img/zip_layout}
+	}
+    \end{center}
+    \caption{Struktura .ZIP souboru (zatím nekompletní)}
+    \label{zipstruct}
+\end{figure}
 \indent Hlavièka, roz¹íøená o metadata, ka¾dého souboru pak musí být obsa¾ena v nìkteré ze "Central
-Directory" sekcí zapoèaté pomocí vlo¾ení {\it Central Directory Header} a ukonèené dal¹í buïto dal¹í
-hlavièkou nebo pomocí {\it End of Central Directory Record}. Soubor musí v¾dy obsahovat alespoò
-jednu {\it Central Directory Header}. Jednotlivé sekce reprezentují adresáøe a hlavièky souborù
-reprezentují pùvodní organizaci souborù pøed vytvoøením archívu.\\
-
+Directory" sekcí zapoèaté pomocí vlo¾ení {\it Central Directory Header} a ukonèené dal¹í buïto
+dal¹í hlavièkou nebo pomocí {\it End of Central Directory Record}. Soubor musí v¾dy obsahovat
+alespoò jednu {\it Central Directory Header}. Jednotlivé sekce reprezentují adresáøe a hlavièky
+souborù reprezentují pùvodní organizaci souborù pøed vytvoøením archívu.\\
 \indent Pro tuto práci je ale nejdùle¾itìj¹í hlavièka {\it Encryption Header} nacházející se za
-hlavièkou souboru. Proto¾e ka¾dý soubor archívu mù¾e být ¹ifrován jinou metodou a s jiný klíèem, tak
-musíme hlavièku ¹ifrování vlo¾it pøed samotná data. Z teto hlavicky musim ziskat informace z polozky
-{\it AlgID}, v ní¾ nás zajímají hodnoty 0x6609 a 0x6603 (3DES 112 a 168). Dal¹í pro nás dùle¾itou polo¾kou
-jsou {\it Flags}
+hlavièkou souboru. Proto¾e ka¾dý soubor archívu mù¾e být ¹ifrován jinou metodou a s jiný klíèem,
+tak musíme hlavièku ¹ifrování vlo¾it pøed samotná data. Z teto hlavicky musim ziskat informace z
+polo¾ky {\it AlgID}, v ní¾ nás zajímají hodnoty 0x6609 a 0x6603 (3DES 112 a 168). Dal¹í pro nás
+dùle¾itou polo¾kou jsou {\it Flags}
+\\------ Pzn. bude doplnìno --------------\\
 
 
 \section{Formát .7z}
 Vznik tohoto formátu se datuje do roku 1999 a jeho autorem je Igor Pavlov. Stejnì tak jako aplikace
-7-zip a nástrojù spojených s tímto formátem. Formát se proslavil hlavnì svojí otevøeností a
-modulární strukturou. Ta umo¾òuje skládání libovolných kompresní, konverzních a ¹ifrovacích metod.\\
-
-\indent Jako výchozí kompresní metoda se bere LZMA. Výhody této metody jsou:
+7-zip a nástrojù spojených s tímto formátem\cite{wikipedie:Pavlov}. Formát se proslavil hlavnì
+svojí otevøeností a modulární strukturou. Ta umo¾òuje skládání libovolných kompresní, konverzních a
+¹ifrovacích metod.\\
+\indent Mezi podporované kompresní metody se øadí LZMA, LZMA2, PPMD, BCJ, BCJ2, BZip2 a
+Deflate. Jako výchozí metoda je brána LZMA. Hlavní výhody této metody jsou\cite{7z:2015}:
 \begin{itemize}
     \item Vysoký kompresní koeficient
     \item Promìnná velikost slovníku
     \item Malé nároky na pamì» pøi dekompresi
     \item Podpora zpracování pomocí multi-threading a hyper-threading
 \end{itemize}
+
+\indent Dal¹ími výhodami formátu je podpora komprese velkých souborù, názvy souborù v Unicode
+kódování, spojení více souborù pøi kompresy do jednoho toku, komprese a ¹ifrování hlavièek archívù
+a dal¹í.\\
+\indent Standardnì pou¾itou ¹ifrovací metodou je AES-256 vy¾adující 256-bitovým ¹iforvacím heslem.
+Takovéto heslo se vytváøí pomocí hashovací funkce SHA-256 z u¾ivatelem zadaného hesla. Pro je¹tì
+vy¹¹í zabezpeèení je provedeno \(2^{18}\) iterací pøi ka¾dém vytváøení hesla. To mù¾e mít za
+následek znatelnou prodlevu ne¾ zaène komprese souborù a ¹ifrování\cite{wikipedia:7z}.
+
 \subsection{Struktura souboru}
+Soubor ve formátu .7z zaèíná signaturou ['7', 'z', 0xBC, 0xAF, 0x27, 0x1C]
+\\------ Pzn. bude doplnìno -------------- \cite{Pavlov:2010} \cite{Pavlov:2015}
 \section{Srovnání}
 
 
-\section{Návrh modulu}
+\chapter{Návrh modulu}
 
-\section{Závìr}
+\chapter{Závìr}
 
 
 
