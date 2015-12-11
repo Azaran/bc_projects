@@ -2,70 +2,72 @@
 % (c) Michal Bidlo, Bohuslav Køena, 2008
 
 \chapter{Úvod}
-Ochrana a zabezpeèení soukromých a dùle¾itých informací je v dne¹ní dobì èasto se vyskytujícím
-tématem na poli informaèních technologií. Je jedno jestli se bavíme o zabezpeèení dat pøi pøenosu
-po síti nebo o zabezpeèení lokálnì ulo¾ených dat. Ka¾dý z nás asi zná situaci, kdy potøebuje
-sdílet s nìkým informace, ale chce zajistit, ¾e je budou schopni pøeèíst pouze osoby, které jsou k
-tomu urèeny.\\ 
-\indent Toho lze dosáhnout ¹ifrováním informací. V dne¹ní dobì máme nezpoèet mo¾ností jak ¹ifrovat
+Ochrana a zabezpeèení soukromých a dùle¾itých informací je v~dne¹ní dobì èasto se vyskytujícím
+tématem na poli informaèních technologií. Je jedno jestli se bavíme o~zabezpeèení dat pøi pøenosu
+po síti nebo o~zabezpeèení lokálnì ulo¾ených dat. Ka¾dý z~nás asi zná situaci, kdy potøebuje
+sdílet s~nìkým informace, ale chce zajistit, ¾e je budou schopni pøeèíst pouze osoby, které jsou
+k~tomu urèeny.\\ 
+\indent Toho lze dosáhnout ¹ifrováním informací. V~dne¹ní dobì máme nezpoèet mo¾ností jak ¹ifrovat
 informace. Výbìr pou¾itého ¹ifrovacího algoritmu má znaèný vliv na kvalitu zabezpeèení dat. Ov¹em
 zvolení správného hesla má vliv je¹tì vìt¹í. Pokud pou¾ijete slabou ¹ifru a silné heslo ¹ance, ¾e
-se k Va¹im datù dostane je o dost men¹í ne¾ kdy¾ to udìláte naopak.\\ 
-\indent Èasto chceme sdílet nebo zabezpeèit více jak jeden soubor s informacemi. Obecnì se pro
-spojení více souborù, rùzného typu, do jednoho celku pou¾ívají archivy. Jedním z nejroz¹íøenìj¹ích
+se k~Va¹im datù dostane je o~dost men¹í ne¾ kdy¾ to udìláte naopak.\\ 
+\indent Èasto chceme sdílet nebo zabezpeèit více jak jeden soubor s~informacemi. Obecnì se pro
+spojení více souborù, rùzného typu, do jednoho celku pou¾ívají archivy. Jedním z~nejroz¹íøenìj¹ích
 typù souborových archivù jsou formáty .ZIP a .7z.\\
-\indent V této práci se pøevá¾nì zabývám analýzou pou¾ívaných metod zabezpeèení a ¹ifrovacích
-algoritmù u tìchto formátù a následnì získáváním hesel k takto zabezpeèeným souborùm. Výsledky
+\indent V~této práci se pøevá¾nì zabývám analýzou pou¾ívaných metod zabezpeèení a ¹ifrovacích
+algoritmù u~tìchto formátù a následnì získáváním hesel k~takto zabezpeèeným souborùm. Výsledky
 tìchto analýz jsou pou¾ity pro návrh roz¹iøujících modulù nástroje {\it Wrathion}. Práce se také
-zabývá pøibli¾ením paralelismu a problémù s ním spojených a také úvedením do standardu a
+zabývá pøibli¾ením paralelismu a problémù s~ním spojených a také úvedením do standardu a
 frameworku OpenCL.
 
-\chapter{Úvod do paralelismu}
+\chapter{Paralelní výpoèty na GPU pomocí OpenCL}
 Dne¹ním trendem ve vývoji architektur pro výpoèetní zaøízení je umo¾nìní paralelního provádìní
-úloh. Jedná se o architektury otevírající dveøe k znatelnému zvý¹ení výkonu u zaøízeních na nich
+úloh. Jedná se o~architektury otevírající dveøe k~znatelnému zvý¹ení výkonu u~zaøízeních na nich
 postavených. Dnes ji¾ pova¾ujeme za normální, ¾e máme více--jádrové procesory (CPU), které
-podporují paralelní zpracování. Ov¹em jedním z hlavních pøedstavitelù toho trendu jsou grafické 
-výpoèetní jednotky (GPU). Existence tìchto typù zaøízení ús»í v potøebu mít prostøedky jak s tìmito
+podporují paralelní zpracování. Ov¹em jedním z~hlavních pøedstavitelù toho trendu jsou grafické 
+výpoèetní jednotky (GPU). Existence tìchto typù zaøízení ús»í v~potøebu mít prostøedky jak s~tìmito
 zaøízeními komunikovat a programovat je.\\
-\indent U paralelních aplikací je na¹í nejvìt¹í prioritou efektivnost vyu¾ití zdrojù. Dùvodem je
+\indent U~paralelních aplikací je na¹í nejvìt¹í prioritou efektivnost vyu¾ití zdrojù. Dùvodem je
 vysoká poøizovací cena a èasto i vysoké provozní náklady. Dal¹ím dùvodem je také nároènost aplikací
 na nich bì¾ících. Ty jsou ve vìt¹inì pøípadù èasovì velmi nároèné. Návrh i programování aplikace
-vyu¾ívající paralelismù mù¾e být znaènì nároèné. Je zde velký rozdíl v programovacích technikách.
-Programování paralelních aplikací pro CPU vychází ze za¾itých standardù pou¾ívaných pro vývoj
-klasických aplikací. Oproti tomu programování GPU a jiných specializovanìj¹ích zaøízení se od
-tìchto standardù velmi li¹í. Napøíklad vytváøení obecnì pou¾itelné aplikace urèené pro bìh na GPU
-je nároèné hlavnì z hlediska odli¹ného pamì»ovému modelu a jinou ¹kálou funkcí pro práci s ní. GPU
-ve znaèné míøe vyu¾ívá operace pro práci s vektory. Nejvìt¹ím problémem spojeným s programováním
-tìchto zaøízení je ¹kála rùzných pou¾ívaných architektur. Faktem je, ¾e v¹echny modely pro práci se
-zaøízeními (pamì»ový model, model provádìní atd.) se mohou mìnit a to v závislosti na platformì,
-výrobci èi pou¾itím hardwaru.\\
+vyu¾ívající paralelismù mù¾e být znaènì nároèné. Je zde velký rozdíl v~programovacích technikách.
+Programování paralelních aplikací pro CPU vychází ze za¾itých standardù, pro práci s~pamìtí,
+procesy nebo pro øízení bìhu aplikace, pou¾ívaných pro vývoj klasických aplikací. Oproti tomu
+programování GPU a jiných specializovanìj¹ích zaøízení se od tìchto standardù velmi li¹í.
+Napøíklad vytváøení obecnì pou¾itelné aplikace urèené pro bìh na GPU je nároèné hlavnì z~hlediska
+odli¹ného pamì»ovému modelu a jinou ¹kálou funkcí pro práci s~ní. GPU ve znaèné míøe vyu¾ívá
+operace pro práci s~vektory. Nejvìt¹ím problémem spojeným s~programováním tìchto zaøízení je ¹kála
+rùzných pou¾ívaných architektur. Faktem je, ¾e v¹echny modely pro práci se zaøízeními (pamì»ový
+model, model provádìní atd.) se mohou mìnit a to v~závislosti na platformì, výrobci èi pou¾itím
+hardwaru.\\
 \indent Takovýto vývoj obecnì pou¾itelných aplikací by byl nereálný, proto¾e bychom museli
 aplikaci vyvynout ve desítkách ne--li stovkách verzí pro jednotlivá konkrétní zaøízení, na kterých
 bychom chtìli aplikaci provozovat. Proto se vyskytla potøeba vytvoøit univerzální rozhraní, jen¾ by
-nad specifickými pøístupy k programování jednotlivých zaøízení vytvoøilo univerzální programovací
+nad specifickými pøístupy k~programování jednotlivých zaøízení vytvoøilo univerzální programovací
 vrstvu, její¾ instrukce by následnì byly interpretovány do instrukèní sady specifického zaøízení.
-Takovýmto rozhraním je napø.: CUDA nebo OpenCL.
+Takovýmto rozhraním je napø.: CUDA\footnote{Platforma vyvinutá spoleèností NVIDIA urèená pro
+umo¾nìní práce s~GPU této spoleènosti~\cite{NVIDIA}.} nebo OpenCL~\cite{AMD:2011}.
 
 \section{OpenCL}
-Jedná se o otevøený nezpoplatnìný standard slou¾ící k zjednodu¹ení a zefektivnìní programování
+Jedná se o~otevøený nezpoplatnìný standard slou¾ící k~zjednodu¹ení a zefektivnìní programování
 paralelních aplikací. OpenCL vyu¾ívá rozhraní, které pracuje na velmi nízké úrovni, tedy skoro na
 úrovni samotných fyzických souèástek, èím¾ dosahuje vysoké efektivity. Nad tímto rozhraním následnì
 vytváøí vrstvu pro výpoèty, jen¾ obsahuje pracovní prostøedky nezávislé na platformì. Hlavní síla
 OpenCL je zkombinování paralelních výpoètù aplikace na GPU se zøetìzeným rendrováním grafických
-prvkù.\\
+prvkù~\cite{Khronos:2015}.\\
 Standard:
 \begin{itemize}
     \item podporuje datovì i úlohovì zalo¾ené paralelní programovací modely
-    \item definuje konzistentní numerické po¾adavky vycházející z IEEE 754
+    \item definuje konzistentní numerické po¾adavky vycházející z~IEEE 754
     \item definuje konfiguraèní profil pro pøenosná zaøízení a vestavìné systémy
-    \item zaji¹»uje efektivní souèinnost s OpenGL, OpenGL SE a dal¹ími grafickými rozhraními
+    \item zaji¹»uje efektivní souèinnost s~OpenGL, OpenGL SE a dal¹ími grafickými rozhraními
 \end{itemize}
 
-Nejedná se pouze o standard pro psaní paralelních aplikací, ale i o stejnojmenný framework, který
+Nejedná se pouze o~standard pro psaní paralelních aplikací, ale i o~stejnojmenný framework, který
 je na tomto standardu postaven. Framework OpenCL zahrnuje programovací jazyky, rozhraní pro
-programování aplikací (API), knihovny a runtimový systém pro ulehèení vývoje.
+programování aplikací (API), knihovny a systém pro bìh programu ({\it runtime} systém).
 \subsection{Architektura OpenCL}
-Struktura OpenCL architektury lze popsat hieararchyckým modelem následovnì:
+Struktura OpenCL architektury lze popsat hieararchickým modelem následovnì:
 \begin{itemize}
     \item Model platformy
     \item Model provedení
@@ -74,13 +76,13 @@ Struktura OpenCL architektury lze popsat hieararchyckým modelem následovnì:
 \end{itemize}
 
 \subsubsection{Model platformy}
-Tento model se skládá z hostitele a jednoho nebo více OpenCL zaøízení, která je rozdìleno na jedno
+Tento model se skládá z~hostitele a jednoho nebo více OpenCL zaøízení, která je rozdìleno na jedno
 nebo více výpoèetních jednotek, které jsou dále dìleny na jeden nebo více výpoèetních prvkù.
 Na jednotlivých prvcích se pak provádí výpoèetní operace.\\
 \indent Rozdìlení na hostitele a zaøízení vy¾aduje implementovat aplikaci pro obì èásti. Tedy
-vytvoøit kód pro hostitele a pro kernel zaøízení. Vezmeme--li si jako pøíklad standardní poèítaè
-tak hostitel je CPU a zaøízení je GPU, pøípadnì více GPU.\\
-\begin{figure}[h]
+vytvoøit kód pro hostitele a kód pro GPU zaøízení ({\it OpenCL kernel}). Vezmeme--li si jako
+pøíklad standardní poèítaè tak hostitel je CPU a zaøízení je GPU, pøípadnì více GPU.\\
+\begin{figure}[ht]
     \begin{center}
 	\scalebox{1}{
 	    \includegraphics{../img/opencl_platform_model}
@@ -90,12 +92,12 @@ tak hostitel je CPU a zaøízení je GPU, pøípadnì více GPU.\\
     \label{platform}
 \end{figure}
 \subsubsection{Model provedení}
-Jak ji¾ bylo zmínìno aplikace se dìlí na dvì èásti. Zde hovoøíme o kernelech a o hostitelovì
+Jak ji¾ bylo zmínìno aplikace se dìlí na dvì èásti. Zde hovoøíme o~kernelech a o~hostitelovì
 programu, pøièem¾ kernel je ten, kdo provádí výpoèty. Tato ``práce'' je provádìna pomocí
 pracovních polo¾ek ({\it work-item}) jen¾ mù¾eme sdru¾ovat do pracovních skupin ({\it
 work-group}).\\
 \indent Hostitel má za úkol spravovat kontext aplikace a na základì nìho nastavovat prostøedí, ve
-kterém bude kernel provádìt operace. V prostøedí musíme specifikovat a nastavit tyto polo¾ky:
+kterém bude kernel provádìt operace. V~prostøedí musíme specifikovat a nastavit tyto polo¾ky:
 \begin{itemize}
     \item Zaøízení
     \item Objekty kernelu
@@ -104,7 +106,7 @@ kterém bude kernel provádìt operace. V prostøedí musíme specifikovat a nastavit 
 \end{itemize}
 
 \indent Hostitel se zaøízením komunikuje pomocí front pøíkazù, do nich¾ se pøíkazy rozøadí podle
-typu operace. Jednotlivé pøíkazy ve frontì se provádí relativnì k ostatním pøíkazùm. Poøadí
+typu operace. Jednotlivé pøíkazy ve frontì se provádí relativnì k~ostatním pøíkazùm. Poøadí
 provádìní je definováno tìmito modely:
 \begin{itemize}
     \item {\it In-order} -- pøíkazy se provádí a mají efekt tak, jak do fronty pøisly
@@ -113,39 +115,39 @@ provádìní je definováno tìmito modely:
 \end{itemize}
 
 \subsubsection{Model pamìti}
-Práce s pamìtí v OpenCL se znaènì li¹í od klasického pøístupu, který známe ze standardních
+Práce s~pamìtí v~OpenCL se znaènì li¹í od klasického pøístupu, který známe ze standardních
 aplikací urèených pro bìh pouze na CPU. Pamì»ový model OpenCL popisuje obsah, strukturu a chování
-pamìti pou¾ívané v platformì vytvoøené tímto frameworkem.
-\indent Pro ka¾dou aplikaci je tøeba pøesnì definovat jak budou jednotlivé pamìti v pamìti vypadat.
+pamìti pou¾ívané v~platformì vytvoøené tímto frameworkem.
+\indent Pro ka¾dou aplikaci je tøeba pøesnì definovat jak budou jednotlivé pamìti v~pamìti vypadat.
 Model dìlíme na ètyøi èásti:
 \begin{itemize}
     \item {\it Oblasti pamìti} -- definuje se kterými oblastmi pamìti hostitel a zaøízení ve
 	stejném kontextu mohou pracovat
-    \item {\it Objekty pamìti} -- jsou definované v OpenCL API, o správu se stará hostitel i
+    \item {\it Objekty pamìti} -- jsou definované v~OpenCL API, o~správu se stará hostitel i
 	zaøízení
-    \item {\it Sdílenou virtuální pamì»} -- jedná se o virtuální adresový prostor pøístupný obìma
+    \item {\it Sdílenou virtuální pamì»} -- jedná se o~virtuální adresový prostor pøístupný obìma
 	èástem aplikace
     \item {\it Model konzistence} -- definuje pravidla pro oblasti pamìti, které jsou pou¾ívané
-	více jednotkami zaráz a zaruèuje, ¾e je dodr¾eno poøadí operací s pamìtí a ¾e jsou data po
+	více jednotkami zaráz a zaruèuje, ¾e je dodr¾eno poøadí operací s~pamìtí a ¾e jsou data po
 	celou dobu validní. Takté¾ definuje synchronizaci nad tìmito oblastmi.
 \end{itemize}
 
 \indent Pro nás je nejdùle¾itìj¹í pochopit jak je pamì» strukturována a jak na sebe navazují
-jednotlivé oblast to je nejlépe patrné z obrázku \ref{memory}. Popis struktury:
+jednotlivé oblast to je nejlépe patrné z~obrázku \ref{memory}. Popis struktury:
 \begin{itemize}
     \item Pamì» hostitele (RAM apod.)
     \item Pamì» zaøízení
     \begin{itemize}
-	\item {\it Globální pamì»} -- oblast je pøístupná pro ètení i zápis v¹em jednotkám v
-	    kontextu nezávisle na zaøízení
+	\item {\it Globální pamì»} -- oblast je pøístupná pro ètení i zápis v¹em jednotkám
+v~kontextu nezávisle na zaøízení
 	\item {\it Pamì» konstant} -- pøed zahájením výpoètu je alokovaná a inicializována
-	    hostitelem a v prùbìhu výpoètu se tato oblast nemìní výpoètu
+	    hostitelem a v~prùbìhu výpoètu se tato oblast nemìní výpoètu
 	\item {\it Lokální pamì»} -- oblast je pøístupná v¹em pracovním polo¾kám ve
 	    stejné pracovní skupinì
 	\item {\it Soukromá pamì»} -- oblast je pøístupná pouze jedné pracovní polo¾ce 
     \end{itemize}
 \end{itemize}
-\begin{figure}[h]
+\begin{figure}[ht]
     \begin{center}
 	\scalebox{0.7}{
 	    \includegraphics{../img/opencl_figure5small1}
@@ -161,9 +163,9 @@ jazyky mohou být podporovány nìkterými implementacemi kompilátoru.
 
 
 \chapter{Nástroj Wrathion}
-Jedná se o nástroj vytvoøený Janem Shmiedem v roce 2014 v rámci jeho diplomové
-práci\cite{Schmied}. Nástroj byl vytvoøen pro pou¾ití v projektu {\it Moderní prostøedky pro 
-boj s kybernetickou kriminalitou na Internetu nové generace, MV, VG20102015022}.
+Jedná se o~nástroj vytvoøený Janem Shmiedem v~roce 2014 v~rámci jeho diplomové
+práci\cite{Schmied}. Nástroj byl vytvoøen pro pou¾ití v~projektu {\it Moderní prostøedky pro 
+boj s~kybernetickou kriminalitou na Internetu nové generace, MV, VG20102015022}.
 \section{Hlavní èásti Wrathionu}
 Nástroj slou¾í ke obnovování hesel pomocí brute-force útokù na tato hesla. Skládá se za ze tøí
 èástí:
@@ -173,36 +175,35 @@ Nástroj slou¾í ke obnovování hesel pomocí brute-force útokù na tato hesla. Sklád
 	\item Aplikace
 \end{itemize}
 
-Nástroj je z pohledu obnovování hesel rozdìlen na dvì stì¾ejní èásti:
+Nástroj je z~pohledu obnovování hesel rozdìlen na dvì stì¾ejní èásti:
 \subsection{Generátory hesel}
 První jsou generátory hesel pro útoky. Jednáse se esenciální funkcionalitu. Bez
-vygenerovaných hesel nemù¾eme na útoky vùbec myslet. V nástroji jsou momentálnì implementovány tøi
+vygenerovaných hesel nemù¾eme na útoky vùbec myslet. V~nástroji jsou momentálnì implementovány tøi
 typ generátorù:
 \begin{itemize}
     \item {\it Brute-force} -- postupnì generuje v¹echny mo¾né permutace ze zadaných znakù
-    \item {\it Rule-based} -- velmi podobný pøedchozí variantì ov¹em umo¾òuje specifikovat rùzná
+    \item {\it Unicode} -- jedná o~upravený brute-force generátor. V~tomto pøípadì je nastavena
+	vstupní abeceda na v¹echny Unicode znaky a znich jsou generovány mo¾né permutace hesel.
+    \item {\it Rule-based} -- velmi podobný pøedchozím variantá ov¹em umo¾òuje specifikovat rùzná
 	podpùrná pravidla pro generování hesel. Napøíklad, ¾e má být první písmeno velké, druhé má
 	být 'a' a ¾e poslední 2 znaky jsou èíslice. Toto umo¾òuje zù¾ení poètu permutací a tedy
-	sni¾uje èas potøebný k vygenerování v¹ech jejich variant (tento typ generátoru je vyvýjen v
-	rámci jiné bakaláøské  práce).
-    \item {\it Unicode} -- jedná o jistou formu rule-based generátoru ov¹em v tomto pøípadì je
-	pouze nastavena vstupní abeceda na v¹echny Unicode znaky a znich jsou generovány mo¾né
-	permutace hesel
-    \item {\it Dictionary} -- slovníkový generátor, vyu¾ívá externí soubory s èasto pou¾ívanými
+	sni¾uje èas potøebný k~vygenerování v¹ech jejich variant (tento typ generátoru je teprve
+	ve vývoji).
+    \item {\it Dictionary} -- slovníkový generátor, vyu¾ívá externí soubory s~èasto pou¾ívanými
 	hesly
 \end{itemize}
 
 \indent Nejèastìji pou¾ívaným generátor je brute-force, který je ov¹em výpoèetnì nároèný. Jedná se
-v¹ak o snadno paralelizovatelný, proto je pøíhodnì implementován i jako kernel bì¾ící na GPU.
+v¹ak o~snadno paralelizovatelný, proto je pøíhodnì implementován i jako kernel bì¾ící na GPU.
 \subsection{Crackery}
 Druhou èástí jsou samotné crackery, které se dìlí podle toho, kdo provádí generování hesel a
 kdo provádí porovnávání hesel:
 \subsubsection{CPU cracker}
-Zde se standardnì spustí ji¾ pøedkompilovaný cracker napsaný v C++. Není zde ¾ádný vìt¹í problém s
-generováním ani následným ovìøováním hesel. Ov¹em výpoèetní síla u paralelizovatelných algoritmù
+Zde se standardnì spustí ji¾ pøedkompilovaný cracker napsaný v~C++. Není zde ¾ádný vìt¹í problém
+s~generováním ani následným ovìøováním hesel. Ov¹em výpoèetní síla u~paralelizovatelných algoritmù
 není CPU ani zdaleka tak vysoká jako na GPU. Proto, pokud je to mo¾né, volíme druhou variantu
 crackeru.\\
-\begin{figure}[h]
+\begin{figure}[ht]
     \begin{center}
 	\scalebox{0.6}{
 	    \includegraphics{../img/proces.png}
@@ -214,118 +215,143 @@ crackeru.\\
 
 \subsubsection{GPU cracker}
 Cracker mù¾e pracovat ve dvouch re¾imech. Prvním je, ¾e hesla generujeme na CPU a pak je posíláme
-do pamìti GPU, kde jsou crackerem zpracována. To má ov¹em velkou nevýhodu v tom, ¾e musíme poøád
-posílat data z pamìti hostitele (CPU) do privátní pamìti výpoèetního prvku (vypoèetní jednotka
+do pamìti GPU, kde jsou crackerem zpracována. To má ov¹em velkou nevýhodu v~tom, ¾e musíme poøád
+posílat data z~pamìti hostitele (CPU) do privátní pamìti výpoèetního prvku (vypoèetní jednotka
 na GPU).\\
-\begin{figure}[h]
+\begin{figure}[ht]
     \begin{center}
 	\scalebox{0.7}{
 	    \includegraphics{../img/generovani_na_CPU}
+	    \includegraphics{../img/generovani_na_GPU}
 	}
     \end{center}
     \caption{Proces generování hesel na CPU a ovìøování na GPU}
     \label{CPUGPU}
 \end{figure}
 \indent Druhou a efektivnìj¹í mo¾ností je generovat hesla pøímo na GPU do privátních pamìtí èím
-minimalizujeme mno¾ství dat, které musí putovat od hostitele k zaøízení, èím¾ sní¾íme výslednou
+minimalizujeme mno¾ství dat, které musí putovat od hostitele k~zaøízení, èím¾ sní¾íme výslednou
 prodlevu výpoètù.\\
-\begin{figure}[h]
-    \begin{center}
-	\scalebox{0.7}{
-	    \includegraphics{../img/generovani_na_GPU}
-	}
-    \end{center}
-    \caption{Procese generování a ovìøování hesel na GPU}
-    \label{GPU}
-\end{figure}
-\indent V obou pøípadech je nutné pøed zahájením jakýchkoliv operací GPU inicializovat OpenCL
+\indent V~obou pøípadech je nutné pøed zahájením jakýchkoliv operací GPU inicializovat OpenCL
 systém. Tedy vytvoøit kontext, fronty pøíkazù, naèíst se a pøelo¾it po¾adovaný kernel a a¾ poté
 nahrát nebo vygenerovat data do/na GPU.
 
 \subsection{Moduly}
-Nástroj je navr¾en s velkým dùrazem na modularitu. V souèasné dobì obsahuje pouze tøi moduly.
-Roz¹íøení poètu implementovaných modulù má za úkol nejen tato práce, ale dvì dal¹í práce vypsané v
-leto¹ním roce.
+Nástroj je navr¾en s~velkým dùrazem na modularitu. V~souèasné dobì obsahuje pouze tøi moduly.
+Dal¹í moduly pro Wrathion jsou ve fázi vývoje.
 
 \subsubsection{Modul ZIP}
-V této práci nás nejvíce zajímá modul ZIP. Ten v pùvodním návrhu obsahuje pouze ¹ifrování
-obnovování hesel z archívù ¹ifrovaných algoritmy PKZIP, AES-128, AES-192, AES-256, co¾ zanechává
+V~této práci nás nejvíce zajímá modul ZIP. Ten v~pùvodním návrhu obsahuje pouze ¹ifrování
+obnovování hesel z~archívù ¹ifrovaných algoritmy PKZIP, AES-128, AES-192, AES-256, co¾ zanechává
 prostor pro implementaci dal¹í, formátem {\it .ZIP}, podporovaných metod. Zajímavostí je, ¾e tento modul
-byl schopný v dobì svého vzniku obnovit heslo ¹ifrovaných {\it .DOCX} souborù, av¹ak tento
-nedostatek u zabezpeèení formátu {\it .DOCX} byl pozdìji odstranìn a tento modul ji¾ tedy není
-schopen heslo, u souborù vytvoøených po zmínìn aktualizaci, obnovit.
+byl schopný v~dobì svého vzniku obnovit heslo ¹ifrovaných {\it .DOCX} souborù, av¹ak tento
+nedostatek u~zabezpeèení formátu {\it .DOCX} byl pozdìji odstranìn a tento modul ji¾ tedy není
+schopen heslo, u~souborù vytvoøených po zmínìné aktualizaci, obnovit.
 
 \subsubsection{Modul DOC}
-Dal¹í modul pracuje s formátem {\it .DOC}, který byl pokládán za základní formát aplikace MS Word z
-balíku MS Office. Tento formát byl s pøíchodem MS Office 2007 nahrazen formátem {\it .DOCX}. Nástroj ve své
-pùvodní podobì obsahuje pouze podporu pro {\it .DOC} formátu. Tvorba modulù pro novìj¹í formát
-{\it .DOCX} spolu s formáty pou¾ívanými v jiných aplikacích balíku MS Office jsou tématem
-jedné, soubì¾nì s touto prací spracovávané, bakaláøské práce.
+Dal¹í modul pracuje s~formátem {\it .DOC}, který byl pokládán za základní formát aplikace MS Word
+z~balíku MS Office. Tento formát byl s~pøíchodem MS Office 2007 nahrazen formátem {\it .DOCX}.
+Nástroj ve své pùvodní podobì obsahuje pouze podporu pro {\it .DOC} formátu. Tvorba modulù pro
+novìj¹í formát {\it .DOCX} spolu s~formáty pou¾ívanými v~jiných aplikacích balíku MS Office jsou
+jedny z~modulù, jen¾ jsou ve fázi vývoje.
 
 \subsubsection{Modul PDF}
-Prozatím posledním ji¾ vytvoøeným modulem je modul pracující s formátem {\it .pdf}. Zde jsou ji¾
-implementovány bezpeènostní revize 1-5. Nástroj poèítá i s implementací revize 6 ta ale není
-nikterak urgentní, proto¾e souborù pou¾ívajících revizí 5 a 6 je velice málo.
-
-
-\chapter{Popis formátù .ZIP a .7z}
+Prozatím posledním ji¾ vytvoøeným modulem je modul pracující s~formátem {\it .PDF}. Zde jsou ji¾
+implementovány bezpeènostní revize 1-5. Nástroj poèítá i s~implementací revize 6, ta ale prozatím
+není ani ve vývoji.
+\chapter{Analýza formátù .ZIP a .7z}
 \section{Formát .ZIP}
-Jedná se o jeden z prvních formátù souborových archivù, který podporoval kompresy dat. V roce 1989
-vytvoøil Phil Katz program PKZIP v rámci nìho¾ byl pøedstaven samotnýho nový formát .ZIP.
+Jedná se o~jeden z~prvních formátù souborových archivù, který podporoval kompresy dat. V~roce 1989
+vytvoøil Phil Katz program PKZIP v~rámci nìho¾ byl pøedstaven samotnýho nový formát .ZIP.
 Specifikace formátu .ZIP byla publikován pod veøejnou doménou. Tímto krokem pomohl
-formátu se stát celosvìtovým otevøeným standardem\cite{PKWARE:2015}. V roce 2015 byl formát, ve své
-specifikaci 6.3.3 z roku 2012, pøijat Mezinárodní orgranizací pro normalizaci (ISO) a Mezinárodní
-elektrotechnickou komísí (IEC) jako¾to standard definovaný dokumentem ISO/IEC
-21320-1:2015\cite{ISOIEC:2015}.\\
+formátu se stát celosvìtovým otevøeným standardem~\cite{PKWARE:2015}. V~roce 2015 byl formát, ve
+své specifikaci 6.3.3 z~roku 2012, pøijat Mezinárodní orgranizací pro normalizaci (ISO) a
+Mezinárodní elektrotechnickou komísí (IEC) jako¾to standard definovaný dokumentem ISO/IEC
+21320-1:2015~\cite{ISOIEC:2015}.\\
 \indent Formát podporuje velké mno¾ství rùzný komprimaèních algoritmù: Store(bez komprese),
 UnShrinking, Expanding, Imploding, Tokenizing, Deflating, Enhanced Deflating, BZIP2, LZMA, WavPack
-a PPMd\cite{PKWARE:2014}.\\ 
-\indent Obdobnì je to i s podporou rùzných ¹ifrovacích algoritmù:
+a PPMd~\cite{PKWARE:2014}.\\ 
+\indent Obdobnì je to i s~podporou rùzných ¹ifrovacích algoritmù:
 \begin{itemize}
     \item {\it PKWARE ¹ifrování} -- prvotní ¹ifrování 
-    \item {\it DES, 3DES(112-bit and 168-bit)} -- podporováno od verze 5.0 z roku 2002
-    \item {\it RC2 (40-bit, 64-bit a 168-bit)} -- podporováno od verze 5.0 z roku 2002
-    \item {\it RC4 (40-bit, 64-bit a 168-bit)} -- podporováno od verze 5.0 z roku 2002
-    \item {\it AES (128-bit, 192-bit a 256-bit)} -- podporováno od verze 5.2 z roku 2003
+    \item {\it DES, 3DES(112-bit and 168-bit)} -- podporováno od verze 5.0 z~roku 2002
+    \item {\it RC2 (40-bit, 64-bit a 168-bit)} -- podporováno od verze 5.0 z~roku 2002
+    \item {\it RC4 (40-bit, 64-bit a 168-bit)} -- podporováno od verze 5.0 z~roku 2002
+    \item {\it AES (128-bit, 192-bit a 256-bit)} -- podporováno od verze 5.2 z~roku 2003
 \end{itemize}
 
-\indent Nastává zde ale problém. Je prakticky nemo¾né najít nástroje umo¾òující vytvoøení archívù
-se ¹ifrováním DES, RC2 a RC4. Z toho tedy plyne, ¾e pravdìpodobnost výskytu archívù ¹ifrovaných
-tìmito metodami je minimální respektive témìø nulová.
+\indent Nastává zde ale problém. ®ádný z~a» u¾ volnì dostupných nebo komerèních nástrojù
+neumo¾òuje vytvoøení archívù se ¹ifrováním DES, RC2 a RC4. Z~toho tedy plyne, ¾e pravdìpodobnost
+výskytu archívù ¹ifrovaných tìmito metodami je minimální respektive témìø nulová.
 
 \subsection{Struktura souboru}
-Soubor se skládá z kombinace rùzných typù hlavièek s pevnou délkou, dat souborù v komprimované /
-nekomprimované a ¹ifrované / ne¹ifrované podobì a ve vìt¹inì pøípadù i popisovaè dat o velikosti 12
-bajtù. Konkrétní struktura je na obrazku \ref{zipstruct}.\\
-\begin{figure}[h]
+Soubory typu archív jsou takové soubory jen¾ v~sobì nesou dal¹í soubory. Dá se tedy øíct, ¾e jedná
+o~jakési \uv{schránky} do nich¾ lze vkládat, ale ají vybírat, urèité soubory rùzných typù.
+U~formátu .ZIP je to je¹tì on nìco vylep¹ené. Mù¾eme zde do archívù ukládat i slo¾ky a tak ukládat
+celé struktury tvoøené ze slo¾ek a souborù \ref{zipstruct}.\\
+\begin{figure}[ht]
     \begin{center}
 	\scalebox{0.5}{
 	    \includegraphics{../img/zip_layout}
 	}
     \end{center}
-    \caption{Struktura .ZIP souboru (zatím nekompletní)}
+    \caption{Struktura .ZIP souboru (zatím nekompletní) \cite{PKWARE:2014}}
     \label{zipstruct}
 \end{figure}
-\indent Hlavièka, roz¹íøená o metadata, ka¾dého souboru pak musí být obsa¾ena v nìkteré ze "Central
-Directory" sekcí zapoèaté pomocí vlo¾ení {\it Central Directory Header} a ukonèené dal¹í buïto
-dal¹í hlavièkou nebo pomocí {\it End of Central Directory Record}. Soubor musí v¾dy obsahovat
-alespoò jednu {\it Central Directory Header}. Jednotlivé sekce reprezentují adresáøe a hlavièky
-souborù reprezentují pùvodní organizaci souborù pøed vytvoøením archívu.\\
-\indent Pro tuto práci je ale nejdùle¾itìj¹í hlavièka {\it Encryption Header} nacházející se za
-hlavièkou souboru. Proto¾e ka¾dý soubor archívu mù¾e být ¹ifrován jinou metodou a s jiný klíèem,
-tak musíme hlavièku ¹ifrování vlo¾it pøed samotná data. Z teto hlavicky musim ziskat informace z
-polo¾ky {\it AlgID}, v ní¾ nás zajímají hodnoty 0x6609 a 0x6603 (3DES 112 a 168). Dal¹í pro nás
-dùle¾itou polo¾kou jsou {\it Flags}
-\\------ Pzn. bude doplnìno --------------\\
+\indent Obsah souboru archívu lze pro lep¹í orientaci rozdìlit na èást obsahující definice a data
+ulo¾ených souborù a na èást reprezentující organizaci souborù a slo¾ek.\\
+\begin{itemize}
+    \item První èást obsahuje záznamy, jen¾ se opakují pro ka¾dý ulo¾ený soubor. Jeden takovýto
+záznam musí obsahovat alespoò lokální hlavièku souboru a data souboru. Pokud je nastaven
+3. bit polo¾ky {\it General purpose bit flag} v~lokální hlavièce souboru tak musíme je¹tì poèítat
+s~tím, ¾e za data byla pøidána sekce {\it Data description} o~velikosti 12 bajtù.
+    \item Druhá èást se skládá ze struktury hlavièek centrálního adresáøe (Central Directory
+Header). Poèet tìchto hlavièek odpovídá odpovídá poètu souborù a slo¾ek obsa¾ených v~tomto
+archívu. Hlavièka centrálního adresáøe zaèíná signaturou [0x50, 0x4b, 0x01, 0x02] podle které je
+v~souboru identifikovatelný zaèátek hlavièky. Za ní následují metadata souboru. Napø.: datum a èas
+poslední úpravy obsa¾eného souboru, velikost pøed a po kompresy atd. Tato struktura hlavièek je
+ukonèena záznamem konec centrálního adresáøe. Ten zaèíná signaturou [0x50, 0x4b, 0x05, 0x06] a
+obsahuje informace o~tom na kterém disku je soubor ulo¾en, na kterém disku zaèíná struktura
+centrálního adresáøe a dal¹í.
+\end{itemize}
+
+\indent Od verze formátu 6.2 jsou pøed hlavièku centrálního adresáøe dal¹í polo¾ky a to hlavièka
+pro de¹ifrování archívu a záznam o~extra datech archívu. Tyto polo¾ky byly pøidány
+v~závislosti na pøidání nové funkce pro ¹ifrování obsahu hlavièek centrálního adresáøe.
+\subsubsection{Øídící struktury definující ¹ifrování}
+\indent Doteï jsme se bavili pouze o~základní struktuøe archívu. Nás ale spí¹e zajímají struktury
+archívù jen¾ obsahují soubory v~za¹ifrované podobì. Zda je soubor ¹ifrován lze zjistit z~jeho
+lokální hlavièky a konkétnì z~1. a 7. bitu polo¾ky {\it Flags}. Nastavení prvního bitu indikuje,
+¾e soubor ¹ifrován.
+\begin{itemize}
+    \item Pokud platí, ¾e není zároveò nastaven i 7. bit, je za lokální hlavièku souboru
+je pøidána hlavièka ¹ifrování. Hlavièka ¹ifrování se vá¾e pouze k~¹ifrování pomocí tradièní
+metody od spoleènosti PKWARE.
+    \item Pokud je nastaven i 7. bit indikující pou¾ití takzvaného \uv{silného ¹ifrování}. V~tomto
+pøípadì se hlaèka ¹ifrování negeneruje, ale pøidávájí se informace o~¹ifrování do hlavièky
+centrálního adresáøe a generuje se záznam s~hlavièkou pro de¹ifrování, který se tváøí jako souèást
+dat souboru a nachází se na samém zaèátku dat.
+\end{itemize}
+
+\indent Informace o~metodì ¹ifrování, délce klíèe atd. jsou uvedeny v~druhé èásti souboru
+z~dùvodù vy¹¹í bezpeènosti a¾ v~polo¾ce {\it Extra Fields} v~hlavièce centrálního adresáøe
+pøíslu¹ící souboru. Polo¾ku {\it Extra Fields} poznáme podle její signatury, kterou zaèíná a má
+hodnotu [0x00, 0x17]. Dal¹í polo¾ky obsahují informace o~pou¾itém ¹ifrovacím algoritmu, délce
+klíèe pro ¹ifrování nebo tøeba {\it Flags} definující co je vy¾adováno prode¹ifrování, jestli je
+vy¾adováno heslo nebo pouze certifikát nebo jedno nebo druhé, tedy heslo nebo certifikát, pøípadnì
+dal¹í mo¾nosti v~souvislosti s~pou¾itým certifikátem.\\
+\indent Záznam pro de¹ifrování obsahuje podobné informace jako {\it Extra Field} roz¹íøené o~délku
+¹ifrovacího klíèe, vzorek náhodných za¹ifrovaných dat a hlavnì o~informace pro validaci hesla a
+CRC-32\footnote{{\it Cyclic Redundancy Code} - speciální hashovací funkce slou¾ící pro detekci
+chyb / zmìn dat oproti pùvodní hodnotì} tìchto validaèních dat.\\
 
 
 \section{Formát .7z}
 Vznik tohoto formátu se datuje do roku 1999 a jeho autorem je Igor Pavlov. Stejnì tak jako aplikace
-7-zip a nástrojù spojených s tímto formátem\cite{wikipedie:Pavlov}. Formát se proslavil hlavnì
+7-zip a nástrojù spojených s~tímto formátem (7-Max, 7-Benchamark). Formát se proslavil hlavnì
 svojí otevøeností a modulární strukturou. Ta umo¾òuje skládání libovolných kompresní, konverzních a
 ¹ifrovacích metod.\\
 \indent Mezi podporované kompresní metody se øadí LZMA, LZMA2, PPMD, BCJ, BCJ2, BZip2 a
-Deflate. Jako výchozí metoda je brána LZMA. Hlavní výhody této metody jsou\cite{7z:2015}:
+Deflate. Jako výchozí metoda je brána LZMA. Hlavní výhody této metody jsou~\cite{7z:2015}:
 \begin{itemize}
     \item Vysoký kompresní koeficient
     \item Promìnná velikost slovníku
@@ -333,13 +359,13 @@ Deflate. Jako výchozí metoda je brána LZMA. Hlavní výhody této metody jsou\cite{
     \item Podpora zpracování pomocí multi-threading a hyper-threading
 \end{itemize}
 
-\indent Dal¹ími výhodami formátu je podpora komprese velkých souborù, názvy souborù v Unicode
+\indent Dal¹ími výhodami formátu je podpora komprese velkých souborù, názvy souborù v~Unicode
 kódování, spojení více souborù pøi kompresy do jednoho toku, komprese a ¹ifrování hlavièek archívù
 a dal¹í.\\
 \indent Standardnì pou¾itou ¹ifrovací metodou je AES-256 vy¾adující 256-bitovým ¹iforvacím heslem.
-Takovéto heslo se vytváøí pomocí hashovací funkce SHA-256 z u¾ivatelem zadaného hesla. Pro je¹tì
+Takovéto heslo se vytváøí pomocí hashovací funkce SHA-256 z~u¾ivatelem zadaného hesla. Pro je¹tì
 vy¹¹í zabezpeèení je provedeno \(2^{18}\) iterací pøi ka¾dém vytváøení hesla. To mù¾e mít za
-následek znatelnou prodlevu ne¾ zaène komprese souborù a ¹ifrování\cite{wikipedia:7z}.
+následek znatelnou prodlevu ne¾ zaène komprese souborù a ¹ifrování.
 
 \subsection{Struktura souboru}
 Soubor ve formátu .7z zaèíná signaturou ['7', 'z', 0xBC, 0xAF, 0x27, 0x1C]
