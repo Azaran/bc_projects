@@ -93,16 +93,17 @@ pøíklad standardní poèítaè tak hostitel je CPU a zaøízení je GPU, pøípadnì více 
 \end{figure}
 \subsubsection{Model provedení}
 Jak ji¾ bylo zmínìno aplikace se dìlí na dvì èásti. Zde hovoøíme o~kernelech a o~hostitelovì
-programu, pøièem¾ kernel je ten, kdo provádí výpoèty. Tato ``práce'' je provádìna pomocí
+programu, pøièem¾ kernel je ten, kdo provádí výpoèty. Tato \uv{práce} je provádìna pomocí
 pracovních polo¾ek ({\it work-item}) jen¾ mù¾eme sdru¾ovat do pracovních skupin ({\it
 work-group}).\\
-\indent Hostitel má za úkol spravovat kontext aplikace a na základì nìho nastavovat prostøedí, ve
+\indent Hostitel má za úkol spravovat kontext aplikace a na základì nìho nastavit prostøedí, ve
 kterém bude kernel provádìt operace. V~prostøedí musíme specifikovat a nastavit tyto polo¾ky:
 \begin{itemize}
-    \item Zaøízení
-    \item Objekty kernelu
-    \item Objekty programu
-    \item Objekty pamìti
+    \item Zaøízení -- jedno a více zaøízení ovladatelných platformou OpenCL
+    \item Objekty kernelu -- OpenCL funkce s pøednastavenými argumenty podle vybraného zaøízení
+    \item Objekty programu -- zdrojový kódu a jeho spustitelná verze, které implementují kernely
+    \item Objekty pamìti -- promìnné, ke kterým mù¾e pøistupovat hostitel i OpenCL zaøízení.
+	Instance kernelù bìhem svého provádìní operují s tìmito objekty.
 \end{itemize}
 
 \indent Hostitel se zaøízením komunikuje pomocí front pøíkazù, do nich¾ se pøíkazy rozøadí podle
@@ -170,9 +171,9 @@ boj s~kybernetickou kriminalitou na Internetu nové generace, MV, VG20102015022}.
 Nástroj slou¾í ke obnovování hesel pomocí brute-force útokù na tato hesla. Skládá se za ze tøí
 èástí:
 \begin{itemize}
-	\item Jádra
-	\item Modulù
-	\item Aplikace
+	\item Jádra -- zprostøedkovávajícího funkcionalitu potøebnou pro crackování
+	\item Modulù -- skrze které je zaji¹tìna podpora crackování rùzných formátù
+	\item Aplikace -- umo¾òující pracovat s frameworkem a moduly pomocí CLI rozhraní
 \end{itemize}
 
 Nástroj je z~pohledu obnovování hesel rozdìlen na dvì stì¾ejní èásti:
@@ -315,7 +316,7 @@ centrálního adresáøe a dal¹í.
 \end{itemize}
 
 \indent Od verze formátu 6.2 jsou pøed hlavièku centrálního adresáøe dal¹í polo¾ky a to hlavièka
-pro de¹ifrování archívu a záznam o~extra datech archívu. Tyto polo¾ky byly pøidány
+    pro de¹ifrování archívu a záznam o~extra datech archívu. Tyto polo¾ky byly pøidány
 v~závislosti na pøidání nové funkce pro ¹ifrování obsahu hlavièek centrálního adresáøe.
 \subsubsection{Øídící struktury definující ¹ifrování}
 \indent Doteï jsme se bavili pouze o~základní struktuøe archívu. Nás ale spí¹e zajímají struktury
@@ -347,9 +348,10 @@ chyb / zmìn dat oproti pùvodní hodnotì} tìchto validaèních dat.\\
 
 \section{Formát .7z}
 Vznik tohoto formátu se datuje do roku 1999 a jeho autorem je Igor Pavlov. Stejnì tak jako aplikace
-7-zip a nástrojù spojených s~tímto formátem (7-Max, 7-Benchamark). Formát se proslavil hlavnì
-svojí otevøeností a modulární strukturou. Ta umo¾òuje skládání libovolných kompresní, konverzních a
-¹ifrovacích metod.\\
+7-Zip a nástrojù spojených s~tímto formátem (7-Max, 7-Benchamark). Formát takté¾ slou¾í k
+vytvoøení souborových archívù podobnì jako .ZIP. Formát se proslavil hlavnì svojí otevøeností a
+modulární strukturou. Ta umo¾òuje skládání libovolných kompresních, konverzních a ¹ifrovacích
+metod.\\
 \indent Mezi podporované kompresní metody se øadí LZMA, LZMA2, PPMD, BCJ, BCJ2, BZip2 a
 Deflate. Jako výchozí metoda je brána LZMA. Hlavní výhody této metody jsou~\cite{7z:2015}:
 \begin{itemize}
@@ -358,18 +360,42 @@ Deflate. Jako výchozí metoda je brána LZMA. Hlavní výhody této metody jsou~\cite
     \item Malé nároky na pamì» pøi dekompresi
     \item Podpora zpracování pomocí multi-threading a hyper-threading
 \end{itemize}
-
 \indent Dal¹ími výhodami formátu je podpora komprese velkých souborù, názvy souborù v~Unicode
-kódování, spojení více souborù pøi kompresy do jednoho toku, komprese a ¹ifrování hlavièek archívù
-a dal¹í.\\
+kódování, mo¾nost spojení více souborù do jednoho toku, který je pak teprve komprimován, komprese
+a ¹ifrování hlavièek archívù a dal¹í.\\
 \indent Standardnì pou¾itou ¹ifrovací metodou je AES-256 vy¾adující 256-bitovým ¹iforvacím heslem.
 Takovéto heslo se vytváøí pomocí hashovací funkce SHA-256 z~u¾ivatelem zadaného hesla. Pro je¹tì
-vy¹¹í zabezpeèení je provedeno \(2^{18}\) iterací pøi ka¾dém vytváøení hesla. To mù¾e mít za
-následek znatelnou prodlevu ne¾ zaène komprese souborù a ¹ifrování.
+vy¹¹í zabezpeèení je provedeno \(2^{18}\) iterací pøi ka¾dém vytváøení hesla. To mù¾e mít na
+slab¹ích zaøízeních za následek znatelnou prodlevu ne¾ zaène komprese souborù a ¹ifrování.
 
 \subsection{Struktura souboru}
-Soubor ve formátu .7z zaèíná signaturou ['7', 'z', 0xBC, 0xAF, 0x27, 0x1C]
-\\------ Pzn. bude doplnìno -------------- \cite{Pavlov:2010} \cite{Pavlov:2015}
+Neprázdný soubory tohoto formátu má ètyøi èásti, které v nìm musí být v¾dy k nalezení. 
+\begin{itemize}
+    \item První èást se nachází hned zaèátku souboru a jedná se o hlavièku se signaturou ({\it
+	7zSignature}) ['7', 'z', 0xBC, 0xAF, 0x27, 0x1C] definující zaèátek souboru daného typu.
+	Za ní v rámci stejné hlavièky jsou informace o verzi archívu, CRC hlavièky a jako poslední
+	jsou polo¾ky týkající se pozice následující hlavièky. Najdeme tam relativní adresu
+	(uvedena jako vzdálenost od konce úvodní hlavièky), následuje pak délka dal¹í hlavièky a
+	CRC pro tyto dvì polo¾ky.
+    \item Druhá èást obstahuje zpracovaná data vytvoøených proudù. Tedy data samostatných nebo
+	pøípadnì i spojených souborù po kompresy, ¹ifrování apod.
+    \item Tøetí èást obsahuje zpracované informace slou¾ící jako podpùrná data pro hlavièku a její
+	polo¾ky.
+    \item Poslední ètvrtá èástí je hlavièka {\it 7zHeader}, její¾ zaèátek je definován v
+	úvodní hlavièce. Tato hlavièka má promìnnou délku a strukturu. Je ji tedy potøeba procházet
+	postupnì a zji¹»ovat, které polo¾ky jsou pøítomny a které ne. K identifikaci jednotlivých
+	polo¾ek slou¾í jedno bajtový identifikátor zapsaný v hexadecimální formì. Identifikátory
+	zaèínají hodnotou 0x00 a konèí 0x19 máme tedy k dispozici dvacetpìt polo¾ek s rùznou
+	velikostí, strukturou a polo¾kami. Jedinými povinnými údaji v hlavièce jsou polo¾ky
+	znaèící zaèátek hlavièky (0x01) a konec hlavièky (0x00). V¹echny ostatní polo¾ky jsou
+	pøípadnì umístìny mezi nì a zaèínají pøíslu¹ným identifikátorem~\cite{Pavlov:2010}.
+\end{itemize}
+
+Pro úèely této práce nás pøedev¹ím zajímají obsahy polo¾ek týkající se polo¾ek o proudech dat
+(0x03 nebo 0x04). V nich konkrétnì polo¾ka informace o kóderech (0x07), ve které se musíme
+propracovat k poli bajtù {\it CodecInfo}. Hodnoty tohoto pole musíme otestovat zda se shodují s
+identifikátorem standardní ¹ifrovací metody AES-256 + SHA-256 (0x6F10701)~\cite{Pavlov:2015}.\\  
+
 \section{Srovnání}
 
 
