@@ -20,6 +20,9 @@ tìchto analýz jsou pou¾ity pro návrh roz¹iøujících modulù nástroje {\it Wrathion
 zabývá pøibli¾ením paralelismu a problémù s~ním spojených a také úvedením do standardu a
 frameworku OpenCL.
 
+\chapter{Metody pro ¹ifrovaní a he¹ovaní}
+Tato kapitola se bude zabývat metodami 3DES, AES, SHA-1, SHA-256. Jak fungují jaké mají výhody
+apod. 
 \chapter{Paralelní výpoèty na GPU pomocí OpenCL}
 Dne¹ním trendem ve vývoji architektur pro výpoèetní zaøízení je umo¾nìní paralelního provádìní
 úloh. Jedná se o~architektury otevírající dveøe k~znatelnému zvý¹ení výkonu u~zaøízeních na nich
@@ -342,7 +345,7 @@ vy¾adováno heslo nebo pouze certifikát nebo jedno nebo druhé, tedy heslo nebo ce
 dal¹í mo¾nosti v~souvislosti s~pou¾itým certifikátem.\\
 \indent Záznam pro de¹ifrování obsahuje podobné informace jako {\it Extra Field} roz¹íøené o~délku
 ¹ifrovacího klíèe, vzorek náhodných za¹ifrovaných dat a hlavnì o~informace pro validaci hesla a
-CRC-32\footnote{{\it Cyclic Redundancy Code} - speciální hashovací funkce slou¾ící pro detekci
+CRC-32\footnote{{\it Cyclic Redundancy Code} - speciální he¹ovací funkce slou¾ící pro detekci
 chyb / zmìn dat oproti pùvodní hodnotì} tìchto validaèních dat.\\
 
 
@@ -364,12 +367,13 @@ Deflate. Jako výchozí metoda je brána LZMA. Hlavní výhody této metody jsou~\cite
 kódování, mo¾nost spojení více souborù do jednoho toku, který je pak teprve komprimován, komprese
 a ¹ifrování hlavièek archívù a dal¹í.\\
 \indent Standardnì pou¾itou ¹ifrovací metodou je AES-256 vy¾adující 256-bitovým ¹iforvacím heslem.
-Takovéto heslo se vytváøí pomocí hashovací funkce SHA-256 z~u¾ivatelem zadaného hesla. Pro je¹tì
+Takovéto heslo se vytváøí pomocí he¹ovací funkce SHA-256 z~u¾ivatelem zadaného hesla. Pro je¹tì
 vy¹¹í zabezpeèení je provedeno \(2^{18}\) iterací pøi ka¾dém vytváøení hesla. To mù¾e mít na
 slab¹ích zaøízeních za následek znatelnou prodlevu ne¾ zaène komprese souborù a ¹ifrování.
 
 \subsection{Struktura souboru}
-Neprázdný soubory tohoto formátu má ètyøi èásti, které v nìm musí být v¾dy k nalezení. 
+Neprázdný soubory tohoto formátu má ètyøi èásti, které v nìm musí být obsazeny viz.
+\ref{7zstruct}. Jedná se o polo¾ky: 
 \begin{itemize}
     \item První èást se nachází hned zaèátku souboru a jedná se o hlavièku se signaturou ({\it
 	7zSignature}) ['7', 'z', 0xBC, 0xAF, 0x27, 0x1C] definující zaèátek souboru daného typu.
@@ -391,12 +395,33 @@ Neprázdný soubory tohoto formátu má ètyøi èásti, které v nìm musí být v¾dy k nal
 	pøípadnì umístìny mezi nì a zaèínají pøíslu¹ným identifikátorem~\cite{Pavlov:2010}.
 \end{itemize}
 
-Pro úèely této práce nás pøedev¹ím zajímají obsahy polo¾ek týkající se polo¾ek o proudech dat
-(0x03 nebo 0x04). V nich konkrétnì polo¾ka informace o kóderech (0x07), ve které se musíme
-propracovat k poli bajtù {\it CodecInfo}. Hodnoty tohoto pole musíme otestovat zda se shodují s
-identifikátorem standardní ¹ifrovací metody AES-256 + SHA-256 (0x6F10701)~\cite{Pavlov:2015}.\\  
 
+\begin{figure}[ht]
+    \begin{center}
+	\scalebox{0.55}{
+	    \includegraphics{../img/7zstructure}
+	}
+    \end{center}
+    \caption{Struktura .7z souboru \cite{Pavlov:2015}}
+    \label{7zstruct}
+\end{figure}
+
+Pro úèely této práce nás pøedev¹ím zajímá hlavièka {\it 7zHeader} a v ní obsahy polo¾ek nesoucích
+informace o proudech dat (0x03 nebo 0x04). V nich konkrétnì polo¾ka informace o kóderech (0x07),
+ve které se musíme propracovat k poli bajtù {\it CodecInfo}. Hodnoty tohoto pole musíme otestovat
+zda se shodují s identifikátorem standardní ¹ifrovací metody AES-256 + SHA-256
+(0x6F10701)~\cite{Pavlov:2015}.\\
 \section{Srovnání}
+Pokud budeme srovnávat formáty z pohledu komprese tak zjistíme, ¾e má.7z ve vìt¹inì
+dostupných mìøení navrch nad .ZIP. Ov¹em nás spí¹e zamá zabezpeèení.\\
+\indent ©ifrování formátu .ZIP metodou PKZIP nemám moc cenu ani porovnávat s ostatními. Jedná se o
+metodu, která byla vyvinuta zároveò s formáte a ji¾ nedostaèuje dne¹ním bezpeènostním standardùm.\\
+\indent Pokud se ale podíváme na silnìj¹í zabezpeèení tak zjistíme, ¾e zde jsou formáty celkem
+vyrovnanéi oba dva podporují AES-256 s vyu¾itím nìjaké he¹ovací metody pro zabezpeèení hesla. Oba
+formáty ají podporují ¹ifrování hlavièek informací o metodách, které jsou pou¾ívány a jaké soubory
+obsahují.\\
+\indent Formát ZIP ale pøekonává 7z mo¾ností pou¾ití elektronických podpisù (certifikát typu
+X.509v3) k ¹ifrování souborù namísto hesel. 7z tuto funkcionalitu vùbec neobshahuje.
 
 
 \chapter{Návrh modulu}
