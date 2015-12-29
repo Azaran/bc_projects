@@ -26,6 +26,69 @@ frameworku OpenCL.
 \chapter{Metody pro ¹ifrovaní a he¹ovaní}
 Tato kapitola se bude zabývat metodami 3DES, AES, SHA-1, SHA-256. Jak fungují jaké mají výhody
 apod. 
+\section{Triple Data Encryption Algorithm (TDEA, 3DES)}
+Jedná se o roz¹íøenou verzi metody
+DES\footnote{Specifikace na \url{http://csrc.nist.gov/publications/fips/fips46-3/fips46-3.pdf}}. K
+vytvoøení této metody do¹lo na základì nedostateèné bezpeènosti metody DES proti útokùm hrubou
+silou. Jedním z po¾adavkù na novou metodu byla zpìtná kompatibilita s metodou DES tak, aby
+spoleènosti nemusely pøedìlávat své systémy.
+
+TDEA je symetrická bloková ¹ifra vyu¾ívající kryptografické jádro DES k ¹ifrování 64-bitového bloku
+dat. Metoda pracuje s 64-bitovým klíèem ov¹em pro ¹ifrování je pou¾ito pouze 56 bitý zbylé bity
+slou¾í k detekci chyb. 
+
+Metoda pou¾ívá tøi 56-bitové klíèe pro své operace. Jednotlivé klíèe jsou pou¾ity v rùzných krocích
+zpracování vstupních dat. Provádìné kroky jsou:
+\begin{enumerate}
+    \item ©ifrování dat pomocí klíèe K1.
+    \item De¹ifrování dat pomocí klíèe K2.
+    \item ©ifrování dat pomocí klíèe K3.
+\end{enumerate}
+Metoda mù¾e být pou¾ita v re¾imech:
+\begin{itemize}
+    \item Klíèe jsou reprezentovány na 168 bitech a jsou definovány jako K1 $\neq$ K2, K2 $\neq$ K3
+        a K1 $\neq$ K3. Ka¾dý klíè je tedy unikátní.
+    \item Klíèe jsou reprezentovány na 112 bitech. Zde jsou definovány jako K1 = K3 a K1 $\neq$ K2.
+    \item Posledním re¾ímem je pou¾ití jednoho 56-bitový klíèe a tedy K1 = K2 = K3.
+\end{itemize}
+V první a druhý re¾im jsou jedinými mo¾nostmi schválenými standardem jako dostateèné. Tøetí re¾im je
+pou¾it pouze pro kompatibilitu s DES. Pokud se toti¾ podíváme na provádìné kroky tak zjistíme, ¾e
+pokud jsou v¹echny klíèe identické je výstup TDEA identický s výstupem DES pøi pou¾ití stejného
+klíèe~\cite{NIST:2012}.
+
+\section{Advanced Encryption Standard (AES)}
+Tento standard byl vytvoøen kvùli nedostatkùm ¹ifrovací metody Triple DES v síle ¹ifrování a v
+rychlosti ¹iforvání dat. Pùvodní název této ¹ifrovací metody je Rijndael. Metoda Rijndael byla
+vybrána institutem National Institute of Standards and Technology jako nejlépe vyhovující metoda ze
+v¹ech pøihlá¹ených. Standard byl publikován v roce 2001~\cite{NIST:2001}.
+
+Jedná se o symetrickou blokovou ¹ifru pou¾ívající 128-bitový datový blok a promìnnou délkou
+¹ifrovacího hesla. Délka hesla mù¾e být 128, 192 nebo 256 bitù. To je reflektováno v názvu metody
+(AES-128, AES-192, AES-256). Metoda pracuje s daty po bajtech, ktere pripadne organizuje do poli
+nebo dvoudimenziálních polí bajtù. V metodì AES je pou¾ito dvoudimenzionální pole skládající se ze
+ètyø øádkù obsahujících ètyøi bajty. Toto dvou dimenzionální pole je nazýváno {\it State}.
+
+Na zaèátku ¹ifrování se nakopírují data ze vstupu do pole {\it State} a nainicializují se
+zaokrouhlovací klíèe ({\it Round Keys}). Poté je na základì pou¾ité délky ¹ifrovacího klíèe x--krát
+pou¾ita zaokrouhlovací funkce. Poèet opakování funkce je 10-krát pro 128b klíè, 12-krát pro 192b
+klíè a 14-krát pro 256b klíè. Funkce se skládá ze ètyø bajtovì-orientovaných transformací:
+\begin{enumerate}
+    \item nahrazení bajtù pomocí nahrazovací tabulky -- nelineární nahrazení bajtù, které funguje
+        nezávisle pro ka¾dý byte pole {\it State}
+    \item posun øádkù pole {\it State} o rùznou hodnotu (offset) -- je pou¾it cyklický posun
+        (rotace) vlevo, kde velikost posunu je rovna indexu øádku pole, tedy 0 a¾ 3
+    \item smíchání dat v rámci ka¾dého sloupce pole {\it State} -- ka¾dý sloupec je pova¾ován za
+        samostatný polynom ètvrté úrovnì, nad kterým jsou provádìny operace
+    \item pøidání zaokrouhlovacího klíèe ({\it Round Key}) k poli {\it State} -- zaokrouhlovací
+        klíèe jsou pøidávány pomocí bitové operace XOR provedené nad sloupci pole
+\end{enumerate}
+Pro de¹ifrování je pou¾ita inverzní funkce a proto¾e se jedná symetrickou ¹ifru je pro de¹ifrování
+pou¾ito stejné heslo jako pro ¹ifrování.
+
+\section{SHA-1}
+
+\section{SHA-256}
+
 \chapter{Paralelní výpoèty na GPU pomocí OpenCL}
 Dne¹ním trendem ve vývoji architektur pro výpoèetní zaøízení je umo¾nìní paralelního provádìní
 úloh. Jedná se o~architektury otevírající dveøe k~znatelnému zvý¹ení výkonu u~zaøízeních na nich
@@ -70,7 +133,6 @@ Standard:
     \item definuje konfiguraèní profil pro pøenosná zaøízení a vestavìné systémy
     \item zaji¹»uje efektivní souèinnost s~OpenGL, OpenGL SE a dal¹ími grafickými rozhraními
 \end{itemize}
-
 Nejedná se pouze o~standard pro psaní paralelních aplikací, ale i o~stejnojmenný framework, který
 je na tomto standardu postaven. Framework OpenCL zahrnuje programovací jazyky, rozhraní pro
 programování aplikací (API), knihovny a systém pro bìh programu ({\it runtime} systém).
@@ -115,9 +177,7 @@ kterém bude kernel provádìt operace. V~prostøedí musíme specifikovat a nastavit 
     \item Objekty pamìti -- promìnné, ke kterým mù¾e pøistupovat hostitel i OpenCL zaøízení.
 	Instance kernelù bìhem svého provádìní operují s tìmito objekty.
 \end{itemize}
-
-
- Hostitel se zaøízením komunikuje pomocí front pøíkazù, do nich¾ se pøíkazy rozøadí podle
+Hostitel se zaøízením komunikuje pomocí front pøíkazù, do nich¾ se pøíkazy rozøadí podle
 typu operace. Jednotlivé pøíkazy ve frontì se provádí relativnì k~ostatním pøíkazùm. Poøadí
 provádìní je definováno tìmito modely:
 \begin{itemize}
@@ -144,9 +204,7 @@ Model dìlíme na ètyøi èásti:
 	více jednotkami zaráz a zaruèuje, ¾e je dodr¾eno poøadí operací s~pamìtí a ¾e jsou data po
 	celou dobu validní. Takté¾ definuje synchronizaci nad tìmito oblastmi.
 \end{itemize}
-
-
- Pro nás je nejdùle¾itìj¹í pochopit jak je pamì» strukturována a jak na sebe navazují
+Pro nás je nejdùle¾itìj¹í pochopit jak je pamì» strukturována a jak na sebe navazují
 jednotlivé oblast to je nejlépe patrné z~obrázku \ref{memory}. Popis struktury:
 \begin{itemize}
     \item Pamì» hostitele (RAM apod.)
@@ -206,9 +264,7 @@ typ generátorù:
     \item {\it Dictionary} -- slovníkový generátor, vyu¾ívá externí soubory s~èasto pou¾ívanými
 	hesly
 \end{itemize}
-
-
- Nejèastìji pou¾ívaným generátor je brute-force, který je ov¹em výpoèetnì nároèný. Jedná se
+Nejèastìji pou¾ívaným generátor je brute-force, který je ov¹em výpoèetnì nároèný. Jedná se
 v¹ak o~snadno paralelizovatelný, proto je pøíhodnì implementován i jako kernel bì¾ící na GPU.
 \subsection{Crackery}
 Druhou èástí jsou samotné crackery, které se dìlí podle toho, kdo provádí generování hesel a
@@ -297,9 +353,7 @@ a PPMd~\cite{PKWARE:2014}.
     \item {\it RC4 (40-bit, 64-bit a 168-bit)} -- podporováno od verze 5.0 z~roku 2002
     \item {\it AES (128-bit, 192-bit a 256-bit)} -- podporováno od verze 5.2 z~roku 2003
 \end{itemize}
-
-
- Nastává zde ale problém. ®ádný z~a» u¾ volnì dostupných nebo komerèních nástrojù
+Nastává zde ale problém. ®ádný z~a» u¾ volnì dostupných nebo komerèních nástrojù
 neumo¾òuje vytvoøení archívù se ¹ifrováním DES, RC2 a RC4. Z~toho tedy plyne, ¾e pravdìpodobnost
 výskytu archívù ¹ifrovaných tìmito metodami je minimální respektive témìø nulová.
 
@@ -334,11 +388,10 @@ ukonèena záznamem konec centrálního adresáøe. Ten zaèíná signaturou [0x50, 0x4b,
 obsahuje informace o~tom na kterém disku je soubor ulo¾en, na kterém disku zaèíná struktura
 centrálního adresáøe a dal¹í.
 \end{itemize}
-
-
- Od verze formátu 6.2 jsou pøed hlavièku centrálního adresáøe dal¹í polo¾ky a to hlavièka
-    pro de¹ifrování archívu a záznam o~extra datech archívu. Tyto polo¾ky byly pøidány
+Od verze formátu 6.2 jsou pøed hlavièku centrálního adresáøe dal¹í polo¾ky a to hlavièka
+pro de¹ifrování archívu a záznam o~extra datech archívu. Tyto polo¾ky byly pøidány
 v~závislosti na pøidání nové funkce pro ¹ifrování obsahu hlavièek centrálního adresáøe.
+
 \subsubsection{Øídící struktury definující ¹ifrování}
 
  Doteï jsme se bavili pouze o~základní struktuøe archívu. Nás ale spí¹e zajímají struktury
@@ -347,23 +400,21 @@ lokální hlavièky nebo z jeho hlavièky centrálního adresáøe a konkétnì z~prvního 
 polo¾ky {\it General Purpose Bit Flag}. Nastavení prvního bitu indikuje, ¾e soubor ¹ifrován.
 \begin{itemize}
     \item Pokud platí, ¾e není zároveò nastaven i sedmý bit, je za lokální hlavièku souboru
-je pøidána hlavièka ¹ifrování. Hlavièka ¹ifrování se vá¾e pouze k~¹ifrování pomocí tradièní
-metody od spoleènosti PKWARE.
-    \item Pokud je nastaven i sedmý bit indikující pou¾ití takzvaného \uv{silného ¹ifrování}. V~tomto
-pøípadì se hlaèka ¹ifrování negeneruje, ale pøidávájí se informace o~¹ifrování do hlavièky
-centrálního adresáøe a generuje se záznam s~hlavièkou pro de¹ifrování, který se tváøí jako souèást
-dat souboru a nachází se na samém zaèátku dat.
+        je pøidána hlavièka ¹ifrování. Hlavièka ¹ifrování se vá¾e pouze k~¹ifrování pomocí tradièní
+        metody od spoleènosti PKWARE.
+    \item Pokud je nastaven i sedmý bit indikující pou¾ití takzvaného \uv{silného ¹ifrování}.
+        V~tomto pøípadì se hlaèka ¹ifrování negeneruje, ale pøidávájí se informace o~¹ifrování do
+        hlavièky centrálního adresáøe a generuje se záznam s~hlavièkou pro de¹ifrování, který se
+        tváøí jako souèást dat souboru a nachází se na samém zaèátku dat.
 \end{itemize}
-
-
- Informace o~metodì ¹ifrování, délce klíèe atd. jsou uvedeny v~druhé èásti souboru
+Informace o~metodì ¹ifrování, délce klíèe atd. jsou uvedeny v~druhé èásti souboru
 z~dùvodù vy¹¹í bezpeènosti. Pøesnìji v~polo¾ce {\it Extra Fields} v~hlavièce centrálního adresáøe
 pøíslu¹ící souboru. Polo¾ku {\it Extra Fields} poznáme podle její signatury, kterou zaèíná a má
 hodnotu [0x00, 0x17]. Dal¹í polo¾ky obsahují informace o~pou¾itém ¹ifrovacím algoritmu, délce
 klíèe pro ¹ifrování a pole pøíznakù {\it Flags} definující, zda je archív ¹ifrovaný, jaká je pou¾ita
 kompresní metoda, jaká Dco je vy¾adováno prode¹ifrování, jestli je
-vy¾adováno heslo nebo pouze certifikát nebo jedna ze obou uvedených, tedy heslo nebo certifikát, pøípadnì
-dal¹í mo¾nosti v~souvislosti s~pou¾itým certifikátem.
+vy¾adováno heslo nebo pouze certifikát nebo jedna ze obou uvedených, tedy heslo nebo certifikát,
+pøípadnì dal¹í mo¾nosti v~souvislosti s~pou¾itým certifikátem.
 
  Záznam pro de¹ifrování obsahuje podobné informace jako {\it Extra Field} roz¹íøené o~délku
 ¹ifrovacího klíèe, vzorek náhodných za¹ifrovaných dat a hlavnì o~informace pro validaci hesla a
@@ -386,8 +437,7 @@ Deflate. Jako výchozí metoda je brána LZMA. Hlavní výhody této metody jsou~\cite
     \item Malé nároky na pamì» pøi dekompresi
     \item Podpora zpracování pomocí multi-threading a hyper-threading
 \end{itemize}
-
- Dal¹ími výhodami formátu je podpora komprese velkých souborù, názvy souborù v~Unicode
+Dal¹ími výhodami formátu je podpora komprese velkých souborù, názvy souborù v~Unicode
 kódování, mo¾nost spojení více souborù do jednoho toku, který je pak teprve komprimován, komprese
 a ¹ifrování hlavièek archívù a dal¹í.
 
@@ -419,8 +469,6 @@ Neprázdný soubor tohoto formátu má ètyøi èásti, které v nìm musí být obsazeny vi
 	znaèící zaèátek hlavièky (0x01) a konec hlavièky (0x00). V¹echny ostatní polo¾ky jsou
 	pøípadnì umístìny mezi nì a zaèínají pøíslu¹ným identifikátorem~\cite{Pavlov:2010}.
 \end{itemize}
-
-
 %\begin{figure}[ht]
 %    \begin{center}
 %	\scalebox{0.55}{
@@ -430,7 +478,6 @@ Neprázdný soubor tohoto formátu má ètyøi èásti, které v nìm musí být obsazeny vi
 %    \caption{Struktura .7z souboru \cite{Pavlov:2015}}
 %    \label{7zstruct}
 %\end{figure}
-
 Pro úèely této práce nás pøedev¹ím zajímá hlavièka {\it 7zHeader} a v ní obsahy polo¾ek nesoucích
 informace o proudech dat (0x03 nebo 0x04). V nich konkrétnì polo¾ka informace o kóderech (0x07),
 ve které se musíme propracovat k poli bajtù {\it CodecInfo}. Hodnoty tohoto pole musíme otestovat
@@ -440,8 +487,7 @@ zda se shodují s identifikátorem standardní ¹ifrovací metody AES-256 + SHA-256
 \section{Srovnání}
 Pokud budeme srovnávat formáty z pohledu komprese, zjistíme, ¾e má .7z je dle mìøení efektivnìj¹í
 ne¾
-.ZIP\footnote{\url{http://www.howtogeek.com/200698/benchmarked-whats-the-best-file-compression-format/}}.
-Ov¹em nás spí¹e zajímá zabezpeèení.
+.ZIP\footnote{\url{http://www.howtogeek.com/200698/benchmarked-whats-the-best-file-compression-format/}}. Ov¹em nás spí¹e zajímá zabezpeèení.
 
  ©ifrování formátu .ZIP metodou PKZIP nemá smysl ani porovnávat s ostatními, nebo» se jedná o
 metodu, která ji¾ nedostaèuje dne¹ním bezpeènostním standardùm~\cite[PKWARE:2014]. 
@@ -451,7 +497,7 @@ bezpeènosti vyrovnané. Oba dva podporují AES-256 s vyu¾itím nìjaké he¹ovací meto
 hesla. Oba formáty také podporují ¹ifrování hlavièek obsahujících informace o metodách, které jsou
 pou¾ívány a jaké soubory obsahují.
 
- Formát ZIP ale pøekonává 7z mo¾ností pou¾ití elektronických podpisù (certifikát typu
+ Formát .ZIP, ale pøekonává .7z mo¾ností pou¾ití elektronických podpisù (certifikát typu
 X.509v3) k ¹ifrování souborù namísto hesel. 7z tuto funkcionalitu vùbec neobshahuje.
 
 
