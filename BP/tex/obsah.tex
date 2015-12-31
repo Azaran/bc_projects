@@ -24,48 +24,46 @@ zabývá pøibli¾ením paralelismu a problémù s~ním spojených a také úvedením do sta
 frameworku OpenCL.
 
 \chapter{Metody pro ¹ifrovaní a he¹ovaní}
-Tato kapitola se bude zabývat metodami 3DES, AES, SHA-1, SHA-256. Jak fungují jaké mají výhody
-apod. 
 \section{Triple Data Encryption Algorithm (TDEA, 3DES)}
-Jedná se o roz¹íøenou verzi metody
-DES\footnote{Specifikace na \url{http://csrc.nist.gov/publications/fips/fips46-3/fips46-3.pdf}}. K
-vytvoøení této metody do¹lo na základì nedostateèné bezpeènosti metody DES proti útokùm hrubou
-silou. Jedním z po¾adavkù na novou metodu byla zpìtná kompatibilita s metodou DES tak, aby
+Jedná se o~roz¹íøenou verzi metody
+DES\footnote{Specifikace na \url{http://csrc.nist.gov/publications/fips/fips46-3/fips46-3.pdf}}.
+K~vytvoøení této metody do¹lo na základì nedostateèné bezpeènosti metody DES proti útokùm hrubou
+silou. Jedním z~po¾adavkù na novou metodu byla zpìtná kompatibilita s~metodou DES tak, aby
 spoleènosti nemusely pøedìlávat své systémy.
 
-TDEA je symetrická bloková ¹ifra vyu¾ívající kryptografické jádro DES k ¹ifrování 64-bitového bloku
-dat. Metoda pracuje s 64-bitovým klíèem ov¹em pro ¹ifrování je pou¾ito pouze 56 bitý zbylé bity
-slou¾í k detekci chyb. 
+TDEA je symetrická bloková ¹ifra vyu¾ívající kryptografické jádro DES k~¹ifrování 64-bitového bloku
+dat. Metoda pracuje s~64-bitovým klíèem ov¹em pro ¹ifrování je pou¾ito pouze 56 bitý zbylé bity
+slou¾í k~detekci chyb. 
 
-Metoda pou¾ívá tøi 56-bitové klíèe pro své operace. Jednotlivé klíèe jsou pou¾ity v rùzných krocích
+Metoda pou¾ívá tøi 56-bitové klíèe pro své operace. Jednotlivé klíèe jsou pou¾ity v~rùzných krocích
 zpracování vstupních dat. Provádìné kroky jsou:
 \begin{enumerate}
     \item ©ifrování dat pomocí klíèe K1.
     \item De¹ifrování dat pomocí klíèe K2.
     \item ©ifrování dat pomocí klíèe K3.
 \end{enumerate}
-Metoda mù¾e být pou¾ita v re¾imech:
+Metoda mù¾e být pou¾ita v~re¾imech:
 \begin{itemize}
     \item Klíèe jsou reprezentovány na 168 bitech a jsou definovány jako K1 $\neq$ K2, K2 $\neq$ K3
         a K1 $\neq$ K3. Ka¾dý klíè je tedy unikátní.
     \item Klíèe jsou reprezentovány na 112 bitech. Zde jsou definovány jako K1 = K3 a K1 $\neq$ K2.
     \item Posledním re¾ímem je pou¾ití jednoho 56-bitový klíèe a tedy K1 = K2 = K3.
 \end{itemize}
-V první a druhý re¾im jsou jedinými mo¾nostmi schválenými standardem jako dostateèné. Tøetí re¾im je
-pou¾it pouze pro kompatibilitu s DES. Pokud se toti¾ podíváme na provádìné kroky tak zjistíme, ¾e
-pokud jsou v¹echny klíèe identické je výstup TDEA identický s výstupem DES pøi pou¾ití stejného
+V~první a druhý re¾im jsou jedinými mo¾nostmi schválenými standardem jako dostateèné. Tøetí re¾im je
+pou¾it pouze pro kompatibilitu s~DES. Pokud se toti¾ podíváme na provádìné kroky tak zjistíme, ¾e
+pokud jsou v¹echny klíèe identické je výstup TDEA identický s~výstupem DES pøi pou¾ití stejného
 klíèe~\cite{NIST:2012}.
 
 \section{Advanced Encryption Standard (AES)}
-Tento standard byl vytvoøen kvùli nedostatkùm ¹ifrovací metody Triple DES v síle ¹ifrování a v
-rychlosti ¹iforvání dat. Pùvodní název této ¹ifrovací metody je Rijndael. Metoda Rijndael byla
+Tento standard byl vytvoøen kvùli nedostatkùm ¹ifrovací metody Triple DES v~síle ¹ifrování a
+v~rychlosti ¹iforvání dat. Pùvodní název této ¹ifrovací metody je Rijndael. Metoda Rijndael byla
 vybrána institutem National Institute of Standards and Technology jako nejlépe vyhovující metoda ze
-v¹ech pøihlá¹ených. Standard byl publikován v roce 2001~\cite{NIST:2001}.
+v¹ech pøihlá¹ených. Standard byl publikován v~roce 2001~\cite{NIST:2001}.
 
-Jedná se o symetrickou blokovou ¹ifru pou¾ívající 128-bitový datový blok a promìnnou délkou
-¹ifrovacího hesla. Délka hesla mù¾e být 128, 192 nebo 256 bitù. To je reflektováno v názvu metody
-(AES-128, AES-192, AES-256). Metoda pracuje s daty po bajtech, ktere pripadne organizuje do poli
-nebo dvoudimenziálních polí bajtù. V metodì AES je pou¾ito dvoudimenzionální pole skládající se ze
+Jedná se o~symetrickou blokovou ¹ifru pou¾ívající 128-bitový datový blok a promìnnou délkou
+¹ifrovacího hesla. Délka hesla mù¾e být 128, 192 nebo 256 bitù. To je reflektováno v~názvu metody
+(AES-128, AES-192, AES-256). Metoda pracuje s~daty po bajtech, ktere pripadne organizuje do poli
+nebo dvoudimenziálních polí bajtù. V~metodì AES je pou¾ito dvoudimenzionální pole skládající se ze
 ètyø øádkù obsahujících ètyøi bajty. Toto dvou dimenzionální pole je nazýváno {\it State}.
 
 Na zaèátku ¹ifrování se nakopírují data ze vstupu do pole {\it State} a nainicializují se
@@ -75,19 +73,88 @@ klíè a 14-krát pro 256b klíè. Funkce se skládá ze ètyø bajtovì-orientovaných tra
 \begin{enumerate}
     \item nahrazení bajtù pomocí nahrazovací tabulky -- nelineární nahrazení bajtù, které funguje
         nezávisle pro ka¾dý byte pole {\it State}
-    \item posun øádkù pole {\it State} o rùznou hodnotu (offset) -- je pou¾it cyklický posun
+    \item posun øádkù pole {\it State} o~rùznou hodnotu (offset) -- je pou¾it cyklický posun
         (rotace) vlevo, kde velikost posunu je rovna indexu øádku pole, tedy 0 a¾ 3
-    \item smíchání dat v rámci ka¾dého sloupce pole {\it State} -- ka¾dý sloupec je pova¾ován za
+    \item smíchání dat v~rámci ka¾dého sloupce pole {\it State} -- ka¾dý sloupec je pova¾ován za
         samostatný polynom ètvrté úrovnì, nad kterým jsou provádìny operace
-    \item pøidání zaokrouhlovacího klíèe ({\it Round Key}) k poli {\it State} -- zaokrouhlovací
+    \item pøidání zaokrouhlovacího klíèe ({\it Round Key}) k~poli {\it State} -- zaokrouhlovací
         klíèe jsou pøidávány pomocí bitové operace XOR provedené nad sloupci pole
 \end{enumerate}
 Pro de¹ifrování je pou¾ita inverzní funkce a proto¾e se jedná symetrickou ¹ifru je pro de¹ifrování
 pou¾ito stejné heslo jako pro ¹ifrování.
 
 \section{SHA-1}
+Slou¾í pro he¹ování\footnote{Vytvoøení otisku zprávy s~konstantní výstupní velikostí pro jakkoliv
+velké vstupní zprávy.} zpráv s~maximální délkou $2^{64}-1$ bitù. Jako výstup produkuje 160 bitovou
+hodnotu tzv. he¹ (hash). Ten je vìt¹inou uveden v~hexa-decimální formì pro sní¾ení nárokù na ulo¾ení
+a vizuálního zkrácení výstupu~\cite{NIST:2015}. 
+
+Existují dvì mo¾nosti jak vytvoøit výstupní hodnotu. Jedna vy¾aduje více zdrojù, ale ve vìt¹inì
+pøípadù potøebuje krat¹í výpoèetní èas (popsána v~Algoritmu \ref{alg:SHA}). Druhá se spí¹e hodí pro systémy s~omezenými zdroji a které
+nevy¾adují co nejrychlej¹í zpracování.
+
+\begin{algorithm}[ht]
+    \SetStartEndCondition{ (}{)}{)}\SetAlgoBlockMarkers{}{}%
+    \SetKwProg{Fn}{}{\string:}{}%
+    \SetKwFor{For}{for}{\string:}{}%
+    \SetKwIF{If}{ElseIf}{Else}{if}{}{else if}{else}{}%
+    \SetKwFor{While}{while}{}{}%
+    \SetKwRepeat{Repeat}{repeat}{until}%
+    \SetKwInOut{Input}{vstup}\SetKwInOut{Output}{výstup}
+    \AlgoDisplayBlockMarkers\SetAlgoNoLine%
+    \DontPrintSemicolon
+    \Input{Zpráva $M$ o~délce $l$, kde $0 < l \leq  2^{64}$ bitù}
+    \Output{He¹ o~délce 160--bitù}
+    \Fn{SHA-1 ($M$)}{
+        Zarovnej zprávu, aby výsledek byl násobkem $512$\;
+        Rozdìl novì vytvoøenou zprávu na $N$ blokù po $512$ bitech ($16 * 32$ bitù blok)\;
+        Nastavení výchozích hodnot he¹ù $H^{(0)}_i$, kde $i = \{0,4\}$\;
+        \For{$i = 1;\,i < N;\,i = i + 1$}{
+            $W = f_{rozsir}(B)$ \tcc*[r]{z $ 16 * 32$-bit hodnoty na $80 * 32$-bit hodnotu}
+            \tcp*[l]{Inicializuj registry konstantami}
+            $a = H_0,\,b = H_1,\,c = H_2,\,d = H_3,\,e = H_4$\;
+            \For{$t = 0;\, t < 80;\, t = t + 1$}{
+                $s = t \wedge MASK$\;
+                \If{$ t \geq 16$}{
+                    $W_s = ROTL^1(W_{(s+13)\wedge MASK} \oplus W_{(s+8)\wedge MASK} \oplus
+                    W_{(s+2)\wedge MASK} \oplus W_s$\;
+                }
+                \If{$ 0 \leq i \leq 19$}{
+                    $T = ROTL^5(a) + (x \wedge y) \oplus (\neg x \wedge z) + e + K_t + W_s$\;
+                }
+                \ElseIf{$20 \leq i \leq 39$ or $60 \leq i \leq 79$}{
+                    $T = ROTL^5(a) + (x \oplus y \oplus z) + e + K_t + W_s$\;
+                }
+                \ElseIf{$40 \leq i \leq 59$}{
+                    $T = ROTL^5(a) + (x \wedge y) \oplus (x \wedge z) \oplus (y \wedge z) 
+                        + e + K_t + W_s$\;
+                }
+                $e = d, d = c$\;
+                $c = ROTL^{30}(b)$\;
+                $b = a, a = T$\;
+            }
+            $H^{(i)}_0 = a + H^{(i-1)}_0$\;
+            $H^{(i)}_1 = b + H^{(i-1)}_1$\;
+            $H^{(i)}_2 = c + H^{(i-1)}_2$\;
+            $H^{(i)}_3 = d + H^{(i-1)}_3$\;
+            $H^{(i)}_4 = e + H^{(i-1)}_4$\;
+        }
+        \Return{$concat(H^{(N)}_0, H^{(N)}_1, H^{(N)}_2, H^{(N)}_3, H^{(N)}_4)$}
+    }
+
+    \caption{Princip SHA funkce}\label{alg:SHA}
+\end{algorithm}
 
 \section{SHA-256}
+Nástupce SHA-1 mající stejná omezení pro vstupní zprávu jako jeho pøedchùdce. Av¹ak li¹í se v~délce
+výstupní hodnoty, kde v~tomto pøípadì má velikost 256-bitù. To poskytuje podstatnì víc mo¾ných
+vypoètených hodnot a sní¾í se tedy procentuální pravdìpodobnost, ¾e dojde ke kolizi vypoètených
+hodnot pro rùzné vstupní zprávy co¾ se pou¾ívá jako jeden z~mo¾ných útokù na he¹ovací
+funkce~\cite{NIST:2015}.
+
+Tato he¹ovací funkce má takté¾ vy¹¹í nároky na zdroje pøi výpoètu výsledku. Nemá takové pamì»ové
+nároky jako její pøedchùdce. Av¹ak výpoèet je realizován pomocí ¹esti logických funkcí namísto
+pùvodních ètyø. Tím se prodlu¾uje èas potøebný k~získání výsledku.
 
 \chapter{Paralelní výpoèty na GPU pomocí OpenCL}
 Dne¹ním trendem ve vývoji architektur pro výpoèetní zaøízení je umo¾nìní paralelního provádìní
@@ -172,10 +239,10 @@ work-group}).
 kterém bude kernel provádìt operace. V~prostøedí musíme specifikovat a nastavit tyto polo¾ky:
 \begin{itemize}
     \item Zaøízení -- jedno a více zaøízení ovladatelných platformou OpenCL
-    \item Objekty kernelu -- OpenCL funkce s pøednastavenými argumenty podle vybraného zaøízení
+    \item Objekty kernelu -- OpenCL funkce s~pøednastavenými argumenty podle vybraného zaøízení
     \item Objekty programu -- zdrojový kódu a jeho spustitelná verze, které implementují kernely
     \item Objekty pamìti -- promìnné, ke kterým mù¾e pøistupovat hostitel i OpenCL zaøízení.
-	Instance kernelù bìhem svého provádìní operují s tìmito objekty.
+	Instance kernelù bìhem svého provádìní operují s~tìmito objekty.
 \end{itemize}
 Hostitel se zaøízením komunikuje pomocí front pøíkazù, do nich¾ se pøíkazy rozøadí podle
 typu operace. Jednotlivé pøíkazy ve frontì se provádí relativnì k~ostatním pøíkazùm. Poøadí
@@ -244,7 +311,7 @@ Nástroj slou¾í ke obnovování hesel pomocí brute-force útokù na tato hesla. Sklád
 \begin{itemize}
 	\item Jádra -- zprostøedkovávajícího funkcionalitu potøebnou pro crackování
 	\item Modulù -- skrze které je zaji¹tìna podpora crackování rùzných formátù
-	\item Aplikace -- umo¾òující pracovat s frameworkem a moduly pomocí CLI rozhraní
+	\item Aplikace -- umo¾òující pracovat s~frameworkem a moduly pomocí CLI rozhraní
 \end{itemize}
 
 Nástroj je z~pohledu obnovování hesel rozdìlen na dvì stì¾ejní èásti:
@@ -361,7 +428,7 @@ výskytu archívù ¹ifrovaných tìmito metodami je minimální respektive témìø nulová
 Archívy jsou takové soubory jen¾ v~sobì nesou dal¹í soubory. Dá se tedy øíct, ¾e jedná
 o~jakési \uv{schránky} do nich¾ lze vkládat, ale i vybírat, urèité soubory rùzných typù.
 U~formátu .ZIP lze do archívù navíc ukládat i adresáøe a tak ukládat
-celé struktury tvoøené z adresáøù a souborù \ref{zipstruct}.
+celé struktury tvoøené z~adresáøù a souborù \ref{zipstruct}.
 \begin{figure}[ht]
     \begin{center}
 	\scalebox{0.5}{
@@ -396,7 +463,7 @@ v~závislosti na pøidání nové funkce pro ¹ifrování obsahu hlavièek centrálního ad
 
  Doteï jsme se bavili pouze o~základní struktuøe archívu. Nás ale spí¹e zajímají struktury
 archívù jen¾ obsahují soubory v~za¹ifrované podobì. Zda je soubor ¹ifrován lze zjistit z~jeho
-lokální hlavièky nebo z jeho hlavièky centrálního adresáøe a konkétnì z~prvního a sedmého bitu
+lokální hlavièky nebo z~jeho hlavièky centrálního adresáøe a konkétnì z~prvního a sedmého bitu
 polo¾ky {\it General Purpose Bit Flag}. Nastavení prvního bitu indikuje, ¾e soubor ¹ifrován.
 \begin{itemize}
     \item Pokud platí, ¾e není zároveò nastaven i sedmý bit, je za lokální hlavièku souboru
@@ -424,8 +491,8 @@ chyb / zmìn dat oproti pùvodní hodnotì} tìchto validaèních dat.
 
 \section{Formát .7z}
 Vznik tohoto formátu se datuje do roku 1999 a jeho autorem je Igor Pavlov. Stejnì tak jako aplikace
-7-Zip a nástrojù spojených s~tímto formátem (7-Max, 7-Benchamark). Formát takté¾ slou¾í k
-vytvoøení souborových archívù podobnì jako .ZIP. Formát se proslavil hlavnì svojí otevøeností a
+7-Zip a nástrojù spojených s~tímto formátem (7-Max, 7-Benchamark). Formát takté¾ slou¾í
+k~vytvoøení souborových archívù podobnì jako .ZIP. Formát se proslavil hlavnì svojí otevøeností a
 modulární strukturou. Ta umo¾òuje skládání libovolných kompresních, konverzních a ¹ifrovacích
 metod.
 
@@ -447,12 +514,12 @@ vy¹¹í zabezpeèení je provedeno \(2^{18}\) iterací pøi ka¾dém vytváøení hesla. To
 slab¹ích zaøízeních za následek znatelnou prodlevu ne¾ zaène komprese souborù a ¹ifrování.
 
 \subsection{Struktura souboru}
-Neprázdný soubor tohoto formátu má ètyøi èásti, které v nìm musí být obsazeny viz.
-\ref{7zstruct}. Jedná se o polo¾ky: 
+Neprázdný soubor tohoto formátu má ètyøi èásti, které v~nìm musí být obsazeny viz.
+\ref{7zstruct}. Jedná se o~polo¾ky: 
 \begin{itemize}
-    \item První èást se nachází hned zaèátku souboru a jedná se o hlavièku se signaturou ({\it
+    \item První èást se nachází hned zaèátku souboru a jedná se o~hlavièku se signaturou ({\it
 	7zSignature}) ['7', 'z', 0xBC, 0xAF, 0x27, 0x1C] definující zaèátek souboru daného typu.
-	Za ní v rámci stejné hlavièky jsou informace o verzi archívu, CRC hlavièky a jako poslední
+	Za ní v~rámci stejné hlavièky jsou informace o~verzi archívu, CRC hlavièky a jako poslední
 	jsou polo¾ky týkající se pozice následující hlavièky. Najdeme zde relativní adresu
 	(uvedena jako vzdálenost od konce úvodní hlavièky), následuje pak délka dal¹í hlavièky a
 	CRC pro tyto dvì polo¾ky.
@@ -460,12 +527,12 @@ Neprázdný soubor tohoto formátu má ètyøi èásti, které v nìm musí být obsazeny vi
 	pøípadnì i spojených souborù po kompresi, ¹ifrování apod.
     \item Tøetí èást obsahuje zpracované informace slou¾ící jako podpùrná data pro hlavièku a její
 	polo¾ky.
-    \item Poslední ètvrtá èástí je hlavièka {\it 7zHeader}, její¾ zaèátek je definován v
-	úvodní hlavièce. Tato hlavièka má promìnnou délku a strukturu. Je ji tedy potøeba procházet
-	postupnì a zji¹»ovat, které polo¾ky jsou pøítomny a které ne. K identifikaci jednotlivých
-	polo¾ek slou¾í jednobajtový identifikátor zapsaný v hexadecimální formì. Identifikátory
-	zaèínají hodnotou 0x00 a konèí 0x19i. Máme tedy k dispozici dvacetpìt polo¾ek s rùznou
-	velikostí, strukturou a polo¾kami. Jedinými povinnými údaji v hlavièce jsou polo¾ky
+    \item Poslední ètvrtá èástí je hlavièka {\it 7zHeader}, její¾ zaèátek je definován
+v~úvodní hlavièce. Tato hlavièka má promìnnou délku a strukturu. Je ji tedy potøeba procházet
+	postupnì a zji¹»ovat, které polo¾ky jsou pøítomny a které ne. K~identifikaci jednotlivých
+	polo¾ek slou¾í jednobajtový identifikátor zapsaný v~hexadecimální formì. Identifikátory
+	zaèínají hodnotou 0x00 a konèí 0x19i. Máme tedy k~dispozici dvacetpìt polo¾ek s~rùznou
+	velikostí, strukturou a polo¾kami. Jedinými povinnými údaji v~hlavièce jsou polo¾ky
 	znaèící zaèátek hlavièky (0x01) a konec hlavièky (0x00). V¹echny ostatní polo¾ky jsou
 	pøípadnì umístìny mezi nì a zaèínají pøíslu¹ným identifikátorem~\cite{Pavlov:2010}.
 \end{itemize}
@@ -478,27 +545,27 @@ Neprázdný soubor tohoto formátu má ètyøi èásti, které v nìm musí být obsazeny vi
 %    \caption{Struktura .7z souboru \cite{Pavlov:2015}}
 %    \label{7zstruct}
 %\end{figure}
-Pro úèely této práce nás pøedev¹ím zajímá hlavièka {\it 7zHeader} a v ní obsahy polo¾ek nesoucích
-informace o proudech dat (0x03 nebo 0x04). V nich konkrétnì polo¾ka informace o kóderech (0x07),
-ve které se musíme propracovat k poli bajtù {\it CodecInfo}. Hodnoty tohoto pole musíme otestovat
-zda se shodují s identifikátorem standardní ¹ifrovací metody AES-256 + SHA-256
+Pro úèely této práce nás pøedev¹ím zajímá hlavièka {\it 7zHeader} a v~ní obsahy polo¾ek nesoucích
+informace o~proudech dat (0x03 nebo 0x04). V~nich konkrétnì polo¾ka informace o~kóderech (0x07),
+ve které se musíme propracovat k~poli bajtù {\it CodecInfo}. Hodnoty tohoto pole musíme otestovat
+zda se shodují s~identifikátorem standardní ¹ifrovací metody AES-256 + SHA-256
 (0x6F10701)~\cite{Pavlov:2015}.
 
 \section{Srovnání}
-Pokud budeme srovnávat formáty z pohledu komprese, zjistíme, ¾e má .7z je dle mìøení efektivnìj¹í
+Pokud budeme srovnávat formáty z~pohledu komprese, zjistíme, ¾e má .7z je dle mìøení efektivnìj¹í
 ne¾
 .ZIP\footnote{\url{http://www.howtogeek.com/200698/benchmarked-whats-the-best-file-compression-format/}}. Ov¹em nás spí¹e zajímá zabezpeèení.
 
- ©ifrování formátu .ZIP metodou PKZIP nemá smysl ani porovnávat s ostatními, nebo» se jedná o
-metodu, která ji¾ nedostaèuje dne¹ním bezpeènostním standardùm~\cite[PKWARE:2014]. 
+ ©ifrování formátu .ZIP metodou PKZIP nemá smysl ani porovnávat s~ostatními, nebo» se jedná
+o~metodu, která ji¾ nedostaèuje dne¹ním bezpeènostním standardùm~\cite[PKWARE:2014]. 
 
- Pokud se ale podíváme na silnìj¹í metody zabezpeèení, zjistíme, ¾e formáty jsou z hlediska
-bezpeènosti vyrovnané. Oba dva podporují AES-256 s vyu¾itím nìjaké he¹ovací metody pro zabezpeèení
-hesla. Oba formáty také podporují ¹ifrování hlavièek obsahujících informace o metodách, které jsou
+ Pokud se ale podíváme na silnìj¹í metody zabezpeèení, zjistíme, ¾e formáty jsou z~hlediska
+bezpeènosti vyrovnané. Oba dva podporují AES-256 s~vyu¾itím nìjaké he¹ovací metody pro zabezpeèení
+hesla. Oba formáty také podporují ¹ifrování hlavièek obsahujících informace o~metodách, které jsou
 pou¾ívány a jaké soubory obsahují.
 
  Formát .ZIP, ale pøekonává .7z mo¾ností pou¾ití elektronických podpisù (certifikát typu
-X.509v3) k ¹ifrování souborù namísto hesel. 7z tuto funkcionalitu vùbec neobshahuje.
+X.509v3) k~¹ifrování souborù namísto hesel. 7z tuto funkcionalitu vùbec neobshahuje.
 
 
 \chapter{Návrh modulu}
