@@ -17,6 +17,7 @@ $(CO).pdf: clean
 	bibtex $(CO)
 	pdflatex $(CO)
 	pdflatex $(CO)
+	rm -f *.dvi *.log $(CO).blg $(CO).bbl $(CO).toc *.aux $(CO).out $(CO).lof
 
 $(CO).dvi: $(CO).tex $(CO).bib
 	latex $(CO)
