@@ -222,11 +222,11 @@ vytvoøit kód pro hostitele a kód pro GPU zaøízení ({\it OpenCL kernel}). Vezmeme
 pøíklad standardní poèítaè tak hostitel je CPU a zaøízení je GPU, pøípadnì více GPU.
 \begin{figure}[ht]
     \begin{center}
-	\scalebox{1}{
-	    \includegraphics{../img/opencl_platform_model}
+	\scalebox{0.3}{
+	    \includegraphics{fig/opencl_platform_model}
 	}
     \end{center}
-    \caption{Model OpenCL platformy}
+    \caption{Model OpenCL platformy \cite{Khronos:2015}}
     \label{platform}
 \end{figure}
 \subsubsection{Model provedení}
@@ -288,11 +288,11 @@ v~kontextu nezávisle na zaøízení
 \end{itemize}
 \begin{figure}[ht]
     \begin{center}
-	\scalebox{0.7}{
-	    \includegraphics{../img/opencl_figure5small1}
+	\scalebox{0.27}{
+	    \includegraphics{fig/opencl_memory_structure}
 	}
     \end{center}
-    \caption{Struktura pamìti OpenCL}
+    \caption{Struktura pamìti OpenCL \cite{Khronos:2015}}
     \label{memory}
 \end{figure}
 \subsubsection{Programovací model}
@@ -313,12 +313,19 @@ Nástroj slou¾í ke obnovování hesel pomocí brute-force útokù na tato hesla. Sklád
 	\item Modulù -- skrze které je zaji¹tìna podpora crackování rùzných formátù
 	\item Aplikace -- umo¾òující pracovat s~frameworkem a moduly pomocí CLI rozhraní
 \end{itemize}
-
-Nástroj je z~pohledu obnovování hesel rozdìlen na dvì stì¾ejní èásti:
+\begin{figure}[ht]
+    \begin{center}
+	\scalebox{0.34}{
+	    \includegraphics{fig/wrathion_structure}
+	}
+    \end{center}
+    \caption{Schéma struktury nástroje Wrathion \cite{Hranicky}}
+    \label{memory}
+\end{figure}
 \subsection{Generátory hesel}
-První jsou generátory hesel pro útoky. Jednáse se esenciální funkcionalitu. Bez
-vygenerovaných hesel nemù¾eme na útoky vùbec myslet. V~nástroji jsou momentálnì implementovány tøi
-typ generátorù:
+První èástí Wrathionu, kterou si rozebereme jsou generátory hesel pro útoky. Jednáse se esenciální
+funkcionalitu. Bez vygenerovaných hesel nemù¾eme na útoky vùbec myslet. V~nástroji jsou momentálnì
+implementovány tøi typ generátorù:
 \begin{itemize}
     \item {\it Brute-force} -- postupnì generuje v¹echny mo¾né permutace ze zadaných znakù
     \item {\it Unicode} -- jedná o~upravený brute-force generátor. V~tomto pøípadì je nastavena
@@ -334,36 +341,35 @@ typ generátorù:
 Nejèastìji pou¾ívaným generátor je brute-force, který je ov¹em výpoèetnì nároèný. Jedná se
 v¹ak o~snadno paralelizovatelný, proto je pøíhodnì implementován i jako kernel bì¾ící na GPU.
 \subsection{Crackery}
-Druhou èástí jsou samotné crackery, které se dìlí podle toho, kdo provádí generování hesel a
+Druhou èástí jsou samotné crackery, které se dìlíme podle toho, kdo provádí generování hesel a
 kdo provádí porovnávání hesel:
 \subsubsection{CPU cracker}
-Zde se standardnì spustí ji¾ pøedkompilovaný cracker napsaný v~C++. Není zde ¾ádný vìt¹í problém
+Zde se standardnì spustí ji¾ pøedkompilovaný cracker napsaný v~C++ (viz. Obr.\ref{CPU}). Není zde ¾ádný vìt¹í problém
 s~generováním ani následným ovìøováním hesel. Ov¹em výpoèetní síla u~paralelizovatelných algoritmù
 není CPU ani zdaleka tak vysoká jako na GPU. Proto, pokud je to mo¾né, volíme druhou variantu
 crackeru.
 \begin{figure}[ht]
     \begin{center}
-	\scalebox{0.6}{
-	    \includegraphics{../img/proces.png}
+	\scalebox{0.3}{
+	    \includegraphics{fig/proces}
 	}
     \end{center}
-    \caption{Proces generování a ovìøování hesel na CPU}
+    \caption{Proces generování a ovìøování hesel na CPU \cite{Schmied}}
     \label{CPU}
 \end{figure}
 
 \subsubsection{GPU cracker}
-Cracker mù¾e pracovat ve dvouch re¾imech. Prvním je, ¾e hesla generujeme na CPU a pak je posíláme
+Cracker mù¾e pracovat ve dvouch re¾imech (viz. Obr. \ref{CPUGPU}). Prvním je, ¾e hesla generujeme na CPU a pak je posíláme
 do pamìti GPU, kde jsou crackerem zpracována. To má ov¹em velkou nevýhodu v~tom, ¾e musíme poøád
 posílat data z~pamìti hostitele (CPU) do privátní pamìti výpoèetního prvku (vypoèetní jednotka
 na GPU).
 \begin{figure}[ht]
     \begin{center}
-	\scalebox{0.7}{
-	    \includegraphics{../img/generovani_na_CPU}
-	    \includegraphics{../img/generovani_na_GPU}
+	\scalebox{0.30}{
+	    \includegraphics{fig/generators}
 	}
     \end{center}
-    \caption{Proces generování hesel na CPU a ovìøování na GPU}
+    \caption{Proces generování hesel na CPU a ovìøování na GPU \cite{Schmied}}
     \label{CPUGPU}
 \end{figure}
 
@@ -431,11 +437,11 @@ U~formátu .ZIP lze do archívù navíc ukládat i adresáøe a tak ukládat
 celé struktury tvoøené z~adresáøù a souborù \ref{zipstruct}.
 \begin{figure}[ht]
     \begin{center}
-	\scalebox{0.5}{
-	    \includegraphics{../img/zip_layout}
+	\scalebox{0.225}{
+	    \includegraphics{fig/zip_structure}
 	}
     \end{center}
-    \caption{Struktura .ZIP souboru (zatím nekompletní) \cite{PKWARE:2014}}
+    \caption{Struktura .ZIP souboru \cite{PKWARE:2014}}
     \label{zipstruct}
 \end{figure}
 
@@ -536,15 +542,15 @@ v~úvodní hlavièce. Tato hlavièka má promìnnou délku a strukturu. Je ji tedy potø
 	znaèící zaèátek hlavièky (0x01) a konec hlavièky (0x00). V¹echny ostatní polo¾ky jsou
 	pøípadnì umístìny mezi nì a zaèínají pøíslu¹ným identifikátorem~\cite{Pavlov:2010}.
 \end{itemize}
-%\begin{figure}[ht]
-%    \begin{center}
-%	\scalebox{0.55}{
-%	    \includegraphics{../img/7zstructure}
-%	}
-%    \end{center}
-%    \caption{Struktura .7z souboru \cite{Pavlov:2015}}
-%    \label{7zstruct}
-%\end{figure}
+\begin{figure}[ht]
+    \begin{center}
+	\scalebox{0.35}{
+	    \includegraphics{fig/7z_structure}
+	}
+    \end{center}
+    \caption{Struktura .7z souboru \cite{Pavlov:2015}}
+    \label{7zstruct}
+\end{figure}
 Pro úèely této práce nás pøedev¹ím zajímá hlavièka {\it 7zHeader} a v~ní obsahy polo¾ek nesoucích
 informace o~proudech dat (0x03 nebo 0x04). V~nich konkrétnì polo¾ka informace o~kóderech (0x07),
 ve které se musíme propracovat k~poli bajtù {\it CodecInfo}. Hodnoty tohoto pole musíme otestovat
