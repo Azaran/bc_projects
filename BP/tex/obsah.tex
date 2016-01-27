@@ -90,8 +90,20 @@ hodnotu tzv. he¹ (hash). Ten je vìt¹inou uveden v~hexa-decimální formì pro sní¾e
 a vizuálního zkrácení výstupu~\cite{NIST:2015}. 
 
 Existují dvì mo¾nosti jak vytvoøit výstupní hodnotu. Jedna vy¾aduje více zdrojù, ale ve vìt¹inì
-pøípadù potøebuje krat¹í výpoèetní èas (popsána v~Algoritmu \ref{alg:SHA}). Druhá se spí¹e hodí pro systémy s~omezenými zdroji a které
-nevy¾adují co nejrychlej¹í zpracování.
+pøípadù potøebuje krat¹í výpoèetní èas (popsána v~Algoritmu \ref{alg:SHA}). Druhá se spí¹e hodí
+pro systémy s~omezenými zdroji a které nevy¾adují co nejrychlej¹í zpracování.
+
+
+\section{SHA-256}
+Nástupce SHA-1 mající stejná omezení pro vstupní zprávu jako jeho pøedchùdce, av¹ak li¹í se v~délce
+výstupní hodnoty, která má v~tomto pøípadì velikost 256-bitù. To poskytuje podstatnì víc mo¾ných
+vypoètených hodnot a sní¾í se tedy procentuální pravdìpodobnost, ¾e dojde ke kolizi vypoètených
+hodnot pro rùzné vstupní zprávy co¾ se pou¾ívá jako jeden z~mo¾ných útokù na he¹ovací
+funkce~\cite{NIST:2015}.
+
+Tato he¹ovací funkce má takté¾ vy¹¹í nároky na zdroje pøi výpoètu výsledku. Nemá takové pamì»ové
+nároky jako její pøedchùdce. Av¹ak výpoèet je realizován pomocí ¹esti logických funkcí namísto
+pùvodních ètyø. Tím se prodlu¾uje èas potøebný k~získání výsledku.
 
 \begin{algorithm}[ht]
     \SetStartEndCondition{ (}{)}{)}\SetAlgoBlockMarkers{}{}%
@@ -144,17 +156,6 @@ nevy¾adují co nejrychlej¹í zpracování.
 
     \caption{Princip SHA funkce}\label{alg:SHA}
 \end{algorithm}
-
-\section{SHA-256}
-Nástupce SHA-1 mající stejná omezení pro vstupní zprávu jako jeho pøedchùdce, av¹ak li¹í se v~délce
-výstupní hodnoty, která má v~tomto pøípadì velikost 256-bitù. To poskytuje podstatnì víc mo¾ných
-vypoètených hodnot a sní¾í se tedy procentuální pravdìpodobnost, ¾e dojde ke kolizi vypoètených
-hodnot pro rùzné vstupní zprávy co¾ se pou¾ívá jako jeden z~mo¾ných útokù na he¹ovací
-funkce~\cite{NIST:2015}.
-
-Tato he¹ovací funkce má takté¾ vy¹¹í nároky na zdroje pøi výpoètu výsledku. Nemá takové pamì»ové
-nároky jako její pøedchùdce. Av¹ak výpoèet je realizován pomocí ¹esti logických funkcí namísto
-pùvodních ètyø. Tím se prodlu¾uje èas potøebný k~získání výsledku.
 
 \chapter{Paralelní výpoèty na GPU pomocí OpenCL}
 Dne¹ním trendem ve vývoji architektur pro výpoèetní zaøízení je umo¾nìní paralelního provádìní
@@ -344,8 +345,8 @@ v¹ak o~snadno paralelizovatelný, proto je pøíhodnì implementován i jako kernel b
 Druhou èástí jsou samotné crackery, které se dìlíme podle toho, kdo provádí generování hesel a
 kdo provádí porovnávání hesel:
 \subsubsection{CPU cracker}
-Zde se standardnì spustí ji¾ pøedkompilovaný cracker napsaný v~C++ (viz. Obr.\ref{CPU}). Není zde
-¾ádný vìt¹í problém s~generováním ani následným ovìøováním hesel, ov¹em výpoèetní síla
+Zde se standardnì spustí ji¾ pøedkompilovaný cracker napsaný v~C++ (viz. obrázek \ref{CPU}). Není
+zde ¾ádný vìt¹í problém s~generováním ani následným ovìøováním hesel, ov¹em výpoèetní síla
 u~paralelizovatelných algoritmù není CPU ani zdaleka tak vysoká jako na GPU. Proto, pokud je to
 mo¾né, volíme druhou variantu crackeru.
 \begin{figure}[ht]
@@ -359,9 +360,9 @@ mo¾né, volíme druhou variantu crackeru.
 \end{figure}
 
 \subsubsection{GPU cracker}
-Cracker mù¾e pracovat ve dvou re¾imech (viz. Obr. \ref{CPUGPU}). V~prvním hesla generujeme na CPU
-a pak je posíláme do pamìti GPU, kde jsou crackerem zpracována. To má ov¹em velkou nevýhodu v~tom,
-¾e musíme poøád posílat data z~pamìti hostitele (CPU) do privátní pamìti výpoèetního prvku
+Cracker mù¾e pracovat ve dvou re¾imech (viz. obrázek \ref{CPUGPU}). V~prvním hesla generujeme na
+CPU a pak je posíláme do pamìti GPU, kde jsou crackerem zpracována. To má ov¹em velkou nevýhodu
+v~tom, ¾e musíme poøád posílat data z~pamìti hostitele (CPU) do privátní pamìti výpoèetního prvku
 (vypoèetní jednotka na GPU).
 \begin{figure}[ht]
     \begin{center}
@@ -432,6 +433,7 @@ neumo¾òuje vytvoøení archivù se ¹ifrováním DES, RC2 a RC4. Z~toho tedy plyne, ¾e
 výskytu archivù ¹ifrovaných tìmito metodami je minimální respektive témìø nulová.
 
 \subsection{Struktura souboru}
+\label{ssec:zip_struct}
 Archivy jsou takové soubory, jen¾ v~sobì nesou dal¹í soubory. Dá se tedy øíct, ¾e se jedná
 o~jakési \uv{schránky} do nich¾ lze vkládat, ale i vybírat, urèité soubory rùzných typù.
 U~formátu .ZIP lze do archivù navíc ukládat i adresáøe a tak ukládat
@@ -467,11 +469,10 @@ pro de¹ifrování archivu a záznam o~extra datech archivu. Tyto polo¾ky byly pøidá
 v~závislosti na pøidání nové funkce pro ¹ifrování obsahu hlavièek centrálního adresáøe.
 
 \subsubsection{Øídící struktury definující ¹ifrování}
-
  Zatím jsme se bavili pouze o~základní struktuøe archivu. Nás ale spí¹e zajímají struktury
 archivù, jen¾ obsahují soubory v~za¹ifrované podobì. Zda je soubor ¹ifrován lze zjistit z~jeho
 lokální hlavièky nebo z~jeho hlavièky centrálního adresáøe a konkétnì z~prvního a sedmého bitu
-polo¾ky {\it General Purpose Bit Flag}. Nastavení prvního bitu indikuje, ¾e soubor ¹ifrován.
+polo¾ky {\it General Purpose Bit Flag}. Nastavení prvního bitu indikuje, ¾e je soubor ¹ifrován.
 \begin{itemize}
     \item Pokud platí, ¾e není zároveò nastaven i sedmý bit, je za lokální hlavièku souboru
         je pøidána hlavièka ¹ifrování. Hlavièka ¹ifrování se vá¾e pouze k~¹ifrování pomocí tradièní
@@ -486,17 +487,20 @@ z~dùvodù vy¹¹í bezpeènosti. Pøesnìji v~polo¾ce {\it Extra Fields} v~hlavièce cen
 pøíslu¹ící souboru. Polo¾ku {\it Extra Fields}, poznáme podle její signatury, kterou zaèíná a má
 hodnotu [0x00, 0x17]. Dal¹í polo¾ky obsahují informace o~pou¾itém ¹ifrovacím algoritmu, délce
 klíèe pro ¹ifrování a pole pøíznakù {\it Flags} definující, zda je archiv ¹ifrovaný, jaká je
-pou¾ita kompresní metoda, co je vy¾adováno pro de¹ifrování, jestli je vy¾adováno heslo nebo pouze
-certifikát nebo jedna z~obou uvedených, tedy heslo nebo certifikát, pøípadnì dal¹í mo¾nosti
-v~souvislosti s~pou¾itým certifikátem.
+pou¾ita kompresní metoda, co je vy¾adováno pro de¹ifrování, zda je vy¾adováno pouze heslo nebo
+pouze certifikát nebo je mo¾né pou¾ít buï heslo nebo certifikát. Dal¹í mo¾nosti závisí na pou¾itém
+certifikátu.
 
- Záznam pro de¹ifrování obsahuje podobné informace jako {\it Extra Field} roz¹íøené o~délku
-¹ifrovacího klíèe, vzorek náhodných za¹ifrovaných dat a hlavnì o~informace pro validaci hesla a
-CRC-32\footnote{{\it Cyclic Redundancy Code} - speciální he¹ovací funkce slou¾ící pro detekci
-chyb / zmìn dat oproti pùvodní hodnotì} tìchto validaèních dat.
+ Záznam pro de¹ifrování obsahuje o inicializaèní vektor (IV, sùl), identifikátor algoritmu pro
+de¹ifrování, bitovou délku ¹ifrovacího klíèe, za¹ifrovaný vzorek náhodných dat (Erddata) a hlavnì
+o~informace pro validaci hesla (VData) a CRC-32 (VCRC32)\footnote{{\it Cyclic Redundancy Code} -
+speciální he¹ovací funkce slou¾ící pro detekci chyb / zmìn dat oproti pùvodní hodnotì} tìchto
+validaèních dat. 
+
 
 
 \section{Formát .7z}
+\label{sec:7z}
 Vznik tohoto formátu se datuje do roku 1999 a jeho autorem je Igor Pavlov. Stejnì jako aplikace
 7-Zip a nástrojù spojených s~tímto formátem (7-Max, 7-Benchamark). Formát takté¾ slou¾í
 k~vytvoøení souborových archivù podobnì jako .ZIP. Formát se proslavil hlavnì svojí otevøeností a
@@ -517,10 +521,11 @@ a ¹ifrování hlavièek archivù a dal¹í.
 
  Standardnì pou¾itou ¹ifrovací metodou je AES-256 vy¾adující 256-bitové ¹ifrovací heslo.
 Takovéto heslo se vytváøí pomocí he¹ovací funkce SHA-256 z~u¾ivatelem zadaného hesla. Pro je¹tì
-vy¹¹í zabezpeèení je provedeno \(2^{18}\) iterací pøi ka¾dém vytváøení hesla. To mù¾e mít na
+vy¹¹í zabezpeèení je provedeno \(2^{19}\) iterací pøi ka¾dém vytváøení hesla. To mù¾e mít na
 slab¹ích zaøízeních za následek znatelnou prodlevu ne¾ zaène komprese souborù a ¹ifrování.
 
 \subsection{Struktura souboru}
+\label{ssec:7z_struct}
 Neprázdný soubor tohoto formátu má ètyøi èásti, které v~nìm musí být obsa¾eny viz.
 \ref{7zstruct}. Jedná se o~polo¾ky: 
 \begin{itemize}
@@ -532,16 +537,17 @@ Neprázdný soubor tohoto formátu má ètyøi èásti, které v~nìm musí být obsa¾eny vi
 	CRC pro tyto dvì polo¾ky.
     \item Druhá èást obstahuje zpracovaná data vytvoøených proudù, tedy data samostatných nebo
 	pøípadnì i spojených souborù po kompresi, ¹ifrování apod.
-    \item Tøetí èást obsahuje zpracované informace slou¾ící jako podpùrná data pro hlavièku a její
+    \item Tøetí èást obsahuje zpracované :ormace slou¾ící jako podpùrná data pro hlavièku a její
 	polo¾ky.
-    \item Poslední ètvrtá èástí je hlavièka {\it 7zHeader}, její¾ zaèátek je definován
-v~úvodní hlavièce. Tato hlavièka má promìnnou délku a strukturu. Je ji tedy potøeba procházet
-	postupnì a zji¹»ovat, které polo¾ky jsou pøítomny a které ne. K~identifikaci jednotlivých
-	polo¾ek slou¾í jednobajtový identifikátor zapsaný v~hexadecimální formì. Identifikátory
-	zaèínají hodnotou 0x00 a konèí 0x19i. Máme tedy k~dispozici dvacetpìt polo¾ek s~rùznou
-	velikostí, strukturou a polo¾kami. Jedinými povinnými údaji v~hlavièce jsou polo¾ky
-	znaèící zaèátek hlavièky (0x01) a konec hlavièky (0x00). V¹echny ostatní polo¾ky jsou
-	pøípadnì umístìny mezi nì a zaèínají pøíslu¹ným identifikátorem~\cite{Pavlov:2010}.
+    \item Poslední ètvrtá èástí je 7z hlavièka ({\it 7zHeader}), její¾ zaèátek je definován
+	v~úvodní hlavièce. Tato hlavièka má promìnnou délku a strukturu. Je ji tedy potøeba
+	procházet postupnì a zji¹»ovat, které polo¾ky jsou pøítomny a které ne. K~identifikaci
+	jednotlivých polo¾ek slou¾í jednobajtový identifikátor zapsaný v~hexadecimální formì.
+	Identifikátory zaèínají hodnotou 0x00 a konèí 0x19. Máme tedy k~dispozici dvacetpìt
+	polo¾ek s~rùznou velikostí, strukturou a polo¾kami. Jedinými povinnými údaji v~hlavièce
+	jsou polo¾ky znaèící zaèátek hlavièky (0x01) a konec hlavièky (0x00). V¹echny ostatní
+	polo¾ky jsou pøípadnì umístìny mezi nì a zaèínají pøíslu¹ným
+	identifikátorem~\cite{Pavlov:2010}.  
 \end{itemize}
 \begin{figure}[ht]
     \begin{center}
@@ -556,7 +562,7 @@ Pro úèely této práce nás pøedev¹ím zajímá hlavièka {\it 7zHeader} a v~ní obsahy 
 informace o~proudech dat (0x03 nebo 0x04). V~nich konkrétnì polo¾ka informace o~kóderech (0x07),
 ve které se musíme propracovat k~poli bajtù {\it CodecInfo}. Hodnoty tohoto pole musíme otestovat
 a zjistit, zda se shodují s~identifikátorem standardní ¹ifrovací metody AES-256 + SHA-256
-(0x6F10701)~\cite{Pavlov:2015}.
+[0x06, 0xF1, 0x07, 0x01]~\cite{Pavlov:2015}.
 
 \section{Srovnání}
 Pokud budeme srovnávat formáty z~pohledu komprese, zjistíme, ¾e .7z je dle mìøení efektivnìj¹í
@@ -575,9 +581,176 @@ pou¾ívány a jaké soubory obsahují.
 X.509v3) k~¹ifrování souborù namísto hesel. 7z tuto funkcionalitu vùbec neobshahuje.
 
 
-\chapter{Návrh modulu}
+\chapter{Návrh modulù}
+V této kapitole se podíváme na to, jak z vý¹e popsaných algoritmù, technologií a strukturálních
+analýz archivù vytvoøíme roz¹iøující moduly pro nástroj Wrathion. Tato kapitola si klade za cíl
+obecnì popsat jak se budou soubory jednotlivých formátù procházet. Tedy jaká data se z nich budou
+èíst, jaké operace je potøeba provést nad vygenerovanými hesly a jak se bude provádìt ovìøování
+shody hesel.
+
+\section{Modul ZIP}
+Jako první si nastíníme modul ZIP. Pokud se divíte proè se zde bavíme o návrhu modulu ZIP,
+kdy¾ jak u¾ bylo vý¹e øeèeno je tento modul pro Wrathion ji¾ vytvoøen, tak se divíte správnì. V
+pøípadì tohoto modulu se bude zabívat roz¹íøením funkcionality a ne vytvoøením zcela nového
+modulu.
+
+ Momentální verze ZIP modulu podporuje pouze staré ¹ifrování PKWARE a ¹ifrování AES. Podpora
+¹ifrování AES je v¹ak relativní. Nemù¾eme øíct, ¾e bychom mìli 100\% funkcionalitu a byli
+schopní zjistit hesla pro v¹echny soubory za¹ifrované metodou AES. Momentálnì podporujeme pouze
+speciální verzi AES, jen¾ si vytvoøily vývojáøi nástroje WinZip. Ti si vytvoøili vlastní oøezanou
+AES hlavièku a oznaèili soubor vlastní metodou. Existují ov¹em nástroje jako SecureZIP od firmy
+PKWARE umo¾òující také za¹ifrovat obsah archivù pomocí ¹ifrovací metody AES, s ní¾ si souèasný
+modul i pøes podporu zji¹tìní hesla pro AES neporadí.
+
+ Dal¹ím ¹ifrovací metodou, kterou nabízí nástroj SecureZIP je 3DES. S ním si momentální verze
+neporadí vùbec a tak je tedy vhodné tuto funkcionalitu doplnit, abychom sní¾ili poèet ZIP archívù,
+jen¾ tento modul nezvládne zpracovat.
+
+\subsubsection{Zji¹tìní informací z archivu}
+Následující text popisuje postup získávání a zpracování informací nutných pro rozhodnutí, zda se
+jedná o ZIP soubor, zda je soubor ¹ifrován, jakou metodou je ¹ifrován, jaké jsou inicializaèní
+hodnoty pou¾ité pøi ¹ifrování apod. To v¹e je potøeba pro roz¹íøení funkcionality modulu. Popis se
+primárnì nesoustøedí na získání dat pro ji¾ implementované funkce, ale pouze dat dùle¾itých pro
+roz¹íøení funkcionality modulu (detailní popis hlavièek a hodnot v nich je v sekci
+\ref{ssec:zip_struct}):
+\begin{enumerate}
+    \item Zji¹tìní signatury -- podíváme se na první 4 bajty a porovnáme je se signaturou [0x50,
+	0x4B, 0x03, 0x04]. Tím ovìøíme zda se jedná o ZIP soubor.
+    \item Pøeètení {\it General purpose bit flag} -- hodnotu pøíznakù (flagù) získáme z
+	nìkteré z hlavièek\footnote{Lokální hlavièka souboru nebo hlavièka souboru v centrálním
+	adresáøi. Hlavièka souboru v centrálním adresáøi obsahuje v¹echny polo¾ky lokální hlavièky
+	plus nìjaké navíc.} prvního souboru.
+    \item Analýza pøíznakù -- zji¹»ujeme zda jsou nastaven první bity pøíznakù na hodnotu 1. Pokud
+	nalezneme ¹ifrování u jednoho souboru pøedpokládáme, ¾e v¹echny ostatní soubory jsou
+	takté¾ ¹ifrované a ¾e byla pou¾ita stejná ¹ifrovací metoda.
+    \item Pøeètení {\it Compression method} -- z nìkteré z hlavièek\footnotemark[\value{footnote}]
+	souboru. Tato polo¾ka nás zajímí pouze pokud byly bity jedna a sedm pøíznakù nastaveny na
+	hodnotu 1. Pakli¾e byly èislo uvedené v této polo¾ce nám dovoluje zjisti zda byla pou¾ita
+	¹ifrovací metoda WinZip AES (hodnota 99). Pou¾ití jiné hodnoty indikuje pou¾ití nìkteré z
+	dal¹ích ¹ifrovacích metod definovaných ve specifikaci formátu .ZIP~\cite{PKWARE:2014}.  
+    \item Pøeètení {\it Extra fields} -- potøebujeme najít hlavièku s daty o ¹ifrování, která se
+	mù¾e vyskytnout pouze za hlavièkou souboru v centrálním adresáøi. V tomto kroku zjistíme
+	informace o pou¾ité ¹ifrovací metodì, délce klíèe atd.
+    \item Získání hodnot hlavièky pro de¹ifrování -- nachází se pøed ulo¾enými daty souboru.
+	Potøebujeme získat pou¾itá inicializaèní data potøebná pro ¹ifrovací s de¹ifrovací funkce.
+	A také data pro ovìøení hesla vèetnì jejich kontrolního souètu (CRC32).
+\end{enumerate}
+
+Jakmile takto získáme v¹echna potøebná data pøesuneme se k hledání pou¾itého hesla. Tento proces
+bude mo¾né realizovat za vyu¾ití CPU nebo GPU. Pro obì tyto zaøízení je nutné vytvoøit samostatný
+kód. Kód pro CPU èistì v jazyce C++ s mo¾ností vyu¾ití nìkterých ji¾ implementovaných funkcí a
+generátorù obsa¾ených v nástroji Wrathion. Pro GPU je tøeba vytvoøit kód v C++, který pobì¾í na
+CPU a bude inicializavat GPU a rozdìlovat práci pracovním jednotkám na ní umístìných a poté kernel
+v OpenCL pro implementování kernelu, který pobì¾í na pracovních jednotkách. Av¹ak v obouch
+pøípadech pùjde o toto¾ný algoritmus \ref{alg:zip_ver}.
+
+\begin{algorithm}[ht]
+    \SetStartEndCondition{ (}{)}{)}\SetAlgoBlockMarkers{}{}%
+    \SetKwFor{For}{for}{\string:}{}%
+    \SetKwIF{If}{ElseIf}{Else}{if}{}{else if}{else}{}%
+    \SetKwRepeat{Repeat}{repeat}{until}%
+    \SetKwInOut{Input}{vstup}\SetKwInOut{Output}{výstup}
+    \AlgoDisplayBlockMarkers\SetAlgoNoLine%
+    \DontPrintSemicolon
+    \Input{Data získaná z hlavièky pro de¹ifrování (IV, Erd, VDlen, Data)}
+    \Output{Poslední vygenerované heslo}
+    $shoda = FALSE$\;
+    \Repeat{$shoda$}{
+	heslo = generujHeslo ()\;
+	odvozene\_heslo = odvodHeslo (SHA1(heslo))\;
+	rd = desifruj (Erd, odvozene\_heslo, IV)\tcc*{Random hodnotu pro ¹ifrování}
+	odvozene\_heslo = odvodHeslo (SHA1(rd + IV))\;
+	desifrovana\_data = desifruj (Data, odvozene\_heslo, IV)\;
+	presun (Data, VDlen, VData)\tcc*{VDlen bajtù z Data do VData} 
+	VCRC32 = Data\;
+	CRC = spocitejCRC32 (VData)\;
+
+	\If{$ CRC ==  VCRC32 $}{
+	    $shoda = TRUE$\;
+	}
+    }
+    \caption{Princip ovìøení vygenerovaného hesla pro ZIP archiv}\label{alg:zip_ver}
+\end{algorithm}
+
+
+
+\section{Modul 7z}
+V tomto pøípadì se jedná o úplnì nový modul. Bude tedy potøeba nadefinovat v¹echny potøebné
+struktuty potøebné k provozu modulu v rámci nástroje Wrathion. Také bude potøeba implementovat
+metody ¹ifrování, he¹ování, odvozování hesel a jiné pou¾ívané formátem .7z. 
+
+\subsubsection{Zji¹tìní informací z archivu}
+Archiv formátu .7z v sobì, stejnì tak jako .ZIP archiv, nese informace nutné pro umo¾nìní
+de¹ifrování souboru. V tomto pøípadì je ov¹em o nìco slo¾itìj¹í je získat. Struktura 7z archivu
+je hodnì komplexní a promìnlivá a struktura hlavièek pøipomíná databázi. Pro detailní porozumnìní
+struktuøe je tedy potøeba nahlídnout do souboru 7zFormat.txti~\cite{Pavlov:2010}. K
+informacím se dostaneme následujícím zjednodu¹eným teoretickým postupem:
+\begin{enumerate}
+    \item Ovìøíme signaturu -- jedná se o první 6 bajtù souboru, které musí odpovídat hodnotì v
+	sekci \ref{ssec:7z_struct} a 
+    \item Získáme offset a velikost dal¹í hlavièky -- pøeskoèíme na pozici 6 bajtù za signaturou a
+	získáme offset jen¾ nám øekne, kde zaèíná dal¹í hlavièka. Po pøeètení hodnoty za ní
+	následující získáme délku této hlavièky.
+    \item Pøejdeme na dal¹í hlavièku -- musíme se podívat na signaturu hlavièky, pokud je rovna
+	0x17 tak musíme projít následující polo¾ky.
+    \item Detekce ¹ifrování hlavièky -- hledání provádíme v hlavièce {\it Folders} se
+	signaturou 0x0B, prvnì hledáme hodnotu [0x06, 0xF1, 0x07, 0x01] øíkající, ¾e jsou
+	data hlavièky ¹ifrována	metodou 7zAES.
+    \item Získání dat pro ¹ifrování -- v pøípadì nálezu èteme data inicializaèního vektoru a poèet
+	iterací, kterým byl proveden výpoèet klíèe pro ¹ifrování (defaultnì 19).
+    \item De¹ifrování hlavièky -- pro de¹ifrování podle algoritmu~\ref{alg:7z_desifr}.
+    \item Detekce hlavièky pro dekompresy -- hledáme ve stejné sekci jako v bodì 5. Zde v¹ak
+	pátrame po hodnotì [0x03, 0x01, 0x01] znaèící pou¾ití LZMA pro kompresy.
+    \item Provedeme dekompresy hlavièky -- pomocí algoritmu LZMA.
+    \item Vypoèítáme CRC dat po dekompresy.
+    \item Porovnáme vypoètené CRC s odpovídajícím CRC ulo¾eným v hlavièce {\it Digest}, pokud ne
+	vracíme se na krok 6.
+    \item Pro zji¹tìní hesla k souborùm se podíváme do dekomprimovaných dat a postupujeme stejnì
+	od kroku 4.
+\end{enumerate}
+
+
+\begin{algorithm}[H]
+    \SetStartEndCondition{ (}{)}{)}\SetAlgoBlockMarkers{}{}%
+    \SetKwFor{For}{for}{\string:}{}%
+    \SetKwInOut{Input}{vstup}\SetKwInOut{Output}{výstup}
+    \AlgoDisplayBlockMarkers\SetAlgoNoLine%
+    \DontPrintSemicolon
+    \Input{Data získaná z hlavièky pro de¹ifrování (IV, pocet\_iteraci) a ¹ifrovaná data}
+    \Output{De¹ifrovaná data (neovìøená)}
+    heslo = generujHeslo ()\;
+    retezec = vytvorRetezec(heslo)\tcc{512 * pár (heslo, 64b èíslo <0,512))}
+    \For{$i = 0; i < pocet\_iteraci; i++$}{
+	retezec = SHA256 (retezec)\;
+    }
+    citelna\_data = desifrujData(Data, retezec, IV)\;
+    
+    \caption{Princip vytvoøení hesla pro de¹ifrování pomocí 7z}\label{alg:7z_desifr}
+\end{algorithm}
+
 
 \chapter{Závìr}
+Obsáhnout v¹echny mo¾nosti a nastavení analyzovaných formátù je znaènì nároèný proces, který
+ve vet¹inì pøípadù ani nestojí za námahu. Dùvodem je nízký poètu dostupných nástrojù schopných tyto
+hodnoty nastavit, platí hlavnì pro formát ZIP.
+
+ Struktury jednotlivých formátù jsou popsány tak, aby bylo mo¾né chybìjící nebo nejasné informace
+mo¾né dohledat bez vìt¹ích problémù ve specifikaci formátu. Zde je nutno podotknout, ¾e jak ji¾
+bylo zmínìno struktura 7z souboru je hodnì komplexní a promìnná. Bohu¾el dokumentace tohoto
+formátu znaènì nedostaèující a je tedy nutné strávit hodnì èasu studiem struktury, zdrojových
+souborù a fóra vývojáøe.
+
+ Návrh roz¹íøení modulu pro ZIP by mìl z vìt¹iny odpovídat tomu jak bude roz¹íøení vypadat po jeho
+implementaci. Také na základì prùzkumu v tomto odvìdví by roz¹íøený modul mìl být napøed pøed
+konkurencí. Nìkteré známé nástroje toti¾ mají podporu pouze pro WinZip AES a PKWARE ¹ifrování
+(John the Ripper) nebo nemají zatím podporu ZIP formátu vùbec (oclHashcat).  
+
+ U modulu 7z se jedná spí¹ o teoretický nástin jak by mohl modul fungovat a jak by
+mohly jednotlivé èásti algoritmu vypadat. Nìkteré dùle¾ité informace toti¾ nejsou nikde detailnì
+popsány. Návrh modulu bude tedy potøeba pravdìpodobnì modifikovat na základì informací zji¹tìných
+bìhem implementace jednotlivých èástí modulu.
+
+ 
 
 
 
