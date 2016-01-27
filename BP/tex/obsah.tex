@@ -1,6 +1,4 @@
 %=========================================================================
-% (c) Michal Bidlo, Bohuslav Køena, 2008
-
 \chapter{Úvod}
 Ochrana a zabezpeèení soukromých a dùle¾itých informací je v~dne¹ní dobì èasto se vyskytujícím
 tématem na poli informaèních technologií. Je jedno, jestli se bavíme o~zabezpeèení dat pøi pøenosu
@@ -154,7 +152,7 @@ pùvodních ètyø. Tím se prodlu¾uje èas potøebný k~získání výsledku.
         \Return{$concat(H^{(N)}_0, H^{(N)}_1, H^{(N)}_2, H^{(N)}_3, H^{(N)}_4)$}
     }
 
-    \caption{Princip SHA funkce}\label{alg:SHA}
+    \caption{Princip funkce SHA1} \label{alg:SHA}
 \end{algorithm}
 
 \chapter{Paralelní výpoèty na GPU pomocí OpenCL}
@@ -675,41 +673,38 @@ pøípadech pùjde o toto¾ný algoritmus \ref{alg:zip_ver}.
 
 
 \section{Modul 7z}
-V tomto pøípadì se jedná o úplnì nový modul. Bude tedy potøeba nadefinovat v¹echny potøebné
-struktuty potøebné k provozu modulu v rámci nástroje Wrathion. Také bude potøeba implementovat
-metody ¹ifrování, he¹ování, odvozování hesel a jiné pou¾ívané formátem .7z. 
+V tomto pøípadì se jedná o úplnì nový modul. Bude tedy potøeba nadefinovat v¹echny struktury
+potøebné k provozu modulu v rámci nástroje Wrathion a implementovat metody ¹ifrování, he¹ování,
+odvozování hesel a jiné pou¾ívané formátem .7z.
 
 \subsubsection{Zji¹tìní informací z archivu}
 Archiv formátu .7z v sobì, stejnì tak jako .ZIP archiv, nese informace nutné pro umo¾nìní
-de¹ifrování souboru. V tomto pøípadì je ov¹em o nìco slo¾itìj¹í je získat. Struktura 7z archivu
-je hodnì komplexní a promìnlivá a struktura hlavièek pøipomíná databázi. Pro detailní porozumnìní
-struktuøe je tedy potøeba nahlídnout do souboru 7zFormat.txti~\cite{Pavlov:2010}. K
-informacím se dostaneme následujícím zjednodu¹eným teoretickým postupem:
+de¹ifrování souboru. V tomto pøípadì je v¹ak o nìco slo¾itìj¹í je získat. Struktura 7z archivu
+je hodnì komplexní a promìnlivá. Struktura hlavièek do znaèné míry pøipomíná databázi. Pro
+detailní porozumnìní struktuøe je tøeba nahlídnout do souboru 7zFormat.txt~\cite{Pavlov:2010}.
+Potøebné informace lze získat následujícím znaènì zjednodu¹eným teoretickým postupem:  
 \begin{enumerate}
-    \item Ovìøíme signaturu -- jedná se o první 6 bajtù souboru, které musí odpovídat hodnotì v
-	sekci \ref{ssec:7z_struct} a 
-    \item Získáme offset a velikost dal¹í hlavièky -- pøeskoèíme na pozici 6 bajtù za signaturou a
-	získáme offset jen¾ nám øekne, kde zaèíná dal¹í hlavièka. Po pøeètení hodnoty za ní
-	následující získáme délku této hlavièky.
-    \item Pøejdeme na dal¹í hlavièku -- musíme se podívat na signaturu hlavièky, pokud je rovna
-	0x17 tak musíme projít následující polo¾ky.
-    \item Detekce ¹ifrování hlavièky -- hledání provádíme v hlavièce {\it Folders} se
-	signaturou 0x0B, prvnì hledáme hodnotu [0x06, 0xF1, 0x07, 0x01] øíkající, ¾e jsou
-	data hlavièky ¹ifrována	metodou 7zAES.
+    \item Ovìøíme signaturu -- jedná se o první 6 bajtù souboru, musí odpovídat hodnotì v
+	sekci \ref{ssec:7z_struct}. 
+    \item Získáme pozici a velikost dal¹í hlavièky -- pøeskoèíme na pozici 6 bajtù za signaturou a
+	získáme pozici dal¹í hlavièky. Z následující hodnaty získáme délku následující hlavièky.
+    \item Pøejdeme na dal¹í hlavièku -- musíme se podívat na signaturu hlavièky, pokud odpovídá
+	hodnotì 0x17 musíme projít její obsah.
+    \item Detekce ¹ifrování hlavièky -- v hlavièce {\it Folders} zaèínající signaturou 0x0B, prvnì
+	hledáme hodnotu [0x06, 0xF1, 0x07, 0x01]. Její nález znamená data hlavièky ¹ifrována
+	metodou 7zAES.
     \item Získání dat pro ¹ifrování -- v pøípadì nálezu èteme data inicializaèního vektoru a poèet
-	iterací, kterým byl proveden výpoèet klíèe pro ¹ifrování (defaultnì 19).
-    \item De¹ifrování hlavièky -- pro de¹ifrování podle algoritmu~\ref{alg:7z_desifr}.
+	iterací pou¾ití he¹ovací funkce pro odvození hesla pro ¹ifrování (defaultnì 19).
+    \item De¹ifrování hlavièky -- de¹ifrujeme podle algoritmu~\ref{alg:7z_desifr}.
     \item Detekce hlavièky pro dekompresy -- hledáme ve stejné sekci jako v bodì 5. Zde v¹ak
 	pátrame po hodnotì [0x03, 0x01, 0x01] znaèící pou¾ití LZMA pro kompresy.
     \item Provedeme dekompresy hlavièky -- pomocí algoritmu LZMA.
     \item Vypoèítáme CRC dat po dekompresy.
     \item Porovnáme vypoètené CRC s odpovídajícím CRC ulo¾eným v hlavièce {\it Digest}, pokud ne
 	vracíme se na krok 6.
-    \item Pro zji¹tìní hesla k souborùm se podíváme do dekomprimovaných dat a postupujeme stejnì
-	od kroku 4.
+    \item Pro zji¹tìní hesla k souborùm se podíváme do dekomprimovaných dat a postupujeme od kroku
+	4 obdobným zpùsobem av¹ak nyní pracujeme s daty o souborech.
 \end{enumerate}
-
-
 \begin{algorithm}[H]
     \SetStartEndCondition{ (}{)}{)}\SetAlgoBlockMarkers{}{}%
     \SetKwFor{For}{for}{\string:}{}%
@@ -728,32 +723,26 @@ informacím se dostaneme následujícím zjednodu¹eným teoretickým postupem:
     \caption{Princip vytvoøení hesla pro de¹ifrování pomocí 7z}\label{alg:7z_desifr}
 \end{algorithm}
 
-
 \chapter{Závìr}
 Obsáhnout v¹echny mo¾nosti a nastavení analyzovaných formátù je znaènì nároèný proces, který
 ve vet¹inì pøípadù ani nestojí za námahu. Dùvodem je nízký poètu dostupných nástrojù schopných tyto
 hodnoty nastavit, platí hlavnì pro formát ZIP.
 
- Struktury jednotlivých formátù jsou popsány tak, aby bylo mo¾né chybìjící nebo nejasné informace
-mo¾né dohledat bez vìt¹ích problémù ve specifikaci formátu. Zde je nutno podotknout, ¾e jak ji¾
-bylo zmínìno struktura 7z souboru je hodnì komplexní a promìnná. Bohu¾el dokumentace tohoto
-formátu znaènì nedostaèující a je tedy nutné strávit hodnì èasu studiem struktury, zdrojových
-souborù a fóra vývojáøe.
+ Struktury jednotlivých formátù byly popsány tak, aby bylo mo¾né chybìjící nebo nejasné informace
+mo¾né dohledat ve specifikacích formátu a nebylo nutné slo¾itì hledat o jaké hodnoty se jedná. Zde
+je nutno podotknout, ¾e jak ji¾ bylo zmínìno, struktura 7z souboru je hodnì komplexní a promìnná.
+Bohu¾el dokumentace tohoto formátu je znaènì nedostaèující a je tedy nutné strávit hodnì èasu
+studiem struktury, zdrojových kódù a fóra vývojáøe pro získání dal¹ích a detailnìj¹ích informací.
 
  Návrh roz¹íøení modulu pro ZIP by mìl z vìt¹iny odpovídat tomu jak bude roz¹íøení vypadat po jeho
 implementaci. Také na základì prùzkumu v tomto odvìdví by roz¹íøený modul mìl být napøed pøed
 konkurencí. Nìkteré známé nástroje toti¾ mají podporu pouze pro WinZip AES a PKWARE ¹ifrování
-(John the Ripper) nebo nemají zatím podporu ZIP formátu vùbec (oclHashcat).  
+(John the Ripper) nebo momentálnì nemají neposkytují funkcionalitu k formátu .ZIP (oclHashcat).  
 
- U modulu 7z se jedná spí¹ o teoretický nástin jak by mohl modul fungovat a jak by
-mohly jednotlivé èásti algoritmu vypadat. Nìkteré dùle¾ité informace toti¾ nejsou nikde detailnì
-popsány. Návrh modulu bude tedy potøeba pravdìpodobnì modifikovat na základì informací zji¹tìných
-bìhem implementace jednotlivých èástí modulu.
-
- 
-
-
-
-
+ U modulu 7z se jedná spí¹ o teoretický nástin jak by mohl modul vypadat a jak by
+mohly jednotlivé èásti algoritmu fungovat. Nìkteré dùle¾ité informace toti¾ nejsou nikde detailnì
+popsány. Hledání informací ve zdrojových kódech 7zip-u je díky absenci komentáøù a vysoké
+abstrakci kódu znaènì nároèné a zdlouhavé. Návrh modulu bude tedy potøeba pravdìpodobnì
+modifikovat na základì informací zji¹tìných bìhem implementace jednotlivých èástí modulu.
 
 %=========================================================================

@@ -9,8 +9,8 @@
 % pøipomínky posílejte na e-mail: bidlom AT fit.vutbr.cz
 % vim: set syntax=tex encoding=latin2:
 %============================================================================
-%\documentclass[cover]{fitthesis} % odevzdani do wisu - odkazy, na ktere se da klikat
-\documentclass[cover,print]{fitthesis} % pro tisk - na odkazy se neda klikat
+\documentclass[cover]{fitthesis} % odevzdani do wisu - odkazy, na ktere se da klikat
+%\documentclass[cover,print]{fitthesis} % pro tisk - na odkazy se neda klikat
 %\documentclass[english,print]{fitthesis} % pro tisk - na odkazy se neda klikat
 %      \documentclass[english]{fitthesis}
 % * Je-li prace psana v anglickem jazyce, je zapotrebi u tridy pouzit 
@@ -77,16 +77,26 @@
   keywords.cs={ZIP, 7z, obnova hesel, archiv, GPU, OpenCL, ¹ifrování}, %klicova slova v ceskem jazyce
   keywords.en={ZIP, 7z, password recovery, archive, GPU, OpenCL, encrypting}, %klicova slova v anglickem jazyce
   %Abstract
-  abstract.cs={Práce se zabývá problematikou vývoje aplikací s~paralelními výpoèty, analýzou
-      formátù .ZIP a .7z a následným návrhem modulù pro roz¹íøení funkcionality nástroje Wrathion.
+  abstract.cs={Tato práce obsahuje pøiblí¾ení pou¾ívaných ¹ifrovacích a he¹ovacích metod
+      vyu¾ívaných k zabezpeèení souborù, pou¾ití GPU jako nástroje pro provádìní paralelních
+      operací a reálné pou¾ití této funkcionality pro zrychlení obnovování hesel souborù. Pro
+      demonstraci je pou¾it nástroj Wrathion umo¾nující generování a zpracování hesel na GPU. Jako
+      referenèní soubory jsou pou¾ity archivy .7z a .ZIP. Popis jejich vnitøních struktur stejnì
+      tak jako návrh modulù pro jejich zpracování nástrojem Wrathion jsou takté¾ souèástí práce.   
   }, % abstrakt v ceskem jazyce
-  abstract.en={This thesis is covering topics concerning development of paralel aplications,
-  analysis of file formats .ZIP and .7z and at the end it contains design of extensional modules
-  for both formats for aplication Wrathion.}, % abstrakt v anglickem jazyce
+  abstract.en={This thesis is describing cryptographic and hashing methods commonly used as
+      protection of data files, usage of GPU such as a tool for parallel computing and its
+      real-world usage for enpowering of the password recovery processes. As demostration tool
+      was chosen Wrathion, which is tool allowing us to generate and process passwords right on
+      GPU. As the example files were chosen archives of formats .7z and .ZIP. This thesis alsoi
+      description of their inner structures same as designs of extention modules for tool Wrathion,
+      which aim to add support for such formats to the tool, are also included. 
+  }, % abstrakt v anglickem jazyce
   %Prohlaseni
-  declaration={Prohla¹uji, ¾e jsem tuto bakaláøskou práci vypracoval samostatnì pod vedením pana Ing. Radka Hranického},
+  declaration={Prohla¹uji, ¾e jsem tuto technickou zprávu vytvoøenou v rámci semestálního projektu
+  samostatnì pod vedením pana Ing. Radka Hranického},
   %Podekovani (nepovinne)
-  acknowledgment={Zde je mo¾né uvést podìkování vedoucímu práce a tìm, kteøí poskytli odbornou pomoc.} % nepovinne
+  %acknowledgment={Zde je mo¾né uvést podìkování vedoucímu práce a tìm, kteøí poskytli odbornou pomoc.} % nepovinne
 }
 
 %Abstrakt (cesky, anglicky)
