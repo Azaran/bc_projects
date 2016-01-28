@@ -1,12 +1,12 @@
-    %=========================================================================
+%=========================================================================
 \chapter{Úvod}
 Ochrana a zabezpeèení soukromých a dùle¾itých informací je v~dne¹ní dobì èasto se vyskytujícím
-tématem na poli informaèních technologií. Je jedno, jestli se bavíme o~zabezpeèení dat pøi pøenosu
+tématem na poli informaèních technologií. edno, jestli se bavíme o~zabezpeèení dat pøi pøenosu
 po síti nebo o~zabezpeèení lokálnì ulo¾ených dat. Ka¾dý z~nás asi zná situaci, kdy potøebuje
 sdílet s~nìkým informace, ale chce zajistit, ¾e je budou schopni pøeèíst pouze osoby, které jsou
 k~tomu urèeny. 
 
- Toho lze dosáhnout ¹ifrováním informací. V~dne¹ní dobì existuje nespoèet mo¾ností jak
+ Vý¹e uvedeného lze dosáhnout ¹ifrováním informací. V~dne¹ní dobì existuje nespoèet mo¾ností jak
 informace ¹ifrovat. Kvalitu zabezpeèení dat znaènì ovlivòuje výbìr pou¾itého ¹ifrovacího algoritmu.
 Ov¹em zvolení správného hesla má vliv je¹tì vìt¹í. Pokud pou¾ijete slabou ¹ifru a silné heslo, je
 ¹ance, ¾e se k~Va¹im datùm dostane neoprávnìná osoba je o~dost men¹í, ne¾ kdy¾ to udìláte naopak.
@@ -15,11 +15,10 @@ Ov¹em zvolení správného hesla má vliv je¹tì vìt¹í. Pokud pou¾ijete slabou ¹ifru 
 spojení více souborù, rùzného typu, do jednoho celku pou¾ívají archivy. Jedním z~nejroz¹íøenìj¹ích
 typù souborových archivù jsou formáty .ZIP a .7z.
 
- V~této práci se pøevá¾nì zabývám analýzou pou¾ívaných metod zabezpeèení a ¹ifrovacích
-algoritmù u~tìchto formátù a následnì získáváním hesel k~takto zabezpeèeným souborùm. Výsledky
-tìchto analýz jsou pou¾ity pro návrh roz¹iøujících modulù nástroje {\it Wrathion}. Práce se také
-zabývá pøiblí¾ením paralelismu a problémù s~ním spojených a také uvedením do standardu a
-frameworku OpenCL.
+ Tato práce se pøevá¾nì zabývá analýzou pou¾ívaných metod zabezpeèení a ¹ifrovacích
+algoritmù u~tìchto formátù a následnì získáváním hesel k~takto zabezpeèeným souborùm. Výsledky analýz jsou pou¾ity pro návrh roz¹iøujících modulù nástroje {\it Wrathion}. Práce se také
+zabývá pøiblí¾ením paralelismu a problémù s~ním spojených. Jsou zde také popsány základní
+principy a struktury standardu a frameworku OpenCL.
 
 \chapter{Metody pro ¹ifrovaní a he¹ovaní}
 \section{Triple Data Encryption Algorithm (TDEA, 3DES)}
@@ -36,9 +35,9 @@ slou¾í k~detekci chyb.
 Metoda pou¾ívá tøi 56-bitové klíèe pro své operace. Jednotlivé klíèe jsou pou¾ity v~rùzných krocích
 zpracování vstupních dat. Provádìné kroky jsou:
 \begin{enumerate}
-    \item ©ifrování dat pomocí klíèe K1.
-    \item De¹ifrování dat pomocí klíèe K2.
-    \item ©ifrování dat pomocí klíèe K3.
+    \item ¹ifrování dat pomocí klíèe K1,
+    \item de¹ifrování dat pomocí klíèe K2,
+    \item ¹ifrování dat pomocí klíèe K3.
 \end{enumerate}
 Metoda mù¾e být pou¾ita v~re¾imech:
 \begin{itemize}
@@ -70,13 +69,13 @@ pou¾ita zaokrouhlovací funkce. Poèet opakování funkce je 10-krát pro 128b klíè, 
 klíè a 14-krát pro 256b klíè. Funkce se skládá ze ètyø bajtovì-orientovaných transformací:
 \begin{enumerate}
     \item nahrazení bajtù pomocí nahrazovací tabulky -- nelineární nahrazení bajtù, které funguje
-        nezávisle pro ka¾dý byte pole {\it State}
+        nezávisle pro ka¾dý byte pole {\it State},
     \item posun øádkù pole {\it State} o~rùznou hodnotu (offset) -- je pou¾it cyklický posun
-        (rotace) vlevo, kde velikost posunu je rovna indexu øádku pole, tedy 0 a¾ 3
+        (rotace) vlevo, kde velikost posunu je rovna indexu øádku pole, tedy 0 a¾ 3,
     \item smíchání dat v~rámci ka¾dého sloupce pole {\it State} -- ka¾dý sloupec je pova¾ován za
-        samostatný polynom ètvrté úrovnì, nad kterým jsou provádìny operace
+        samostatný polynom ètvrté úrovnì, nad kterým jsou provádìny operace,
     \item pøidání zaokrouhlovacího klíèe ({\it Round Key}) k~poli {\it State} -- zaokrouhlovací
-        klíèe jsou pøidávány pomocí bitové operace XOR provedené nad sloupci pole
+        klíèe jsou pøidávány pomocí bitové operace XOR provedené nad sloupci pole.
 \end{enumerate}
 Pro de¹ifrování je pou¾ita inverzní funkce a proto¾e se jedná symetrickou ¹ifru, je pro de¹ifrování
 pou¾ito stejné heslo jako pro ¹ifrování.
@@ -194,10 +193,11 @@ OpenCL je zkombinování paralelních výpoètù aplikace na GPU se zøetìzeným rendrov
 prvkù~\cite{Khronos:2015}.
 Standard:
 \begin{itemize}
-    \item podporuje datovì i úlohovì zalo¾ené paralelní programovací modely
-    \item definuje konzistentní numerické po¾adavky vycházející z~IEEE 754
-    \item definuje konfiguraèní profil pro pøenosná zaøízení a vestavìné systémy
-    \item zaji¹»uje efektivní souèinnost s~OpenGL, OpenGL SE a dal¹ími grafickými rozhraními
+    \item Podporuje datovì i úlohovì zalo¾ené paralelní programovací modely.
+    \item Definuje konzistentní numerické po¾adavky vycházející z~IEEE 754.
+    \item Definuje konfiguraèní profil pro pøenosná zaøízení a vestavìné systémy.
+    \item Zaji¹»uje efektivní souèinnost s~OpenGL, OpenGL SE a dal¹ími grafickými
+        rozhraními.
 \end{itemize}
 Nejedná se pouze o~standard pro psaní paralelních aplikací, ale i o~stejnojmenný framework, který
 je na tomto standardu postaven. Framework OpenCL zahrnuje programovací jazyky, rozhraní pro
@@ -205,10 +205,10 @@ programování aplikací (API), knihovny a systém pro bìh programu ({\it runtime} s
 \subsection{Architektura OpenCL}
 Struktura OpenCL architektury lze popsat hierarchickým modelem následovnì:
 \begin{itemize}
-    \item Model platformy
-    \item Model provedení
-    \item Model pamìti
-    \item Programovací model
+    \item model platformy,
+    \item model provedení,
+    \item model pamìti,
+    \item programovací model.
 \end{itemize}
 
 \subsubsection{Model platformy}
@@ -237,19 +237,21 @@ work-group}).
  Hostitel má za úkol spravovat kontext aplikace a na jeho základì nastavit prostøedí, ve
 kterém bude kernel provádìt operace. V~prostøedí musíme specifikovat a nastavit tyto polo¾ky:
 \begin{itemize}
-    \item Zaøízení -- jedno a více zaøízení ovladatelných platformou OpenCL
-    \item Objekty kernelu -- OpenCL funkce s~pøednastavenými argumenty podle vybraného zaøízení
-    \item Objekty programu -- zdrojový kódu a jeho spustitelná verze, které implementují kernely
+    \item Zaøízení -- jedno a více zaøízení ovladatelných platformou OpenCL.
+    \item Objekty kernelu -- OpenCL funkce s~pøednastavenými argumenty podle vybraného
+        zaøízení.
+    \item Objekty programu -- zdrojový kódu a jeho spustitelná verze, které implementují
+        kernely.
     \item Objekty pamìti -- promìnné, ke kterým mù¾e pøistupovat hostitel i OpenCL zaøízení.
 	Instance kernelù bìhem svého provádìní operují s~tìmito objekty.
 \end{itemize}
 Hostitel se zaøízením komunikuje pomocí front pøíkazù, do nich¾ se pøíkazy rozøadí podle
 typu operace. Jednotlivé pøíkazy ve frontì se provádí relativnì k~ostatním pøíkazùm. Poøadí
-provádìní je definováno tìmito modely:
+provádìní mù¾e být definováno následujícími modely:
 \begin{itemize}
-    \item {\it In-order} -- pøíkazy se provádí a mají efekt tak, jak do fronty pøi¹ly
+    \item {\it In-order} -- pøíkazy se provádí a mají efekt tak, jak do fronty pøi¹ly.
     \item {\it Out-of-order} -- poøadí provedení pøíkazù je omezeno pouze explicitnì uvedenými
-	    synchronizaèními body nebo explicitnì definovanými závislostmi na událostech
+        synchronizaèními body nebo explicitnì definovanými závislostmi na událostech.
 \end{itemize}
 
 \subsubsection{Model pamìti}
@@ -261,11 +263,11 @@ pamìti pou¾ívané v~platformì vytvoøené tímto frameworkem.
 Model dìlíme na ètyøi èásti:
 \begin{itemize}
     \item {\it Oblasti pamìti} -- definuje, se kterými oblastmi pamìti hostitel a zaøízení ve
-	stejném kontextu mohou pracovat
+	stejném kontextu mohou pracovat.
     \item {\it Objekty pamìti} -- jsou definované v~OpenCL API, o~správu se stará hostitel i
-	zaøízení
+	zaøízení.
     \item {\it Sdílenou virtuální pamì»} -- jedná se o~virtuální adresový prostor pøístupný obìma
-	èástem aplikace
+	èástem aplikace.
     \item {\it Model konzistence} -- definuje pravidla pro oblasti pamìti, které jsou pou¾ívané
 	více jednotkami naráz a zaruèuje, ¾e je dodr¾eno poøadí operací s~pamìtí a ¾e jsou data po
 	celou dobu validní. Takté¾ definuje synchronizaci nad tìmito oblastmi.
@@ -273,16 +275,16 @@ Model dìlíme na ètyøi èásti:
 Pro nás je nejdùle¾itìj¹í pochopit jak je pamì» strukturována a jak na sebe navazují
 jednotlivé oblasti. To je nejlépe patrné z~obrázku \ref{memory}. Popis struktury:
 \begin{itemize}
-    \item Pamì» hostitele (RAM apod.)
-    \item Pamì» zaøízení
+    \item pamì» hostitele (RAM apod.),
+    \item pamì» zaøízení,
     \begin{itemize}
-	\item {\it Globální pamì»} -- oblast je pøístupná pro ètení i zápis v¹em jednotkám
-v~kontextu nezávisle na zaøízení
-	\item {\it Pamì» konstant} -- pøed zahájením výpoètu je alokovaná a inicializována
-	    hostitelem a v~prùbìhu výpoètu se tato oblast nemìní výpoètu
-	\item {\it Lokální pamì»} -- oblast je pøístupná v¹em pracovním polo¾kám ve
-	    stejné pracovní skupinì
-	\item {\it Soukromá pamì»} -- oblast je pøístupná pouze jedné pracovní polo¾ce 
+	\item {\it globální pamì»} -- oblast je pøístupná pro ètení i zápis v¹em jednotkám
+v~kontextu nezávisle na zaøízení,
+	\item {\it pamì» konstant} -- pøed zahájením výpoètu je alokovaná a inicializována
+	    hostitelem a v~prùbìhu výpoètu se tato oblast nemìní výpoètu,
+	\\item {\it lokální pamì»} -- oblast je pøístupná v¹em pracovním polo¾kám ve
+	    stejné pracovní skupinì,
+	\item {\it soukromá pamì»} -- oblast je pøístupná pouze jedné pracovní polo¾ce.
     \end{itemize}
 \end{itemize}
 \begin{figure}[ht]
@@ -302,15 +304,15 @@ jazyky mohou být podporovány nìkterými implementacemi kompilátoru.
 
 \chapter{Nástroj Wrathion}
 Jedná se o~nástroj vytvoøený Janem Shmiedem v~roce 2014 v~rámci jeho diplomové
-práce\cite{Schmied}. Nástroj byl vytvoøen pro pou¾ití v~projektu {\it Moderní prostøedky pro 
+práce~\cite{Schmied}. Nástroj byl vytvoøen pro pou¾ití v~projektu {\it Moderní prostøedky pro 
 boj s~kybernetickou kriminalitou na Internetu nové generace, MV, VG20102015022}.
 \section{Hlavní èásti Wrathionu}
 Nástroj slou¾í ke obnovování hesel pomocí brute-force útokù na tato hesla. Skládá se ze tøí
 èástí:
 \begin{itemize}
-	\item Jádra -- zprostøedkovávajícího funkcionalitu potøebnou pro crackování
-	\item Modulù -- skrze které je zaji¹tìna podpora crackování rùzných formátù
-	\item Aplikace -- umo¾òující pracovat s~frameworkem a moduly pomocí CLI rozhraní
+	\item Jádra -- zprostøedkovávajícího funkcionalitu potøebnou pro crackování,
+	\item Modulù -- skrze které je zaji¹tìna podpora crackování rùzných formátù,
+	\item Aplikace -- umo¾òující pracovat s~frameworkem a moduly pomocí CLI rozhraní.
 \end{itemize}
 \begin{figure}[ht]
     \begin{center}
@@ -326,7 +328,7 @@ První èástí Wrathionu, kterou si rozebereme jsou generátory hesel pro útoky. Jed
 funkcionalitu. Bez vygenerovaných hesel nemù¾eme na útoky vùbec myslet. V~nástroji jsou momentálnì
 implementovány tøi typ generátorù:
 \begin{itemize}
-    \item {\it Brute-force} -- postupnì generuje v¹echny mo¾né permutace ze zadaných znakù
+    \item {\it Brute-force} -- postupnì generuje v¹echny mo¾né permutace ze zadaných znakù.
     \item {\it Unicode} -- jedná se o~upravený brute-force generátor. V~tomto pøípadì je nastavena
 	vstupní abeceda na v¹echny Unicode znaky a z~nich jsou generovány mo¾né permutace hesel.
     \item {\it Rule-based} -- velmi podobný pøedchozím variantám ov¹em umo¾òuje specifikovat rùzná
@@ -335,7 +337,7 @@ implementovány tøi typ generátorù:
 	sni¾uje èas potøebný k~vygenerování v¹ech jejich variant (tento typ generátoru je teprve
 	ve vývoji).
     \item {\it Dictionary} -- slovníkový generátor, který vyu¾ívá externí soubory s~èasto
-	pou¾ívanými hesly
+	pou¾ívanými hesly.
 \end{itemize}
 Nejèastìji pou¾ívaným generátorem je brute-force, který je ov¹em výpoèetnì nároèný. Jedná se
 v¹ak o~snadno paralelizovatelný generátor, proto je pøíhodnì implementován i jako kernel bì¾ící na
@@ -377,9 +379,9 @@ v~tom, ¾e musíme poøád posílat data z~pamìti hostitele (CPU) do privátní pamìti 
 minimalizujeme mno¾ství dat, které musí putovat od hostitele k~zaøízení. Tímto sní¾íme výslednou
 prodlevu výpoètù.
 
- V~obou pøípadech je nutné pøed zahájením jakýchkoliv operací GPU inicializovat OpenCL
-systém. Tedy vytvoøit kontext, fronty pøíkazù, zajistit naètení a pøelo¾ení po¾adovaného kernelu a
-a¾ poté nahrát nebo vygenerovat data do/na GPU.
+ V~obou pøípadech je nutné pøed zahájením jakýchkoliv operací GPU
+ inicializovat\linebreak OpenCL systém. Tedy vytvoøit kontext, fronty pøíkazù, zajistit naètení a
+ pøelo¾ení po¾adovaného kernelu a a¾ poté nahrát nebo vygenerovat data do/na GPU.
 
 \subsection{Moduly}
 Nástroj je navr¾en s~velkým dùrazem na modularitu. V~souèasné dobì obsahuje pouze tøi moduly.
@@ -421,11 +423,11 @@ a PPMd~\cite{PKWARE:2014}.
 
  Obdobnì je to i s~podporou rùzných ¹ifrovacích algoritmù:
 \begin{itemize}
-    \item {\it PKWARE ¹ifrování} -- prvotní ¹ifrování 
-    \item {\it DES, 3DES(112-bit a 168-bit)} -- podporováno od verze 5.0 z~roku 2002
-    \item {\it RC2 (40-bit, 64-bit a 168-bit)} -- podporováno od verze 5.0 z~roku 2002
-    \item {\it RC4 (40-bit, 64-bit a 168-bit)} -- podporováno od verze 5.0 z~roku 2002
-    \item {\it AES (128-bit, 192-bit a 256-bit)} -- podporováno od verze 5.2 z~roku 2003
+    \item {\it PKWARE ¹ifrování} -- prvotní ¹ifrování,
+    \item {\it DES, 3DES(112-bit a 168-bit)} -- podporováno od verze 5.0 z~roku 2002,
+    \item {\it RC2 (40-bit, 64-bit a 168-bit)} -- podporováno od verze 5.0 z~roku 2002,
+    \item {\it RC4 (40-bit, 64-bit a 168-bit)} -- podporováno od verze 5.0 z~roku 2002,
+    \item {\it AES (128-bit, 192-bit a 256-bit)} -- podporováno od verze 5.2 z~roku 2003.
 \end{itemize}
 Nastává zde ale problém, ¾e ¾ádný z~a» u¾ volnì dostupných nebo komerèních nástrojù
 neumo¾òuje vytvoøení archivù se ¹ifrováním DES, RC2 a RC4. Z~toho tedy plyne, ¾e pravdìpodobnost
@@ -510,10 +512,10 @@ metod.
  Mezi podporované kompresní metody se øadí LZMA, LZMA2, PPMD, BCJ, BCJ2, BZip2 a
 Deflate. Jako výchozí metoda je brána LZMA. Hlavní výhody této metody jsou~\cite{7z:2015}:
 \begin{itemize}
-    \item Vysoký kompresní koeficient
-    \item Promìnná velikost slovníku
-    \item Malé nároky na pamì» pøi dekompresi
-    \item Podpora zpracování pomocí multi-threading a hyper-threading
+    \item vysoký kompresní koeficient,
+    \item promìnná velikost slovníku,
+    \item malé nároky na pamì» pøi dekompresi,
+    \item podpora zpracování pomocí multi-threading a hyper-threading.
 \end{itemize}
 Dal¹í výhodou formátu je podpora komprese velkých souborù, názvy souborù v~Unicode
 kódování, mo¾nost spojení více souborù do jednoho toku, který je pak teprve komprimován, komprese
@@ -748,5 +750,14 @@ mohly jednotlivé èásti algoritmu fungovat. Nìkteré dùle¾ité informace toti¾ nejs
 popsány. Hledání informací ve zdrojových kódech 7zip-u je díky absenci komentáøù a vysoké
 abstrakci kódu znaènì nároèné a zdlouhavé. Návrh modulu bude tedy potøeba pravdìpodobnì
 modifikovat na základì informací zji¹tìných bìhem implementace jednotlivých èástí modulu.
+
+ Bìhem implementace bude zapotøebí vytvoøit dvì verze obou modulù. Jednu verzi bezici pouze na
+CPU a druhou, která bude podporovat paralelní zpracování na GPU. V návaznosti na implementaci
+bude potøeba provést mìøení rychlosti a následné srovnání s konkurencí. Podle výsledkù srovnání
+jde odhadnout jak moc optimální ná¹ modul je a zda je tøeba ho nìjak upravit a vyladit nebo
+jestli je v rámci mo¾ností vykonovì optimalizován. 
+
+  Na konci bude tøeba provést objektivní srovnání s konkurencí a urèit, pro které pøíkpady je
+vhodné pou¾ít jaký nástroj.
 
 %=========================================================================
