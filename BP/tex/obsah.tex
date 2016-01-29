@@ -1,26 +1,34 @@
 %=========================================================================
 \chapter{Úvod}
 Ochrana a zabezpeèení soukromých a dùle¾itých informací je v~dne¹ní dobì èasto se vyskytujícím
-tématem na poli informaèních technologií. edno, jestli se bavíme o~zabezpeèení dat pøi pøenosu
-po síti nebo o~zabezpeèení lokálnì ulo¾ených dat. Ka¾dý z~nás asi zná situaci, kdy potøebuje
-sdílet s~nìkým informace, ale chce zajistit, ¾e je budou schopni pøeèíst pouze osoby, které jsou
-k~tomu urèeny. 
+tématem na poli informaèních technologií. A¾ u¾ se bavíme o~zabezpeèení dat pøi pøenosu po síti
+nebo o~zabezpeèení lokálnì ulo¾ených dat. Doká¾eme se i asi pøedstavit situaci, kdy potøebujeme
+sdílet informace, ale chceme zajistit, ¾e je budou schopny pøeèíst pouze osoby, které jsou k~tomu
+urèeny.
 
  Vý¹e uvedeného lze dosáhnout ¹ifrováním informací. V~dne¹ní dobì existuje nespoèet mo¾ností jak
-informace ¹ifrovat. Kvalitu zabezpeèení dat znaènì ovlivòuje výbìr pou¾itého ¹ifrovacího algoritmu.
-Ov¹em zvolení správného hesla má vliv je¹tì vìt¹í. Pokud pou¾ijete slabou ¹ifru a silné heslo, je
-¹ance, ¾e se k~Va¹im datùm dostane neoprávnìná osoba je o~dost men¹í, ne¾ kdy¾ to udìláte naopak.
+informace ¹ifrovat. Kvalitu zabezpeèení dat znaènì ovlivòuje výbìr pou¾itého ¹ifrovacího
+algoritmu a dostateènì silného hesla. Pokud pou¾ijeme slabou ¹ifru a silné heslo, je
+¹ance, ¾e se k~Va¹im datùm dostane neoprávnìná osoba je výraznì ni¾¹í, ne¾ kdy¾ to udìláte naopak.
 
  Èasto chceme sdílet nebo zabezpeèit více ne¾ jeden soubor s~informacemi. Obecnì se pro
 spojení více souborù, rùzného typu, do jednoho celku pou¾ívají archivy. Jedním z~nejroz¹íøenìj¹ích
 typù souborových archivù jsou formáty .ZIP a .7z.
 
  Tato práce se pøevá¾nì zabývá analýzou pou¾ívaných metod zabezpeèení a ¹ifrovacích
-algoritmù u~tìchto formátù a následnì získáváním hesel k~takto zabezpeèeným souborùm. Výsledky analýz jsou pou¾ity pro návrh roz¹iøujících modulù nástroje {\it Wrathion}. Práce se také
+algoritmù u~tìchto formátù a následnì získáváním hesel k~takto zabezpeèeným souborùm. Výsledky
+analýz jsou pou¾ity pro návrh roz¹iøujících modulù nástroje {\it Wrathion}. Práce se také
 zabývá pøiblí¾ením paralelismu a problémù s~ním spojených. Jsou zde také popsány základní
 principy a struktury standardu a frameworku OpenCL.
 
+ V kapitole \ref{ch:sifrovani} s podíváme na ¹ifrovací a he¹ovací metody pou¾ívané formáty
+archivù. V kapitole \ref{ch:opencl} si pøiblí¾eme technologii OpenCL, která je pou¾ita pro
+akceleraci pomocí grafické karty v nástroji {\it Wrathion}. Ten je popsán v kapitole
+\ref{ch:wrathion}. V kapitole \ref{ch:formaty} jsou zanalyzovány formáty .ZIP a .7z. Na základì
+poznatkù z analýz jsou v kapitole \ref{ch:moduly} vytvoøeny návrhy ro¾¹iøujících modulù {\it
+Wrathionu}. 
 \chapter{Metody pro ¹ifrovaní a he¹ovaní}
+\label{ch:sifrovani}
 \section{Triple Data Encryption Algorithm (TDEA, 3DES)}
 Jedná se o~roz¹íøenou verzi metody
 DES\footnote{Specifikace na \url{http://csrc.nist.gov/publications/fips/fips46-3/fips46-3.pdf}}.
@@ -155,6 +163,7 @@ pùvodních ètyø. Tím se prodlu¾uje èas potøebný k~získání výsledku.
 \end{algorithm}
 
 \chapter{Paralelní výpoèty na GPU pomocí OpenCL}
+\label{ch:opencl}
 Dne¹ním trendem ve vývoji architektur pro výpoèetní zaøízení je umo¾nìní paralelního provádìní
 úloh. Jedná se o~architektury otevírající dveøe k~znatelnému zvý¹ení výkonu u~zaøízení na nich
 postavených. Dnes ji¾ pova¾ujeme za normální, ¾e máme více jádrové procesory (CPU), které
@@ -282,7 +291,7 @@ jednotlivé oblasti. To je nejlépe patrné z~obrázku \ref{memory}. Popis struktury
 v~kontextu nezávisle na zaøízení,
 	\item {\it pamì» konstant} -- pøed zahájením výpoètu je alokovaná a inicializována
 	    hostitelem a v~prùbìhu výpoètu se tato oblast nemìní výpoètu,
-	\\item {\it lokální pamì»} -- oblast je pøístupná v¹em pracovním polo¾kám ve
+	\item {\it lokální pamì»} -- oblast je pøístupná v¹em pracovním polo¾kám ve
 	    stejné pracovní skupinì,
 	\item {\it soukromá pamì»} -- oblast je pøístupná pouze jedné pracovní polo¾ce.
     \end{itemize}
@@ -303,6 +312,7 @@ jazyky mohou být podporovány nìkterými implementacemi kompilátoru.
 
 
 \chapter{Nástroj Wrathion}
+\label{ch:wrathion}
 Jedná se o~nástroj vytvoøený Janem Shmiedem v~roce 2014 v~rámci jeho diplomové
 práce~\cite{Schmied}. Nástroj byl vytvoøen pro pou¾ití v~projektu {\it Moderní prostøedky pro 
 boj s~kybernetickou kriminalitou na Internetu nové generace, MV, VG20102015022}.
@@ -310,9 +320,9 @@ boj s~kybernetickou kriminalitou na Internetu nové generace, MV, VG20102015022}.
 Nástroj slou¾í ke obnovování hesel pomocí brute-force útokù na tato hesla. Skládá se ze tøí
 èástí:
 \begin{itemize}
-	\item Jádra -- zprostøedkovávajícího funkcionalitu potøebnou pro crackování,
-	\item Modulù -- skrze které je zaji¹tìna podpora crackování rùzných formátù,
-	\item Aplikace -- umo¾òující pracovat s~frameworkem a moduly pomocí CLI rozhraní.
+	\item jádra -- zprostøedkovávajícího funkcionalitu potøebnou pro crackování,
+	\item modulù -- skrze které je zaji¹tìna podpora crackování rùzných formátù,
+	\item aplikace -- umo¾òující pracovat s~frameworkem a moduly pomocí CLI rozhraní.
 \end{itemize}
 \begin{figure}[ht]
     \begin{center}
@@ -408,6 +418,7 @@ bezpeènostní revize 1-5. Nástroj poèítá i s~implementací revize 6. Vývoj této fu
 být zapoèat a¾ po zveøejnìní specifikace této revize.
 
 \chapter{Analýza formátù .ZIP a .7z}
+\label{ch:formaty}
 \section{Formát .ZIP}
 Jedná se o~jeden z~prvních formátù souborových archivù, který podporoval kompresi dat. V~roce 1989
 vytvoøil Phil Katz program PKZIP v~rámci nìho¾ byl pøedstaven nový formát .ZIP. Specifikace
@@ -583,6 +594,7 @@ pou¾ívány a jaké soubory obsahují.
 
 
 \chapter{Návrh modulù}
+\label{ch:moduly}
 V~této kapitole se podíváme na to, jak z~vý¹e popsaných algoritmù, technologií a strukturálních
 analýz archivù vytvoøíme roz¹iøující moduly pro nástroj Wrathion. Tato kapitola si klade za cíl
 obecnì popsat, jak se budou soubory jednotlivých formátù procházet. Tedy jaká data se z~nich budou
@@ -590,22 +602,18 @@ obecnì popsat, jak se budou soubory jednotlivých formátù procházet. Tedy jaká da
 shody hesel.
 
 \section{Modul ZIP}
-Jako první si nastíníme modul ZIP. Pokud se divíte proè se zde bavíme o~návrhu modulu ZIP,
-kdy¾ jak u¾ bylo vý¹e øeèeno je tento modul pro Wrathion ji¾ vytvoøen, tak se divíte správnì.
-V~pøípadì tohoto modulu se budu zabývat roz¹íøením funkcionality a ne vytvoøením zcela nového
-modulu.
+Jako první si nastíníme modul ZIP. Nemusíme zde øe¹it návrh celého modelu a v¹echno
+mo¾ností pro formát, ale pouze roz¹íøení funkcionality o zatím nepodporavané metody zabezpeèení.
 
  Momentální verze ZIP modulu podporuje pouze staré ¹ifrování PKWARE a ¹ifrování AES. Podpora
-¹ifrování AES je v¹ak relativní. Nemù¾eme øíct, ¾e bychom mìli 100\% funkcionalitu a byli
-schopní zjistit hesla pro v¹echny soubory za¹ifrované metodou AES. Momentálnì podporujeme pouze
-speciální verzi AES, je¾ si vytvoøili vývojáøi nástroje WinZip. Ti si vytvoøili vlastní oøezanou
-AES hlavièku a oznaèili soubor vlastní metodou. Existují ov¹em nástroje jako SecureZIP od firmy
-PKWARE umo¾òující také za¹ifrovat obsah archivù pomocí ¹ifrovací metody AES, s~ní¾ si souèasný
-modul i pøes podporu zji¹tìní hesla pro AES neporadí.
+¹ifrování AES je v¹ak neúplná. Modul momentálnì podporuje pouze speciální verzi AES, je¾ si
+vytvoøili vývojáøi nástroje WinZip. Ti si vytvoøili vlastní oøezanou AES hlavièku a oznaèili
+soubor vlastní metodou. Existují ov¹em nástroje jako SecureZIP od firmy PKWARE umo¾òující také
+za¹ifrovat obsah archivù pomocí ¹ifrovací metody AES, s~ní¾ si souèasný modul i pøes podporu
+zji¹tìní hesla pro AES neporadí.
 
  Dal¹í ¹ifrovací metodou, kterou nabízí nástroj SecureZIP je 3DES. S~ním si momentální verze
-neporadí vùbec a tak je tedy vhodné tuto funkcionalitu doplnit. Doplnìním, sní¾íme poèet ZIP
-archivù, které tento modul nezvládne zpracovat.
+neporadí vùbec a je tedy vhodné tuto funkcionalitu doplnit.
 
 \subsubsection{Zji¹tìní informací z~archivu}
 Následující text popisuje postup získávání a zpracování informací nutných pro rozhodnutí, zda se
@@ -751,13 +759,10 @@ popsány. Hledání informací ve zdrojových kódech 7zip-u je díky absenci komentáøù
 abstrakci kódu znaènì nároèné a zdlouhavé. Návrh modulu bude tedy potøeba pravdìpodobnì
 modifikovat na základì informací zji¹tìných bìhem implementace jednotlivých èástí modulu.
 
- Bìhem implementace bude zapotøebí vytvoøit dvì verze obou modulù. Jednu verzi bezici pouze na
+ Bìhem implementace bude zapotøebí vytvoøit dvì verze obou modulù. Jednu verzi bì¾ící pouze na
 CPU a druhou, která bude podporovat paralelní zpracování na GPU. V návaznosti na implementaci
-bude potøeba provést mìøení rychlosti a následné srovnání s konkurencí. Podle výsledkù srovnání
-jde odhadnout jak moc optimální ná¹ modul je a zda je tøeba ho nìjak upravit a vyladit nebo
-jestli je v rámci mo¾ností vykonovì optimalizován. 
-
-  Na konci bude tøeba provést objektivní srovnání s konkurencí a urèit, pro které pøíkpady je
-vhodné pou¾ít jaký nástroj.
+bude potøeba provést mìøení rychlosti a srovnání s dal¹ími nástroji. Podle výsledkù srovnání
+jde odhadnout, jak moc optimální ná¹ modul je a zda je potøeba jej upravit a vyladit nebo
+zda je v rámci mo¾ností optimalizován.
 
 %=========================================================================
