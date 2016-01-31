@@ -2,17 +2,17 @@
 \chapter{Úvod}
 Ochrana a~zabezpeèení soukromých a~dùle¾itých informací je v~dne¹ní dobì èasto se vyskytujícím
 tématem na poli informaèních technologií. A» u¾ se bavíme o~zabezpeèení dat pøi pøenosu po síti
-nebo o~zabezpeèení lokálnì ulo¾ených dat. Doká¾eme se i~asi pøedstavit situaci, kdy potøebujeme
+nebo o~zabezpeèení lokálnì ulo¾ených dat. Doká¾eme si asi pøedstavit situaci, kdy potøebujeme
 sdílet informace, ale chceme zajistit, ¾e je budou schopny pøeèíst pouze osoby, které jsou k~tomu
 urèeny.
 
- Vý¹e uvedeného lze dosáhnout ¹ifrováním informací. V~dne¹ní dobì existuje nespoèet mo¾ností jak
+ Vý¹e uvedeného lze dosáhnout ¹ifrováním informací. V~dne¹ní dobì existuje nespoèet mo¾ností, jak
 informace ¹ifrovat. Kvalitu zabezpeèení dat znaènì ovlivòuje výbìr pou¾itého ¹ifrovacího
 algoritmu a~dostateènì silného hesla. Pokud pou¾ijeme slabou ¹ifru a~silné heslo, je
-¹ance, ¾e se k~Va¹im datùm dostane neoprávnìná osoba je výraznì ni¾¹í, ne¾ kdy¾ to udìláte naopak.
+¹ance, ¾e se k~Na¹im datùm dostane neoprávnìná osoba je výraznì ni¾¹í, ne¾ kdy¾ to udìláte naopak.
 
  Èasto chceme sdílet nebo zabezpeèit více ne¾ jeden soubor s~informacemi. Obecnì se pro
-spojení více souborù, rùzného typu, do jednoho celku pou¾ívají archivy. Jedním z~nejroz¹íøenìj¹ích
+spojení více souborù rùzného typu do jednoho celku pou¾ívají archivy. Jedním z~nejroz¹íøenìj¹ích
 typù souborových archivù jsou formáty .ZIP a~.7z.
 
  Tato práce se pøevá¾nì zabývá analýzou pou¾ívaných metod zabezpeèení a~¹ifrovacích
@@ -27,7 +27,7 @@ akceleraci pomocí grafické karty v~nástroji {\it Wrathion}. Ten je popsán v~kapi
 \ref{ch:wrathion}. V~kapitole \ref{ch:formaty} jsou zanalyzovány formáty .ZIP a~.7z. Na základì
 poznatkù z~analýz jsou v~kapitole \ref{ch:moduly} vytvoøeny návrhy ro¾¹iøujících modulù {\it
 Wrathionu}. 
-\chapter{Metody pro ¹ifrovaní a~he¹ovaní}
+\chapter{Metody pro ¹ifrování a~he¹ování}
 \label{ch:sifrovani}
 Chceme--li se bavit o~¹ifrování a~he¹ování musíme si nejprve definovat pojem \uv{kryptografie}.
 \begin{defn}
@@ -40,7 +40,7 @@ vyjadøují pou¾ití algoritmù nebo funkcí navrhnutých na základì kryptografických 
 \section{©ifrování}
 Pokud potøebujeme zabezpeèit data tak, aby bìhem pøenosu nebyla ètena neoprávnìnou osobou, která by
 mohla data jakkoliv získat, bavíme se o~¹ifrování. Pro ¹ifrování potøebujeme heslo, které pou¾ijeme
-pro zamaskování informací tak, aby pùvodní zpráva nebyla èitelná. V~pøíápadì ¹ifrování v¹ak
+pro zamaskování informací tak, aby pùvodní zpráva nebyla èitelná. V~pøípadì ¹ifrování v¹ak
 potøebujeme umìt data znovu odmaskovat a~tím udìlat èitelnými~\cite{AC:1996}. Podle toho rozli¹ujeme metody na dva
 typy:
 \begin{itemize}
@@ -62,7 +62,7 @@ silou. Jedním z~po¾adavkù na novou metodu byla zpìtná kompatibilita s~metodou DE
 spoleènosti nemusely pøedìlávat své systémy.
 
 TDEA je symetrická bloková ¹ifra vyu¾ívající kryptografické jádro DES k~¹ifrování 64-bitového bloku
-dat. Metoda pracuje s~64-bitovým klíèem ov¹em pro ¹ifrování je pou¾ito pouze 56 bitù, zbylé bity
+dat. Metoda pracuje s~64-bitovým klíèem, ov¹em pro ¹ifrování je pou¾ito pouze 56 bitù, zbylé bity
 slou¾í k~detekci chyb. 
 
 Metoda pou¾ívá tøi 56-bitové klíèe pro své operace. Jednotlivé klíèe jsou pou¾ity v~rùzných krocích
@@ -97,7 +97,7 @@ nebo dvoudimenzionálních polí bajtù. V~metodì AES je pou¾ito dvoudimenzionální p
 ze ètyø øádkù obsahujících ètyøi bajty. Toto dvou dimenzionální pole je nazýváno {\it State}.
 
 Na zaèátku ¹ifrování se nakopírují data ze vstupu do pole {\it State} a~nastaví se
-zaokrouhlovací klíèe ({\it Round Keys}). Poté je na základì pou¾ité délky ¹ifrovacího klíèe x--krát
+zaokrouhlovací klíèe ({\it Round Keys}). Poté je, na základì pou¾ité délky ¹ifrovacího klíèe, x--krát
 pou¾ita zaokrouhlovací funkce. Poèet opakování funkce je 10-krát pro 128b klíè, 12-krát pro 192b
 klíè a~14-krát pro 256b klíè. Funkce se skládá ze ètyø bajtovì-orientovaných transformací:
 \begin{enumerate}
@@ -110,7 +110,7 @@ klíè a~14-krát pro 256b klíè. Funkce se skládá ze ètyø bajtovì-orientovaných tra
     \item pøidání zaokrouhlovacího klíèe ({\it Round Key}) k~poli {\it State} -- zaokrouhlovací
         klíèe jsou pøidávány pomocí bitové operace XOR provedené nad sloupci pole.
 \end{enumerate}
-Pro de¹ifrování je pou¾ita inverzní funkce a~proto¾e se jedná symetrickou ¹ifru, je pro de¹ifrování
+Pro de¹ifrování je pou¾ita inverzní funkce, a~proto¾e se jedná symetrickou ¹ifru, je pro de¹ifrování
 pou¾ito stejné heslo jako pro ¹ifrování.
 
 \section{He¹ování}
@@ -130,16 +130,16 @@ Slou¾í pro he¹ování zpráv s~maximální délkou $2^{64}-1$ bitù. Jako výstup produk
 hodnotu tzv. he¹ (hash). Ten je vìt¹inou uveden v~hexa-decimální formì pro sní¾ení nárokù na ulo¾ení
 a vizuálního zkrácení výstupu~\cite{NIST:2015}. 
 
-Existují dvì mo¾nosti jak vytvoøit výstupní hodnotu. Jedna vy¾aduje více zdrojù, ale ve vìt¹inì
+Existují dvì mo¾nosti, jak vytvoøit výstupní hodnotu. Jedna vy¾aduje více zdrojù, ale ve vìt¹inì
 pøípadù potøebuje krat¹í výpoèetní èas. Druhá se spí¹e hodí
-pro systémy s~omezenými zdroji a~které nevy¾adují co nejrychlej¹í zpracování.
+pro systémy s~omezenými zdroji, které nevy¾adují co nejrychlej¹í zpracování.
 
 
 \subsection{SHA-256}
-Nástupce SHA-1 mající stejná omezení pro vstupní zprávu jako jeho pøedchùdce, av¹ak li¹í se v~délce
+Nástupce SHA-1, mající stejná omezení pro vstupní zprávu jako jeho pøedchùdce, se v¹ak li¹í v~délce
 výstupní hodnoty, která má v~tomto pøípadì velikost 256-bitù. To poskytuje podstatnì víc mo¾ných
 vypoètených hodnot a~sní¾í se tedy procentuální pravdìpodobnost, ¾e dojde ke kolizi vypoètených
-hodnot pro rùzné vstupní zprávy co¾ se pou¾ívá jako jeden z~mo¾ných útokù na he¹ovací
+hodnot pro rùzné vstupní zprávy, co¾ se pou¾ívá jako jeden z~mo¾ných útokù na he¹ovací
 funkce~\cite{NIST:2015}.
 
 Tato he¹ovací funkce má takté¾ vy¹¹í nároky na zdroje pøi výpoètu výsledku. Nemá takové pamì»ové
@@ -204,14 +204,14 @@ Dne¹ním trendem ve vývoji architektur pro výpoèetní zaøízení je umo¾nìní paralel
 úloh. Jedná se o~architektury otevírající dveøe k~znatelnému zvý¹ení výkonu u~zaøízení na nich
 postavených. Dnes ji¾ pova¾ujeme za normální, ¾e máme více jádrové procesory (CPU), které
 podporují paralelní zpracování. Ov¹em jedním z~hlavních pøedstavitelù toho trendu jsou grafické 
-výpoèetní jednotky (GPU). Existence tìchto typù zaøízení ústí v~potøebu mít prostøedky jak s~tìmito
+výpoèetní jednotky (GPU). Existence tìchto typù zaøízení ústí v~potøebu mít prostøedkya, jak s~tìmito
 zaøízeními komunikovat a~programovat je.
 
  U~paralelních aplikací je na¹í nejvìt¹í prioritou efektivnost vyu¾ití zdrojù. Dùvodem je
 vysoká poøizovací cena a~èasto i~vysoké provozní náklady. Dal¹ím dùvodem je také nároènost aplikací
 na nich bì¾ících. Ty jsou ve vìt¹inì pøípadù èasovì velmi nároèné. Návrh i~programování aplikace
 vyu¾ívající paralelismù mù¾e být znaènì nároèné. Je zde velký rozdíl v~programovacích technikách.
-Programování paralelních aplikací pro CPU vychází ze za¾itých standardù, pro práci s~pamìtí,
+Programování paralelních aplikací pro CPU vychází ze za¾itých standardù pro práci s~pamìtí,
 procesy nebo pro øízení bìhu aplikace, pou¾ívaných pro vývoj klasických aplikací. Oproti tomu
 programování GPU a~jiných specializovanìj¹ích zaøízení se od tìchto standardù velmi li¹í.
 Napøíklad vytváøení obecnì pou¾itelné aplikace urèené pro bìh na GPU je nároèné hlavnì z~hlediska
@@ -223,7 +223,7 @@ hardwaru.
 
  Takovýto vývoj obecnì pou¾itelných aplikací by byl nereálný, proto¾e bychom museli
 aplikaci vyvinout v~desítkách ne--li stovkách verzí pro jednotlivá konkrétní zaøízení, na kterých
-bychom chtìli aplikaci provozovat. Proto se vyskytla potøeba vytvoøit univerzální rozhraní, jej¾ by
+bychom chtìli aplikaci provozovat. Proto se vyskytla potøeba vytvoøit univerzální rozhraní, je¾ by
 nad specifickými pøístupy k~programování jednotlivých zaøízení vytvoøilo univerzální programovací
 vrstvu, její¾ instrukce by následnì byly interpretovány do instrukèní sady specifického zaøízení.
 Takovýmto rozhraním je napø.: CUDA\footnote{Platforma vyvinutá spoleèností NVIDIA urèená pro
@@ -258,7 +258,7 @@ Struktura OpenCL architektury lze popsat hierarchickým modelem následovnì:
 
 \subsubsection{Model platformy}
 Tento model se skládá z~hostitele a~jednoho nebo více OpenCL zaøízení, která jsou rozdìlena na
-jedno nebo více výpoèetních jednotek, které jsou dále dìleny na jeden nebo více výpoèetních prvkù.
+jedno nebo více výpoèetních jednotek. Ty jsou dále dìleny na jeden nebo více výpoèetních prvkù.
 Na jednotlivých prvcích se pak provádí výpoèetní operace.
 
  Rozdìlení na hostitele a~zaøízení vy¾aduje implementovat aplikaci pro obì èásti. Tedy
@@ -285,7 +285,7 @@ kterém bude kernel provádìt operace. V~prostøedí musíme specifikovat a~nastavit 
     \item Zaøízení -- jedno a~více zaøízení ovladatelných platformou OpenCL.
     \item Objekty kernelu -- OpenCL funkce s~pøednastavenými argumenty podle vybraného
         zaøízení.
-    \item Objekty programu -- zdrojový kódu a~jeho spustitelná verze, které implementují
+    \item Objekty programu -- zdrojový kód a~jeho spustitelná verze, které implementují
         kernely.
     \item Objekty pamìti -- promìnné, ke kterým mù¾e pøistupovat hostitel i~OpenCL zaøízení.
 	Instance kernelù bìhem svého provádìní operují s~tìmito objekty.
@@ -304,7 +304,7 @@ Práce s~pamìtí v~OpenCL se znaènì li¹í od klasického pøístupu, který známe ze st
 aplikací urèených pro bìh pouze na CPU. Pamì»ový model OpenCL popisuje obsah, strukturu a~chování
 pamìti pou¾ívané v~platformì vytvoøené tímto frameworkem.
 
- Pro ka¾dou aplikaci je tøeba pøesnì definovat, jak budou jednotlivé pamìti v~pamìti vypadat.
+ Pro ka¾dou aplikaci je tøeba pøesnì definovat, jak pøesnì bude její pamì» vypadat.
 Model dìlíme na ètyøi èásti:
 \begin{itemize}
     \item {\it Oblasti pamìti} -- definuje, se kterými oblastmi pamìti hostitel a~zaøízení ve
@@ -317,7 +317,7 @@ Model dìlíme na ètyøi èásti:
 	více jednotkami naráz a~zaruèuje, ¾e je dodr¾eno poøadí operací s~pamìtí a~¾e jsou data po
 	celou dobu validní. Takté¾ definuje synchronizaci nad tìmito oblastmi.
 \end{itemize}
-Pro nás je nejdùle¾itìj¹í pochopit jak je pamì» strukturována a~jak na sebe navazují
+Pro nás je nejdùle¾itìj¹í pochopit, jak je pamì» strukturována a~jak na sebe navazují
 jednotlivé oblasti. To je nejlépe patrné z~obrázku \ref{memory}. Popis struktury:
 \begin{itemize}
     \item pamì» hostitele (RAM apod.),
@@ -342,7 +342,7 @@ v~kontextu nezávisle na zaøízení,
     \label{memory}
 \end{figure}
 \subsubsection{Programovací model}
-Tento model lze také nazvat jako OpenCL Framework. Framework se skládá ze tøech komponentù. Zde za
+Tento model lze také nazvat jako OpenCL framework. Framework se skládá ze tøech komponentù. Zde za
 zmínku stojí OpenCL kompilátor. Ten podporuje pokroèilý jazyk SPIR-V a~jazyk OpenCL C. Dal¹í
 jazyky mohou být podporovány nìkterými implementacemi kompilátoru.
 
@@ -372,7 +372,7 @@ Nástroj slou¾í ke obnovování hesel pomocí brute-force útokù na tato hesla. Sklád
 \subsection{Generátory hesel}
 První èástí Wrathionu, kterou si rozebereme jsou generátory hesel pro útoky. Jedná se o~esenciální
 funkcionalitu. Bez vygenerovaných hesel nemù¾eme na útoky vùbec myslet. V~nástroji jsou momentálnì
-implementovány tøi typ generátorù:
+implementovány tøi typy generátorù:
 \begin{itemize}
     \item {\it Brute-force} -- postupnì generuje v¹echny mo¾né permutace ze zadaných znakù.
     \item {\it Unicode} -- jedná se o~upravený brute-force generátor. V~tomto pøípadì je nastavena
@@ -389,7 +389,7 @@ Nejèastìji pou¾ívaným generátorem je brute-force, který je ov¹em výpoèetnì nároè
 v¹ak o~snadno paralelizovatelný generátor, proto je pøíhodnì implementován i~jako kernel bì¾ící na
 GPU.
 \subsection{Crackery}
-Druhou èástí jsou samotné crackery, které se dìlíme podle toho, kdo provádí generování hesel a
+Druhou èástí jsou samotné crackery, které dìlíme podle toho, kdo provádí generování hesel a
 kdo provádí porovnávání hesel:
 \subsubsection{CPU cracker}
 Zde se standardnì spustí ji¾ pøedkompilovaný cracker napsaný v~C++ (viz. Obrázek \ref{CPU}). Není
@@ -483,7 +483,7 @@ výskytu archivù ¹ifrovaných tìmito metodami je minimální respektive témìø nulová
 \subsection{Struktura souboru}
 \label{ssec:zip_struct}
 Archivy jsou soubory obsahující dal¹í soubory. Dá se tedy øíct, ¾e se jedná
-o~jakési \uv{schránky}, do nich¾ lze vkládat, ale i~vybírat, urèité soubory rùzných typù.
+o~jakési\linebreak\uv{schránky}, do nich¾ lze vkládat, ale i~vybírat, urèité soubory rùzných typù.
 U~formátu .ZIP lze do archivù navíc ukládat i~adresáøe a~tak ukládat
 celé struktury tvoøené z~adresáøù a~souborù \ref{zipstruct}.
 \begin{figure}[ht]
@@ -508,8 +508,8 @@ Header). Poèet tìchto hlavièek odpovídá poètu adresáøù a~souborù obsa¾ených v~to
 archivu. Hlavièka centrálního adresáøe zaèíná signaturou [0x50, 0x4b, 0x01, 0x02], podle které je
 v~souboru identifikovatelný zaèátek hlavièky. Za ní následují metadata souboru. Napø.: datum a~èas
 poslední úpravy obsa¾eného souboru, velikost pøed a~po kompresi atd. Tato struktura hlavièek je
-ukonèena záznamem konec centrálního adresáøe. Ten zaèíná signaturou [0x50, 0x4b, 0x05, 0x06] a
-obsahuje informace o~tom na kterém disku je soubor ulo¾en, na kterém disku zaèíná struktura
+ukonèena záznamem konec centrálního adresáøe. Ten zaèíná signaturou [0x50, 0x4b, 0x05, 0x06]
+a~obsahuje informace o~tom na kterém disku je soubor ulo¾en, na kterém disku zaèíná struktura
 centrálního adresáøe a~dal¹í.
 \end{itemize}
 Od verze formátu 6.2 jsou pøed hlavièkou centrálního adresáøe dal¹í polo¾ky a~to hlavièka
@@ -518,12 +518,12 @@ v~závislosti na pøidání nové funkce pro ¹ifrování obsahu hlavièek centrálního ad
 
 \subsubsection{Øídící struktury definující ¹ifrování}
  Zatím jsme se bavili pouze o~základní struktuøe archivu. Nás ale spí¹e zajímají struktury
-archivù, jej¾ obsahují soubory v~za¹ifrované podobì. Zda je soubor ¹ifrován lze zjistit z~jeho
+archivù, jen¾ obsahují soubory v~za¹ifrované podobì. Zda je soubor ¹ifrován lze zjistit z~jeho
 lokální hlavièky nebo z~jeho hlavièky centrálního adresáøe a~konkrétnì z~prvního a~sedmého bitu
 polo¾ky {\it General Purpose Bit Flag}. Nastavení prvního bitu indikuje, ¾e je soubor ¹ifrován.
 \begin{itemize}
     \item Pokud platí, ¾e není zároveò nastaven i~sedmý bit, je za lokální hlavièku souboru
-        je pøidána hlavièka ¹ifrování. Hlavièka ¹ifrování se vá¾e pouze k~¹ifrování pomocí tradièní
+        pøidána hlavièka ¹ifrování. Hlavièka ¹ifrování se vá¾e pouze k~¹ifrování pomocí tradièní
         metody od spoleènosti PKWARE.
     \item Pokud je nastaven i~sedmý bit indikující pou¾ití takzvaného \uv{silného
 	¹ifrování}, hlavièka ¹ifrování se negeneruje, ale pøidávají se informace o~¹ifrování do
@@ -582,8 +582,7 @@ Neprázdný soubor tohoto formátu má ètyøi èásti, které v~nìm musí být obsa¾eny vi
 	7zSignature}) ['7', 'z', 0xBC, 0xAF, 0x27, 0x1C] definující zaèátek souboru daného typu.
 	Za ní v~rámci stejné hlavièky jsou informace o~verzi archivu, CRC hlavièky a~jako poslední
 	jsou polo¾ky týkající se pozice následující hlavièky. Najdeme zde relativní adresu
-	(uvedena jako vzdálenost od konce úvodní hlavièky), následuje pak délka dal¹í hlavièky a
-	CRC pro tyto dvì polo¾ky.
+	(uvedena jako vzdálenost od konce úvodní hlavièky), následuje pak délka dal¹í hlavièky a~CRC pro tyto dvì polo¾ky.
     \item Druhá èást obsahuje zpracovaná data vytvoøených proudù, tedy data samostatných nebo
 	pøípadnì i~spojených souborù po kompresi, ¹ifrování apod.
     \item Tøetí èást obsahuje zpracované informace slou¾ící jako podpùrná data pro hlavièku a~její
@@ -670,7 +669,7 @@ z~nìkteré z~hlavièek\footnote{Lokální hlavièka souboru nebo hlavièka souboru v~c
 	jsou takté¾ ¹ifrované a~¾e byla pou¾ita stejná ¹ifrovací metoda. Pokud je nastaven i~13.
 	bit musíme provést ètení de¹ifrovací hlavièky archivu a~pomocí ní de¹ifrovat celou
 	strukturu centrálního adresáøe. Postup de¹ifrování je identický s~de¹ifrováním souborù.
-    \item Pøeètení {\it Compression method} -- z~nìkteré z~hlavièek\footnotemark[\value{footnote}]
+    \item Pøeètení {\it Compression method} -- z~nìkteré z~hlavièek %\footnotemark[\value{footnote}] 
 	souboru. Tato polo¾ka nás zajímá, pouze pokud byly bity jedna a~sedm pøíznakù nastaveny na
 	hodnotu 1. Èíslo uvedené v~této polo¾ce nám dovoluje zjistit, zda byla pou¾ita ¹ifrovací
 	metoda WinZip AES (hodnota 99). Pou¾ití jiné hodnoty indikuje pou¾ití nìkteré z~dal¹ích
@@ -682,14 +681,13 @@ z~nìkteré z~hlavièek\footnote{Lokální hlavièka souboru nebo hlavièka souboru v~c
 	Potøebujeme získat pou¾itá inicializaèní data potøebná pro ¹ifrovací s~de¹ifrovací funkce.
 	A~také data pro ovìøení hesla vèetnì jejich kontrolního souètu (CRC32).
 \end{enumerate}
-
-Jakmile takto získáme v¹echna potøebná data pøesuneme se k~hledání pou¾itého hesla. Tento proces
+Jakmile takto získáme v¹echna potøebná data, pøesuneme se k~hledání pou¾itého hesla. Tento proces
 bude mo¾né realizovat za vyu¾ití CPU nebo GPU. Pro obì tato zaøízení je nutné vytvoøit samostatný
 kód. Kód pro CPU èistì v~jazyce C++ s~mo¾ností vyu¾ití nìkterých ji¾ implementovaných funkcí a
 generátorù obsa¾ených v~nástroji Wrathion. Pro GPU je tøeba vytvoøit kód v~C++, který pobì¾í na
 CPU a~bude inicializavat GPU a~rozdìlovat práci pracovním jednotkám na ní umístìných a~poté kernel
 v~OpenCL pro implementování kernelu, který pobì¾í na pracovních jednotkách. Av¹ak v~obou
-pøípadech pùjde o~toto¾ný algoritmus \ref{alg:zip_ver}.
+pøípadech pùjde o~toto¾ný Algoritmus \ref{alg:zip_ver}.
 
 \begin{algorithm}[ht]
     \SetStartEndCondition{ (}{)}{)}\SetAlgoBlockMarkers{}{}%
@@ -736,8 +734,8 @@ teoretickým postupem:
 \begin{enumerate}
     \item Ovìøíme signaturu -- jedná se o~prvníich 6 bajtù souboru, které musí odpovídat hodnotì
 v~sekci \ref{ssec:7z_struct}. 
-    \item Získáme pozici a~velikost dal¹í hlavièky -- pøeskoèíme na pozici 6 bajtù za signaturou a
-	získáme pozici dal¹í hlavièky. Z~následující hodnoty získáme délku následující hlavièky.
+    \item Získáme pozici a~velikost dal¹í hlavièky -- pøeskoèíme na pozici 6 bajtù za signaturou
+        a~získáme pozici dal¹í hlavièky. Z~následující hodnoty získáme délku následující hlavièky.
     \item Pøejdeme na dal¹í hlavièku -- musíme se podívat na signaturu hlavièky, pokud odpovídá
 	hodnotì 0x17 musíme projít její obsah.
     \item Detekce ¹ifrování hlavièky -- v~hlavièce {\it Folders} zaèínající signaturou 0x0B,
@@ -745,7 +743,7 @@ v~sekci \ref{ssec:7z_struct}.
 	¹ifrována metodou 7zAES.
     \item Získání dat pro ¹ifrování -- v~pøípadì nálezu èteme data inicializaèního vektoru a~poèet
 	iterací pou¾ití he¹ovací funkce pro odvození hesla pro ¹ifrování (defaultnì 19).
-    \item De¹ifrování hlavièky -- de¹ifrujeme podle algoritmu~\ref{alg:7z_desifr}.
+    \item De¹ifrování hlavièky -- de¹ifrujeme podle Algoritmu~\ref{alg:7z_desifr}.
     \item Detekce hlavièky pro dekompresi -- hledáme ve stejné sekci jako v~bodì 5. Zde v¹ak
 	pátráme po hodnotì [0x03, 0x01, 0x01] znaèící pou¾ití LZMA pro kompresi.
     \item Provedeme dekompresi hlavièky -- pomocí algoritmu LZMA.
@@ -753,7 +751,8 @@ v~sekci \ref{ssec:7z_struct}.
     \item Porovnáme vypoètené CRC s~odpovídajícím CRC ulo¾eným v~hlavièce {\it Digest}, pokud
 	nesouhlasí, vracíme se na krok 6.
     \item Pro zji¹tìní hesla k~souborùm se podíváme do dekomprimovaných dat a~postupujeme od kroku
-	4 obdobným zpùsobem, av¹ak nyní pracujeme s~daty o~souborech namísto o~hlavièce.
+	4 obdobným zpùsobem, av¹ak nyní pracujeme s~daty souvisejícími se soubory namísto
+        s~hlavièkou.
 \end{enumerate}
 \begin{algorithm}[H]
     \SetStartEndCondition{ (}{)}{)}\SetAlgoBlockMarkers{}{}%
@@ -775,12 +774,12 @@ v~sekci \ref{ssec:7z_struct}.
 
 \chapter{Závìr}
 Obsáhnout v¹echny mo¾nosti a~nastavení analyzovaných formátù je znaènì nároèný proces, který
-ve vìt¹inì pøípadù ani nestojí za námahu. Dùvodem je nízký poètu dostupných nástrojù schopných tyto
+ve vìt¹inì pøípadù ani nestojí za námahu. Dùvodem je nízký poèet dostupných nástrojù schopných tyto
 hodnoty nastavit, co¾ platí hlavnì pro formát ZIP.
 
  Struktury jednotlivých formátù byly popsány tak, aby bylo mo¾né chybìjící nebo nejasné informace
 dohledat ve specifikacích formátu a~nebylo nutné slo¾itì hledat, o~jaké hodnoty se jedná. Zde
-je nutno podotknout, ¾e jak ji¾ bylo zmínìno, struktura 7z souboru je hodnì komplexní a~promìnná.
+je nutno podotknout, ¾e, jak ji¾ bylo zmínìno, struktura 7z souboru je hodnì komplexní a~promìnná.
 Bohu¾el dokumentace tohoto formátu je znaènì nedostaèující a~je tedy nutné strávit hodnì èasu
 studiem struktury, zdrojových kódù a~fóra vývojáøe pro získání dal¹ích a~detailnìj¹ích informací.
 
@@ -789,7 +788,7 @@ implementaci. Také na základì prùzkumu v~tomto odvìtví by roz¹íøený modul mìl bý
 konkurencí. Nìkteré známé nástroje toti¾ mají podporu pouze pro WinZip AES a~PKWARE ¹ifrování
 (John the Ripper) nebo momentálnì neposkytují funkcionalitu k~formátu .ZIP (oclHashcat).  
 
- U~modulu 7z se jedná spí¹ o~teoretický nástin jak by mohl modul vypadat a~jak by
+ U~modulu 7z se jedná spí¹ o~teoretický nástin, jak by mohl modul vypadat a~jak by
 mohly jednotlivé èásti algoritmu fungovat. Nìkteré dùle¾ité informace toti¾ nejsou nikde detailnì
 popsány. Hledání informací ve zdrojových kódech 7zip-u je díky absenci komentáøù a~vysoké
 abstrakci kódu znaènì nároèné a~zdlouhavé. Návrh modulu bude tedy potøeba pravdìpodobnì
