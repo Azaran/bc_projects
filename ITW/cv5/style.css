@@ -1,0 +1,68 @@
+/* ITW - cv5 - CSS3*/
+
+/*
+ * zarovnání obsahu na střed stránky není třeba řešit
+ * pro splnění úkolu použijte obrázky z adresářů images a images/blue/normal, žádné jiné
+ * stránka bude rozdělena do dvou částí (outer-frame a selector), u každé části dodržujte předepsané rámečky
+ * underlying frame tvoří vnitřní rámeček okolo textu (zelené pozadí)
+ * barva pozadí inner frame je #C8C8C8; barva pozadí underlying frame je #0c0
+ * inner frame má černý stín
+ * v selectoru jsou obrázky vertikálně vystředěné
+ * rodina písem je sans-serif, velikost 0.85em
+ */
+body {
+    font-family: sans-serif;
+    font-size: 0.85em;
+}
+#outer-frame{
+    background-image: url(images/blue/tl.png), url(images/blue/tr.png), url(images/blue/bl.png), url(images/blue/br.png), url(images/blue/t.png), url(images/blue/b.png), url(images/blue/l.png), url(images/blue/r.png);
+    background-repeat: no-repeat, no-repeat, no-repeat, no-repeat, repeat-x,repeat-x, repeat-y, repeat-y; 
+    background-position: left top, right top, left bottom, right bottom, center top, center bottom, left center, right center; 
+    background-origin: padding-box; 
+    width: 370px;
+    height: 370px;
+    padding: 130px;
+    border: 2px black solid;
+    border-radius: 15px 15px;
+    position:relative;
+    
+}
+#inner-frame{
+    border-image: url(images/border.png) 5 stretch round; 
+    border-image-width: 5px;
+    border-image-outset: 3px;
+    background-color: #c8c8c8;
+    box-shadow: 8px 8px 15px 4px black;
+    padding: 30px;
+    text-shadow: 3px 3px 5px black;
+    text-align: justify;
+    z-index:2;
+}
+
+#underlying-frame{
+    position: absolute;
+    top: 164px;
+    left: 158px;
+    width: 314px;
+    height: 284px;
+    border: 1px solid grey;
+    border-radius: 8px 8px;
+    background-color: rgba(0,192,0,0.25); 
+    z-index: 1;
+}
+
+#selector{
+    margin: 10px auto;
+    border: 1px dashed black;
+    display: inline-block;
+}
+
+#selector div{
+    display: inline;
+}
+#selector img {
+    vertical-align: middle;
+}
+#red{
+    display: none;
+}
