@@ -258,74 +258,109 @@ class TcSQLInjection(TcBase):
             self.fail("couldn't fill and submit login form")
 
 class TcXSSVulner(TcBase):
+    
+    def script_in_form(self, user, passwd):
+        driver = self.driver
+        if (self.fill_submit_login_form(user, passwd)):
+            for i in range(g_timeout):
+                try:
+                    el = driver.find_element_by_css_selector("div[name=\"validation\"]")
+                    display = el.value_of_css_property('display')
+                    if (display == "block"): break
+                except: pass
+                time.sleep(1)
+            else: self.fail("time out")
+            if not self.is_alert_present():
+                self.fail("script worked")
+        else:
+            self.fail("couldn't fill and submit login form")
 
 
     def test_standard_brackets(self):
-        driver = self.driver
-        if (self.fill_submit_login_form("<script>alert(document.cookie);</script>",\
-            "<script>alert(document.cookie);</script>")):
-            for i in range(g_timeout):
-                try:
-                    el = driver.find_element_by_css_selector("div[name=\"validation\"]")
-                    display = el.value_of_css_property('display')
-                    if (display == "block"): break
-                except: pass
-                time.sleep(1)
-            else: self.fail("time out")
-            if self.is_alert_present():
-                self.fail("script worked")
-        else:
-            self.fail("couldn't fill and submit login form")
-
+        self.script_in_form("<script>alert(document.cookie);</script>",\
+            "<script>alert(document.cookie);</script>")
 
     def test_encoded_brackets1(self):
-        driver = self.driver
-        if (self.fill_submit_login_form("\%3cscript\%3ealert(document.cookie);\%3c/script\%3e",\
-            "\%3cscript\%3ealert(document.cookie);\%3c/script\%3e")):
-            for i in range(g_timeout):
-                try:
-                    el = driver.find_element_by_css_selector("div[name=\"validation\"]")
-                    display = el.value_of_css_property('display')
-                    if (display == "block"): break
-                except: pass
-                time.sleep(1)
-            else: self.fail("time out")
-            if self.is_alert_present():
-                self.fail("script worked")
-        else:
-            self.fail("couldn't fill and submit login form")
+        self.script_in_form("\%3cscript\%3ealert(document.cookie);\%3c/script\%3e",\
+            "\%3cscript\%3ealert(document.cookie);\%3c/script\%3e")
     
     def test_encoded_brackets2(self):
-        driver = self.driver
-        if (self.fill_submit_login_form("\\3cscript\\3ealert(document.cookie);\\3c/script\\3e",\
-            "\\3cscript\\3ealert(document.cookie);\\3c/script\\3e")):
-            for i in range(g_timeout):
-                try:
-                    el = driver.find_element_by_css_selector("div[name=\"validation\"]")
-                    display = el.value_of_css_property('display')
-                    if (display == "block"): break
-                except: pass
-                time.sleep(1)
-            else: self.fail("time out")
-            if self.is_alert_present():
-                self.fail("script worked")
-        else:
-            self.fail("couldn't fill and submit login form")
-
+        self.script_in_form("\\3cscript\\3ealert(document.cookie);\\3c/script\\3e",\
+            "\\3cscript\\3ealert(document.cookie);\\3c/script\\3e")
 
 class TcUserType(TcBase):
 
-    def test_user_type_admin(self):
-    def test_user_type_manager(self):
-    def test_user_type_employee(self):
-    def test_user_type_helpdesk(self):
+    def user_type(self, user, passwd, expected_values):
+        driver = self.driver
+        if self.fill_submit_login_form(user, passwd):
+            for i in range(g_timeout):
+                try:
+                    if self.is_element_present(By.CSS_SELECTOR, "span.loggedinas"): break
+                except: pass
+                time.sleep(1)
+            else:
+                self.make_screenshot()
+                self.fail("time out")
 
+            try:
+                driver.find_element_by_css_selector("span.loggedinas").click()
+                driver.find_element_by_css_selector("li.dropdown.open")
+                driver.find_element_by_link_text("Profile").click()
+            except NoSuchElementException as e:
+                self.make_screenshot()
+                self.fail("element not found")
+            
+            for i in range(g_timeout):
+                try:
+                    if self.is_element_present(By.PARTIAL_LINK_TEXT, "User Groups"): break
+                except: pass
+                time.sleep(1)
+            else:
+                self.make_screenshot()
+                self.fail("time out")
+           
+            self.driver.find_element_by_css_selector("li[name=\"memberof_group\"]").click()
+            
+            for i in range(g_timeout):
+                try:
+                    if self.is_element_present(By.CSS_SELECTOR, "table[name=\"cn\"]"): break
+                except: pass
+                time.sleep(1)
+            else:
+                self.make_screenshot()
+                self.fail("time out")
+            
+            table =  self.driver.find_element_by_css_selector("table[name=\"cn\"]")
+            tbody = table.find_element_by_tag_name("tbody")
+            rows = tbody.find_elements_by_tag_name("tr")
+            col = []
+            for row in rows:
+                col.append(row.find_element_by_css_selector("td > div[name=\"cn\"]").text)
+
+            if len([i for i in col if i in expected_values]) != len(expected_values):
+                self.fail("rights missing")
+    
+    def test_user_type_admin(self):
+        expected_values = ["admins", "trust admins"]
+        self.user_type("admin", "Secret123", expected_values)
+    def test_user_type_manager(self):
+        expected_values = ["employees", "ipausers", "managers"]
+        self.user_type("manager", "Secret123", expected_values)
+    def test_user_type_employee(self):
+        expected_values = ["employees", "ipausers"]
+        self.user_type("employee", "Secret123", expected_values)
+    def test_user_type_helpdesk(self):
+        expected_values = ["ipausers"]
+        self.user_type("helpdesk", "Secret123", expected_values)
+
+"""
 class TcUserInterface(TcBase):
     def test_ui_admin(self):
     def test_ui_manager(self):
     def test_ui_employee(self):
     def test_ui_helpdesk(self):
 
+"""
 
 
 if __name__ == "__main__":
