@@ -36,7 +36,7 @@ Chceme--li se bavit o~¹ifrování a~he¹ování musíme si nejprve definovat pojem \uv
 \end{defn}
 Pojmy \uv{¹ifrování} a~\uv{he¹ování} vyjadøují dva rùzné pøístupy k~zabezpeèení informací. Oba pojmy
 vyjadøují pou¾ití algoritmù nebo funkcí navrhnutých na základì kryptografických pravidel. 
-
+i
 \section{©ifrování}
 Pokud potøebujeme zabezpeèit data tak, aby bìhem pøenosu nebyla ètena neoprávnìnou osobou, která by
 mohla data jakkoliv získat, bavíme se o~¹ifrování. Pro ¹ifrování potøebujeme heslo, které pou¾ijeme
@@ -54,6 +54,7 @@ typy:
         veøejný klíè a~klíè soukromý. Pokud chcemezamaskovat informace pou¾ijeme veøejný klíè pro
         ¹ifrování a~soukromý pro de¹ifrování. Druhá kombinace klíèù slou¾í k~ovìøení dat a~k~¹ifrování.
 \end{itemize}
+
 \subsection{Triple Data Encryption Algorithm (TDEA, 3DES)}
 Jedná se o~roz¹íøenou verzi metody
 DES\footnote{Specifikace na \url{http://csrc.nist.gov/publications/fips/fips46-3/fips46-3.pdf}}.
@@ -486,6 +487,7 @@ Archivy jsou soubory obsahující dal¹í soubory. Dá se tedy øíct, ¾e se jedná
 o~jakési\linebreak\uv{schránky}, do nich¾ lze vkládat, ale i~vybírat, urèité soubory rùzných typù.
 U~formátu .ZIP lze do archivù navíc ukládat i~adresáøe a~tak ukládat
 celé struktury tvoøené z~adresáøù a~souborù \ref{zipstruct}.
+
 \begin{figure}[ht]
     \begin{center}
 	\scalebox{0.225}{
@@ -545,8 +547,6 @@ de¹ifrování, bitovou délku ¹ifrovacího klíèe, za¹ifrovaný vzorek náhodných dat (
 o~informace pro validaci hesla (VData) a~CRC-32 (VCRC32)\footnote{{\it Cyclic Redundancy Code} -
 speciální he¹ovací funkce slou¾ící pro detekci chyb / zmìn dat oproti pùvodní hodnotì} tìchto
 validaèních dat. 
-
-
 
 \section{Formát .7z}
 \label{sec:7z}
@@ -609,7 +609,12 @@ Pro úèely této práce nás pøedev¹ím zajímá hlavièka {\it 7zHeader} a~v~ní obsahy 
 informace o~proudech dat (0x03 nebo 0x04). V~nich konkrétnì polo¾ka informace o~kóderech (0x07),
 ve které se musíme propracovat k~poli bajtù {\it CodecInfo}. Hodnoty tohoto pole musíme otestovat
 a zjistit, zda se shodují s~identifikátorem standardní ¹ifrovací metody AES-256 + SHA-256
-[0x06, 0xF1, 0x07, 0x01]~\cite{Pavlov:2015}.
+[0x06, 0xF1, 0x07, 0x01]~\cite{Pavlov:2015}. Zde je tøeba také nálezt data o pou¾ité kompresi.
+Kompresní metoda LZMA má identifikátor [0x03, 0x01, 0x01]. Dal¹í dùle¾itou polo¾kou pro ovìøení hesla je CRC ¹ifrovaného souboru. 
+
+Tento typ archivu bohu¾el neobsahuje ¾ádnou jinou metodu ovìøení hesla ne¾ pomocí spoèítání a
+porovnání CRC hodnot. K tomu je nutné nejprvek celý soubor de¹ifrovat a dekomprimovat co¾ znaènì
+pøidává na nároènosti celého ovìøovacího procesu.
 
 \section{Srovnání}
 Pokud budeme srovnávat formáty z~pohledu komprese, zjistíme, ¾e .7z je dle mìøení efektivnìj¹í
@@ -625,7 +630,8 @@ hesla. Oba formáty také podporují ¹ifrování hlavièek obsahujících informace o~me
 pou¾ívány a~jaké soubory obsahují.
 
  Formát .ZIP pøekonává .7z mo¾ností pou¾ití elektronických podpisù (certifikát typu X.509v3)
- k~¹ifrování souborù namísto hesel. 7z tuto funkcionalitu vùbec neobshahuje. 
+k~¹ifrování souborù namísto hesel. 7z tuto funkcionalitu vùbec neobshahuje. 
+
 
 
 \chapter{Návrh modulù}
@@ -655,15 +661,13 @@ Následující text popisuje postup získávání a~zpracování informací nutných pro ro
 jedná o~ZIP soubor, zda je soubor ¹ifrován, jakou metodou je ¹ifrován, jaké jsou inicializaèní
 hodnoty pou¾ité pøi ¹ifrování apod. To v¹e je potøeba pro roz¹íøení funkcionality modulu. Popis se
 primárnì nesoustøedí na získání dat pro ji¾ implementované funkce, ale pouze dat dùle¾itých pro
-roz¹íøení funkcionality modulu (detailní popis hlavièek a~hodnot v~nich je v~sekci
-\ref{ssec:zip_struct}):
+roz¹íøení funkcionality modulu (detailní popis hlavièek a~hodnot v~nich je
+v~sekci~\ref{ssec:zip_struct}):
 \begin{enumerate}
     \item Zji¹tìní signatury -- podíváme se na první 4 bajty a~porovnáme je se signaturou [0x50,
 	0x4B, 0x03, 0x04]. Tím ovìøíme, zda se jedná o~ZIP soubor.
-    \item Pøeètení {\it General purpose bit flag} -- hodnotu pøíznakù (flagù) získáme
-z~nìkteré z~hlavièek\footnote{Lokální hlavièka souboru nebo hlavièka souboru v~centrálním
-	adresáøi. Hlavièka souboru v~centrálním adresáøi obsahuje v¹echny polo¾ky lokální hlavièky
-	plus nìjaké navíc.} prvního souboru.
+    \item Pøeètení {\it General purpose bit flag} -- hodnotu pøíznakù získáme z lokální hlavièky
+	prvního souboru.
     \item Analýza pøíznakù -- zji¹»ujeme zda jsou nastaveny první a~sedmý bit pøíznakù na hodnotu
 	1. Pokud nalezneme ¹ifrování u~jednoho souboru pøedpokládáme, ¾e v¹echny ostatní soubory
 	jsou takté¾ ¹ifrované a~¾e byla pou¾ita stejná ¹ifrovací metoda. Pokud je nastaven i~13.
@@ -687,7 +691,7 @@ kód. Kód pro CPU èistì v~jazyce C++ s~mo¾ností vyu¾ití nìkterých ji¾ implementov
 generátorù obsa¾ených v~nástroji Wrathion. Pro GPU je tøeba vytvoøit kód v~C++, který pobì¾í na
 CPU a~bude inicializavat GPU a~rozdìlovat práci pracovním jednotkám na ní umístìných a~poté kernel
 v~OpenCL pro implementování kernelu, který pobì¾í na pracovních jednotkách. Av¹ak v~obou
-pøípadech pùjde o~toto¾ný Algoritmus \ref{alg:zip_ver}.
+pøípadech pùjde o~toto¾ný Algoritmus~\ref{alg:zip_ver}.
 
 \begin{algorithm}[ht]
     \SetStartEndCondition{ (}{)}{)}\SetAlgoBlockMarkers{}{}%
@@ -697,27 +701,18 @@ pøípadech pùjde o~toto¾ný Algoritmus \ref{alg:zip_ver}.
     \SetKwInOut{Input}{vstup}\SetKwInOut{Output}{výstup}
     \AlgoDisplayBlockMarkers\SetAlgoNoLine%
     \DontPrintSemicolon
-    \Input{Data získaná z~hlavièky pro de¹ifrování (IV, Erd, VDlen, Data)}
+    \Input{Data získaná z~hlavièky pro de¹ifrování (IV, Erd, Dlen, Data)}
     \Output{Poslední vygenerované heslo}
-    $shoda = FALSE$\;
-    \Repeat{$shoda$}{
+    \Repeat{$ CRC != spocitejCRC32 (Data, Dlen-4) $}{
 	heslo = generujHeslo ()\;
 	odvozene\_heslo = odvodHeslo (SHA1(heslo))\;
-	rd = desifruj (Erd, odvozene\_heslo, IV)\tcc*{Random hodnotu pro ¹ifrování}
+	rd = desifruj (Erd, odvozene\_heslo, IV)\tcc*{Random hodnota pro ¹ifrování}
 	odvozene\_heslo = odvodHeslo (SHA1(rd + IV))\;
 	desifrovana\_data = desifruj (Data, odvozene\_heslo, IV)\;
-	presun (Data, VDlen, VData)\tcc*{VDlen bajtù z~Data do VData} 
-	VCRC32 = Data\;
-	CRC = spocitejCRC32 (VData)\;
-
-	\If{$ CRC ==  VCRC32 $}{
-	    $shoda = TRUE$\;
-	}
+	CRC = *(uint32*)(\&Data[Dlen-4])\tcc*{Poslední 4 bajty jsou CRC}
     }
     \caption{Princip ovìøení vygenerovaného hesla pro ZIP archiv}\label{alg:zip_ver}
 \end{algorithm}
-
-
 
 \section{Modul 7z}
 V~tomto pøípadì se jedná o~úplnì nový modul. Bude tedy potøeba nadefinovat v¹echny struktury
@@ -732,46 +727,120 @@ detailní porozumìní struktuøe øídících dat formátu je tøeba nahlìdnout do soubor
 7zFormat.txt~\cite{Pavlov:2010}. Potøebné informace lze získat následujícím znaènì zjednodu¹eným
 teoretickým postupem:
 \begin{enumerate}
-    \item Ovìøíme signaturu -- jedná se o~prvníich 6 bajtù souboru, které musí odpovídat hodnotì
+    \item Ovìøíme signaturu -- jedná se o~prvních 6 bajtù souboru, které musí odpovídat hodnotì
 v~sekci \ref{ssec:7z_struct}. 
-    \item Získáme pozici a~velikost dal¹í hlavièky -- pøeskoèíme na pozici 6 bajtù za signaturou
-        a~získáme pozici dal¹í hlavièky. Z~následující hodnoty získáme délku následující hlavièky.
-    \item Pøejdeme na dal¹í hlavièku -- musíme se podívat na signaturu hlavièky, pokud odpovídá
-	hodnotì 0x17 musíme projít její obsah.
-    \item Detekce ¹ifrování hlavièky -- v~hlavièce {\it Folders} zaèínající signaturou 0x0B,
-	nejprve hledáme hodnotu [0x06, 0xF1, 0x07, 0x01]. Její nález znamená, ¾e data hlavièky jsou
-	¹ifrována metodou 7zAES.
-    \item Získání dat pro ¹ifrování -- v~pøípadì nálezu èteme data inicializaèního vektoru a~poèet
-	iterací pou¾ití he¹ovací funkce pro odvození hesla pro ¹ifrování (defaultnì 19).
-    \item De¹ifrování hlavièky -- de¹ifrujeme podle Algoritmu~\ref{alg:7z_desifr}.
-    \item Detekce hlavièky pro dekompresi -- hledáme ve stejné sekci jako v~bodì 5. Zde v¹ak
-	pátráme po hodnotì [0x03, 0x01, 0x01] znaèící pou¾ití LZMA pro kompresi.
-    \item Provedeme dekompresi hlavièky -- pomocí algoritmu LZMA.
-    \item Vypoèítáme CRC dat po dekompresi.
-    \item Porovnáme vypoètené CRC s~odpovídajícím CRC ulo¾eným v~hlavièce {\it Digest}, pokud
-	nesouhlasí, vracíme se na krok 6.
-    \item Pro zji¹tìní hesla k~souborùm se podíváme do dekomprimovaných dat a~postupujeme od kroku
-	4 obdobným zpùsobem, av¹ak nyní pracujeme s~daty souvisejícími se soubory namísto
-        s~hlavièkou.
+    \item Pøejdeme na pozici 6 bajtù za signaturou, kde	prvních 8 bajtù obsahuje pozici hlavièky.
+	Na dal¹ích 8 bajtech je délka hlavièky.
+    \item Pøejdeme na zaèátek hlavièky.
+    \item Pøejdeme na záznam se signaturou 0x06, ze kterého získáme pozici dat k ní¾ pøièteme 32.
+    \item Pøejdeme na záznam se signaturou 0x09, ze kterého získáme délku proudu dat.
+    \item Pøejdeme na záznam se signaturou 0x0B, ve kteté hledáme hodnoty [0x06, 0xF1, 0x07, 0x01]
+	a [0x03, 0x01, 0x01] znaèící 7zAES a LZMA.
+    \item Získáme z nich data -- inicializaèní vektor, poèet iterací pou¾ití SHA256 (defaultnì
+	19) pro 7zAES a inicializaèní data slovníkù pro LZMA.
+    \item Pøejdeme na záznam se signaturou 0x0A, ze kterého získáme CRC dat souboru.
 \end{enumerate}
-\begin{algorithm}[H]
+Jakmile tato data získáme mù¾eme se pøesunout k hledání hesla. Tento proces, popsáný
+Algoritmem~\ref{alg:7z_desifr}, lze plnì realizovat pouze na CPU. Formát 7z toti¾ mù¾e obsahovat
+soubory o velké velikosti, které by se nemusely vejít do pamìti GPU. Musíme zde vzít toti¾ v
+potaz, ¾e potøebujeme mít v pamìti prostor o velikosti souboru pro ka¾dou výpoèetní jednotku GPU,
+na které pobì¾í kernel.
+
+ Tento problém lze vyøe¹it tak, ¾e pomocí GPU pouze první tøí kroky Algoritmu~\ref{alg:7z_desifr}
+na 16 bajtovém vzorku dat. Ten pak otestujeme, zda se jeho první bajt rovná 0x00 nebo zda se jeho
+první tøi bajty rovnají 0x010406. Pokud ano, tak heslo oznaèíme jako potenciální správné heslo a
+otestujeme ho na CPU nad celými daty.
+
+\begin{algorithm}[ht]
     \SetStartEndCondition{ (}{)}{)}\SetAlgoBlockMarkers{}{}%
     \SetKwFor{For}{for}{\string:}{}%
     \SetKwInOut{Input}{vstup}\SetKwInOut{Output}{výstup}
+    \SetKwRepeat{Repeat}{repeat}{until}%
     \AlgoDisplayBlockMarkers\SetAlgoNoLine%
     \DontPrintSemicolon
-    \Input{Data získaná z~hlavièky pro de¹ifrování (IV, pocet\_iteraci) a~¹ifrovaná data}
-    \Output{De¹ifrovaná data (neovìøená)}
-    heslo = generujHeslo ()\;
-    retezec = vytvorRetezec(heslo)\tcc{512 * pár (heslo, 64b èíslo <0,512))}
-    \For{$i = 0; i< pocet\_iteraci; i++$}{
-	retezec = SHA256 (retezec)\;
+    \Input{Data získaná z~hlavièek}
+    \Output{Poslední vygenerované heslo}
+    \Repeat{$ CRC != spocitejCRC32 (data) $}{
+	heslo = generujHeslo ()\;
+	klic = derivuj\_heslo(heslo, iteraci)
+	desif\_data = desifruj\_data(klic, IV, sif\_data)
+	data = dekomprimuj(desif\_data, lzma\_data)
     }
-    citelna\_data = desifrujData(Data, retezec, IV)\;
-    
     \caption{Princip vytvoøení hesla pro de¹ifrování pomocí 7z}\label{alg:7z_desifr}
 \end{algorithm}
+    
+\chapter{Implementace}
+\label{ch:implementace}
+Tato kapitola se vìnuje popisu implementace pøidáné funkcionality modulu ZIP a nového modulu pro
+7z do nástroje Wrathion. Jsou v ní také zmínìny pou¾ité knihovny a verze pou¾itých knihoven
+implementujícíh de¹ifrovací a dekomprimaèní metody. Kapitola je rozdìlena do dvou èástí, ka¾dá
+reprezentující jeden z formátù jimi¾ se tato práce zabývá.
 
+\section{Implementace modulu ZIP}
+Jak ji¾ bylo zmínìno tento modul bylo tøeba pouze obohatit o urèité nedostatky, které se týkaly
+pøedev¹ím podpory metod ¹ifrování. Konktrétnì se jedná o metody ¹ifrování souborù AES a DES a také
+o metodu umo¾òující ¹ifrování {\textit Central Directory} záznamu. Tyto metody jsou definované ve
+standardu formátu ZIP vydaném firmou PKWARE v rámci APPNOTE.txt~\cite{PKWARE:2014} a pou¾ívány v
+nástrojích z rodiny SecureZIP od PKWARE.
+
+\subsection{ZIPFormat}
+Tato tøída slou¾í ke ètení potøebných informací z archívu na vstupu. Získává tedy imformace o tom
+jaká ¹ifrovací metoda byla pou¾ita na základì èeho¾ pak hledá dal¹í pro nás dùle¾itá data ve
+struktuøe souboru. Data jsou ukladána do struktury $ZIPInitData$, která je pou¾ita pro
+inicializaci nových instancí tøíd crackerù. 
+
+ Tøída byla upravena tak, aby byla schopna detekovat vý¹e zmínìné metody a ulo¾it data potøebná pro
+následné ovìøování hesel.
+
+\subsection{ZIPStAESCrackerCPU}
+Jedná se o tøídu s implementací pro ovìøení hesla metodou AES èistì na CPU. Tøída obsahuje funkci
+pro ovìøení hesla $checkPassword()$ a funkce $derive()$, $derive\_key()$ a $sha1()$ pro vytvoøení
+¹ifrovacích klíèù.
+
+ Tøída vyu¾ívá implementace ¹ifrovací funkce AES pou¾ité v nástroji UnRAR, kde je
+implementována jako tøída Rijndael pod licencí Public Domain. Datové typy pou¾íté v pøevzaté
+tøídy byly pozmìny tak, aby odpovídaly typù pou¾ívaným v na¹em nástroji.
+ 
+ Obì derivaèní funkce vytváøejí blok, který odpovídá funkci $CryptDeriveKey()$ z MS
+CryptoAPI~\cite{CryptoAPI}. Funkce $sha1()$ je pøevzata z døíve implemetovaných èástí modulu ZIP.
+
+ Funkce $checkPassword()$ implementuje algoritmus \ref{alg:zip_ver} jen¾ slou¾í k ovìøení hesla
+získaného z generátoru. Algoritmus je odvozen algoritmu uvedeného v APPNOTE.txt zaèínajícího na
+øádku 2720.
+
+\subsection{ZIPStAESCrackerGPU}
+Tato tøída obsahuje implementaci pro ovìøení hesla metodou AES na GPU. Tato tøída slou¾í pouze k
+vytvoøení, inicializování a pøedání pamì»ových objektù (zásobníkù) OpenCL kernelu
+$zip\_staes\_kernel$. To je realizováno ve funkci $initData()$. 
+
+ K ovìøení hesla je realizováno GPU kernelem. Na CPU se po zji¹tìní nálezu provede pouze
+kontrola voláním funkce $verifyPassword()$. Tato funkce vyu¾ívá objektu s typem tøídy
+$ZIPStAESCrackerCPU$ a volání jeho funkce $checkPassword$, která je volá s kernelem oznaèeným
+heslem na vstupu.
+
+\subsubsection{zip\_staes\_kernel}
+Kernel je na napsán v jazyce OpenCL C jeho funkcionalita odpovídá funkce $checkPassword()$ ze
+tøídy $ZIPStAESCrackerCPU$. Implementaènì je zde jeden znatelný rozdíl. Dynamické vytváøení Sbox
+tabulek pro AES je nahrazeno konstantními tabulkami.
+ 
+\subsection{ZIPTDESCrackerCPU}
+Jedná se o tøídu obsahující pokus o implementaci metody 3DES pro CPU. Jedná se o tøídu velmi
+podobnou tøídì $ZIPStAESCrackerCPU$. Jediným rozdílem je funkcí pro 3DES z knihovny OpenSSL
+namísto funkcí pro AES.
+
+ Tuto tøídu se mi bohu¾el nepovedlo zprovoznit. Pøíèinu problému s funkèností vidím v pøidávání
+paritních bitù ke klíèi a inicializaènímu vektoru, jen¾ je knihovnou vy¾adováno. Dal¹ím
+problémem s ladìním tohoto problému je, ¾e se mi nepovedlo nalést ani ¾ádný Open Source
+archivaèní program, který by umìl takovýto soubor de¹ifrovat. To znaènì komplikuje proces ladìní,
+kdy¾ není mo¾né porovnávat rozdíly v hodnotách v jednotlivých krocích.
+
+\section{Implementace modulu 7z (SevenZ)}
+
+
+
+
+\chapter{Mìøení a srovnání}
+\label{ch:mereni_a_srovnani}
 \chapter{Závìr}
 Obsáhnout v¹echny mo¾nosti a~nastavení analyzovaných formátù je znaènì nároèný proces, který
 ve vìt¹inì pøípadù ani nestojí za námahu. Dùvodem je nízký poèet dostupných nástrojù schopných tyto
@@ -800,4 +869,7 @@ bude potøeba provést mìøení rychlosti a~srovnání s~dal¹ími nástroji. Podle výsle
 jde odhadnout, jak moc optimální ná¹ modul je a~zda je potøeba jej upravit a~vyladit nebo
 zda je v~rámci mo¾ností optimalizován.
 
+
+Doplnit: Wrathion by sel rozsirit o moznost zasilat z GPU i hashe do CPU pro false positive hesla
+u 7z. Cimz by se 7z Crackovani urychlilo.
 %=========================================================================
