@@ -656,7 +656,7 @@ zji¹tìní hesla pro AES neporadí.
  Dal¹í ¹ifrovací metodou, kterou nabízí nástroj SecureZIP je 3DES. S~ním si momentální verze
 neporadí vùbec a~je tedy vhodné tuto funkcionalitu doplnit.
 
-\subsubsection{Zji¹tìní informací z~archivu}
+\subsection{Zji¹tìní informací z~archivu}
 Následující text popisuje postup získávání a~zpracování informací nutných pro rozhodnutí, zda se
 jedná o~ZIP soubor, zda je soubor ¹ifrován, jakou metodou je ¹ifrován, jaké jsou inicializaèní
 hodnoty pou¾ité pøi ¹ifrování apod. To v¹e je potøeba pro roz¹íøení funkcionality modulu. Popis se
@@ -714,12 +714,12 @@ pøípadech pùjde o~toto¾ný Algoritmus~\ref{alg:zip_ver}.
     \caption{Princip ovìøení vygenerovaného hesla pro ZIP archiv}\label{alg:zip_ver}
 \end{algorithm}
 
-\section{Modul 7z}
+\section{Modul SevenZ}
 V~tomto pøípadì se jedná o~úplnì nový modul. Bude tedy potøeba nadefinovat v¹echny struktury
 potøebné k~provozu modulu v~rámci nástroje Wrathion a~implementovat metody ¹ifrování, he¹ování,
 odvozování hesel a~jiné pou¾ívané formátem .7z.
 
-\subsubsection{Zji¹tìní informací z~archivu}
+\subsection{Zji¹tìní informací z~archivu}
 Archiv formátu .7z v~sobì, stejnì tak jako .ZIP archiv, nese informace nutné pro umo¾nìní
 de¹ifrování souboru. V~tomto pøípadì je v¹ak o~nìco slo¾itìj¹í je získat. Struktura 7z archivu
 je hodnì komplexní a~promìnlivá. Struktura hlavièek do znaèné míry pøipomíná databázi. Pro
@@ -744,12 +744,7 @@ Jakmile tato data získáme mù¾eme se pøesunout k hledání hesla. Tento proces, pop
 Algoritmem~\ref{alg:7z_desifr}, lze plnì realizovat pouze na CPU. Formát 7z toti¾ mù¾e obsahovat
 soubory o velké velikosti, které by se nemusely vejít do pamìti GPU. Musíme zde vzít toti¾ v
 potaz, ¾e potøebujeme mít v pamìti prostor o velikosti souboru pro ka¾dou výpoèetní jednotku GPU,
-na které pobì¾í kernel.
-
- Tento problém lze vyøe¹it tak, ¾e pomocí GPU pouze první tøí kroky Algoritmu~\ref{alg:7z_desifr}
-na 16 bajtovém vzorku dat. Ten pak otestujeme, zda se jeho první bajt rovná 0x00 nebo zda se jeho
-první tøi bajty rovnají 0x010406. Pokud ano, tak heslo oznaèíme jako potenciální správné heslo a
-otestujeme ho na CPU nad celými daty.
+na které pobì¾í kernel. Øe¹ení tohoto problému je popsáno v sekci \ref{ssec:7zcrackercpu}.
 
 \begin{algorithm}[ht]
     \SetStartEndCondition{ (}{)}{)}\SetAlgoBlockMarkers{}{}%
@@ -834,10 +829,74 @@ problémem s ladìním tohoto problému je, ¾e se mi nepovedlo nalést ani ¾ádný Open
 archivaèní program, který by umìl takovýto soubor de¹ifrovat. To znaènì komplikuje proces ladìní,
 kdy¾ není mo¾né porovnávat rozdíly v hodnotách v jednotlivých krocích.
 
-\section{Implementace modulu 7z (SevenZ)}
+\section{Implementace modulu SevenZ}
+V tomto pøípadì bylo tøeba vytvoøit úplnì nový modul. K tomu bylo tøeba vytvoøit soubory {\textit
+SevenZModule.cpp, SevenZFormat.cpp} a soubory pro CPU a GPU cracker. Soubory v sobì nesou
+stejnojmenné tøídy implementující funkce vy¾adované pro správnou komunikaci s na¹ím nástrojem.
 
+\subsection{SevenZFormat}
+Podobnì jako tøída $ZIPFormat$ i tato slou¾í k získání a zpracování informací ulo¾ených v
+archivu. Pro ulo¾ení byla vytvoøena struktura $SevenZInitData$ skádající se z polo¾ek základních
+datových typù, ale také z dal¹ích vytvoøených struktur. Mezi nì jmenovitì patøí $SevenZCoder$,
+$SevenZFolder$ a $SevenZPackInfoHdr$, které reflektují polo¾ky obsa¾ené ve struktuøe hlavièky
+souboru. Tento pøístup k ulo¾ení dat byl zvolen na základì ji¾ zmínìného problému jím¾ je, ¾e
+struktura hlavièky u formátu .7z je znaènì komplikovaná a promìnná. Ètení struktury ulehèují
+odpovídající funkce v této tøídì.
 
+ Tøída mimo jiné obsahuje funkci $SevenZUINT64()$ implementující dekodér 64 bitových
+bezznamýnkových èísel. Tohoto kódování velkých èísel je ve formátu .7z pou¾ito k redukování
+pamì»ového prostoru potøebného k ulo¾ení takového èísla. Ve zkratce to funguje tak, ¾e poèet
+jednièek v nepøeru¹ené øadì zaèínající na nejvy¹¹ích pozicích v prvním bajtu urèuje kolik
+následujících bajtù se je¹tì vá¾e k tomuto èíslu. Zbytek prvního bajtu za prvním výskytem nuly je
+pou¾it k ulo¾ení hodnoty nejvýznamnìj¹ího bajtu~\cite{Pavlov:2010}. 
 
+\subsection{SevenZCrackerCPU}
+\label{ssec:7zcrackercpu}
+Tato tøída obsahuje implementaci funkcí potøebných pro ovìøení hesla na CPU. Stejnì tak jako
+v¹echny ekvivalentní tøídy v ostatních modulech i tato obsahuje funkci $checkPassword()$ a pak
+funkce pro vytvoøení klíèe pro de¹ifrování a funkci se starající se o samotné de¹ifrování a
+dekompresi dat.
+
+ Funkce pro de¹ifrování a dekompresi byly pøevzaty z nástroje 7zip vytvoøeného autorem formátu .7z
+Igorem Pavlov, tyto funkce vytvoøil pod licencí Public Domain. Díky tomu, ¾e nástroj 7zip je
+napsán v C / C++ nebylo tøeba nijak do funkcí respektive tøíd vùbec zasahovat. Funkce $hash()$
+vytváøející klíè pro de¹ifrování byla také znaènì inspirována zdrojovými kódy 7zip-u. 
+
+ Ve funkci $checkPassword()$ je pou¾ita rychlostní optimalizace slou¾ící k redukci èasu
+potøebného k urèení zda se mù¾e jedna o správné heslo. Optimalizace funguje následujícím zpùsobem:
+\begin{enumerate}
+    \item Zjistíme jestli jsou data pro de¹ifrování velká alespoò 32 bajtù. Pokud jsou men¹í tak
+	se optimalizace nepou¾ije.
+    \item Vezmeme prvních 16 bajtù dat.
+    \item Provedeme nad nimi operaci de¹ifrování.
+    \item Ovìøíme hodnoty na zaèátku de¹ifrovaných dat. Pokud je první bajt roven 0x00
+	(pevná první hodnota dat dekomprimovatelnch LZMA) nebo pokud se první tøi bajty rovnají
+	0x0104006 (posloupnost signatur v hlavièce archivu typu .7z) tak pokracujeme podle
+	Algoritmu~\ref{alg:7z_desifr} pro celé data souboru. Jinak heslo zahodíme a jdeme o
+	zaèátku s novým heslem.
+\end{enumerate}
+\subsection{SevenZCrackerGPU}
+Jak ji¾ název naznaèuje jedná se o tøídu s implementací funkce pro inicializaci dat na GPU a s
+funkcí pro ovìøení hesla získaného z GPU. Aèkoliv to vypadá velmi podobnì je zde jeden velký
+rozdíl v tom, kdy a jak dostaneme správné heslo. S jistou nadsázkou se dá øíct, ¾e se jedná o
+tøídu provádìjící obnovení hesla na CPU s jistou formou heuristiky. 
+
+Formout heuristiky jsou kroky 1 - 4 optimalizace popsáné v pøedchozí podkapitole. Rozdíl oproti
+CPU implementaci je ten, ¾e filtrování hesel obstarává GPU a nemusíme ho tedy provádìt na CPU.
+Teoreticky by nám tímto zpùsobem filtrování sní¾í poèet hesel zhruba 256-krát v pøípadì, ¾e
+¹ifrovaná data jsou i komprimovaná data. V pøípadì, ¾e se bavíme archivech .7z, které obsahují
+pouze jeden soubor a jejich hlavièka tedy pøed ¹ifrováním není komprimovaná, pak se dostáváme
+daleko vìt¹í redukci hesel.
+
+\subsubsection{sevenz\_aes\_kernel}
+Kernel obsahuje pøepis tøíd pøevzatých z nástroje 7zip. Jediné modifikace tìchto tøíd jsou
+provedeny nahrazením funkcí pro generování AES a SHA256 tabulek za konstantní tabulky. Kernel jako
+takový provádí pouze filtraci hesel pro CPU. 
+
+Dùvodem proè neprovádíme v¹echny kroky na GPU je pomìrnì jednoduchý. GPU nemá dostatek pamìti na
+to, aby mohla obsahovat nìkolik instancí dat k de¹ifrování. V archivu mohou být obsa¾eny soubory o
+velikosti nìkolika gigabajtù a není tedy v na¹í moci takto velký shluk dat vmìstnat. Pokusy o
+vmìstnání nìkolika instancí takovýchto dat je tedy naprosto nereálné. 
 
 \chapter{Mìøení a srovnání}
 \label{ch:mereni_a_srovnani}
@@ -871,5 +930,7 @@ zda je v~rámci mo¾ností optimalizován.
 
 
 Doplnit: Wrathion by sel rozsirit o moznost zasilat z GPU i hashe do CPU pro false positive hesla
-u 7z. Cimz by se 7z Crackovani urychlilo.
+u 7z. Cimz by se 7z Crackovani urychlilo. Taky by bylo dobry provade kontrolu false positive hesel
+ve vice vlaknech aby se to urychlilo.
+
 %=========================================================================
