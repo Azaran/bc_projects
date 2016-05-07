@@ -900,19 +900,238 @@ vměstnání několika instancí takovýchto dat je tedy naprosto nereálné.
 
 \chapter{Měření a srovnání}
 \label{ch:mereni_a_srovnani}
-\section{7zip archiv se šifrovanou hlavičkou}
-\subsection{Srovnaní s konkurencí}
-\section{7zip archiv bez šifrované hlavičky}
-\subsection{Srovnaní s konkurencí}
-\section{ZIP archiv se šifrovanou hlavičkou}
-\subsection{Srovnaní s konkurencí}
+Pro měření jsem vytvořil sada archivů patřičných formátů. Soubory uložené do archivů obsahují
+náhodně vygenerovaná data. Archivy pro měření výkonu rozšířeních modulu ZIP jsem vytvořil nástrojem
+PKWARE SecureZIP. K vytvoření archivů formátu .7z jsem použil nástroj 7-zip.
+
+Za znakovou abecedu jsem si zvolil všechna malá písmena ze znakové sady ASCII, tedy 26 znaků. Hesla
+byla volena tak, aby se jednalo o nejhorší možný případ pro danou znakovou abecedu z pohledu
+jednoduchého brute-force generátoru. To znamená, že při délce hesla 3 je podoba hesla "zzz".
+
+Naměřené hodnoty jsem převzal z informací poskytnutých jednotlivými nástroji a nijak jsem
+neověřoval jak přesně je nástroje získávají. Všechny časy byly zaokrouhleny na celé sekundy. Pro
+jednotlivá měření jsem zvolil maximální dobu pokoušení se o prolomení hesla na 10 minut. Pokud se
+heslo do té doby nepovedlo získat správné heslo tak byla do tabulky zanesena hodnota "> 10m".
+V případě rychlosti byla do tabulek zanesena průměrná naměřená rychlost testovaných hesel za jednu
+sekundu.
+
+\section{Testovací sestava}
+CPU: Intel Core i7 5970 @ ?.??GHz\\
+RAM: 32GB\\
+GPU: 4x AMD Radeon R9 Fury X (Catalyst Omega 15.7, AMD APP SDK v3.0 )\\
+OS: Ubuntu 14.04 x64
+
 \section{ZIP archiv bez šifrované hlavičky}
-\subsection{Srovnaní s konkurencí}
-\section{7zip archiv s různou velikostí}
-\subsection{Srovnaní s konkurencí}
+\shorthandoff{-}
+\begin{table}[h]
+    \begin{center}  
+        \newcolumntype{R}{>{\raggedleft\arraybackslash}X}%
+        \begin{tabularx}{\textwidth}{|l|l|R|R|R|R|R|R|R|}
+            \cline{2-9}
+            \multicolumn{1}{c|}{} & Délka hesla & 3 & 4 & 5 & 6 & 7 & 8 & 9 \\\hline
+            \multirow{2}{*}{CPU} & Čas & 1s & 1s & 15s & 6m 2s & > 10m & > 10m & > 10m \\ 
+                                 & Rychlost& - & - & 855018 & 899430 & 899430 & 899430 & 899430\\ 
+            \hline
+            \multirow{2}{*}{GPU} & Čas & 1s & 1s & 15s & 6m 2s & > 10m & > 10m & > 10m \\ 
+                                 & Rychlost& - & - & 855018 & 899430 & 899430 & 899430 & 899430\\ 
+            \hline
+        \end{tabularx}
+        \caption{Srovnání času a rychlosti obnovy různě dlouhých hesel archivů ZIP se šiforváním
+            AES-256 při běhu na 6 vláknech na CPU.}
+        \label{tab:zip_cpu_256}
+    \end{center}
+\end{table}
+\shorthandon{-}
+
+            
+
+
+\section{ZIPrůznou bitovou délkou klíče}
+\shorthandoff{-}
+\begin{table}[h]
+    \begin{center}  
+        \newcolumntype{R}{>{\raggedleft\arraybackslash}X}%
+        \begin{tabularx}{\textwidth}{|l|l|R|R|R|R|R|R|R|}
+            \cline{2-9}
+            \multicolumn{1}{c|}{} & Délka hesla & 3 & 4 & 5 & 6 & 7 & 8 & 9 \\\hline
+            \multirow{2}{*}{CPU} & Čas & 1s & 1s & 13s & 5m 24s & > 10m & > 10m & > 10m \\ 
+                                 & Rychlost& - & - & 1010808 & 1005492 & 1005492 & 1005492 & 1005492 \\ 
+            \hline
+            \multirow{2}{*}{GPU} & Čas & 1s & 1s & 15s & 6m 2s & > 10m & > 10m & > 10m \\ 
+                                 & Rychlost& \- & \- & 855018 & 899430 & 899430 & 899430 & 899430\\ 
+            \hline
+        \end{tabularx}
+        \caption{Srovnání času a rychlosti obnovy různě dlouhých hesel archivů ZIP se šiforváním
+            AES-192 při běhu na 6 vláknech na CPU.}
+        \label{tab:zip_cpu_192}
+    \end{center}
+\end{table}
+\shorthandon{-}
+
+\shorthandoff{-}
+\begin{table}[h]
+    \begin{center}  
+        \newcolumntype{R}{>{\raggedleft\arraybackslash}X}%
+        \begin{tabularx}{\textwidth}{|l|l|R|R|R|R|R|R|R|}
+            \cline{2-9}
+            \multicolumn{1}{c|}{} & Délka hesla & 3 & 4 & 5 & 6 & 7 & 8 & 9 \\\hline
+            \multirow{2}{*}{CPU} & Čas & 1s & 1s & 12s & 4m 53s & > 10m & > 10m & > 10m \\ 
+                                 & Rychlost& - & - & 1084236 & 1109832 & 1109832 & 1109832 & 1109832 \\ 
+            \hline
+            \multirow{2}{*}{GPU} & Čas & 1s & 1s & 15s & 6m 2s & > 10m & > 10m & > 10m \\ 
+                                 & Rychlost& - & - & 855018 & 899430 & 899430 & 899430 & 899430\\ 
+            \hline
+        \end{tabularx}
+        \caption{Srovnání času a rychlosti obnovy různě dlouhých hesel archivů ZIP se šiforváním
+            AES-128 při běhu na 6 vláknech na CPU.}
+        \label{tab:zip_cpu_128}
+    \end{center}
+\end{table}
+\shorthandon{-}
+
+\shorthandoff{-}
+\section{7zip archiv se šifrovanou hlavičkou}
+\begin{table}[h]
+    \begin{center}  
+        \newcolumntype{R}{>{\raggedleft\arraybackslash}X}%
+        \begin{tabularx}{\textwidth}{|l|l|R|R|R|R|}
+            \cline{2-6}
+            \multicolumn{1}{c|}{} & Délka hesla & 3 & 4 & 5 & 6 \\\hline
+            \multirow{2}{*}{CPU} & Čas & 1m 33s & > 10m & > 10m & > 10m \\ 
+                                 & Rychlost& 198 & 198 & 198 & 198 \\ 
+            \hline
+            \multirow{2}{*}{GPU} & Čas & 1s & 1s & 15s & 6m 2s \\ 
+                                 & Rychlost& - & - & 855018 & 899430 \\ 
+            \hline
+        \end{tabularx}
+        \caption{Srovnání času a rychlosti obnovy různě dlouhých hesel archivů 7zip se šifrovanou
+            hlavičkou při běhu na 6 vláknech na CPU.}
+        \label{tab:zip_cpu_128}
+    \end{center}
+\end{table}
+\shorthandon{-}
+
+
+\section{7zip archiv bez šifrované hlavičky}
+\shorthandoff{-}
+\begin{table}[h]
+    \begin{center}  
+        \newcolumntype{R}{>{\raggedleft\arraybackslash}X}%
+        \begin{tabularx}{\textwidth}{|l|l|R|R|R|R|}
+            \cline{2-6}
+            \multicolumn{1}{c|}{} & Délka hesla & 3 & 4 & 5 & 6 \\\hline
+            \multirow{2}{*}{CPU} & Čas & 1m 33s & > 10m & > 10m & > 10m \\ 
+                                 & Rychlost& 192 & 196 & 198 & 198 \\ 
+            \hline
+            \multirow{2}{*}{GPU} & Čas & 1s & 1s & 15s & 6m 2s  \\ 
+                                 & Rychlost& - & - & 855018 & 899430 \\ 
+            \hline
+        \end{tabularx}
+        \caption{Srovnání času a rychlosti obnovy různě dlouhých hesel archivů 7zip bez šifrované
+            hlavičky při běhu na 6 vláknech na CPU.}
+        \label{tab:zip_cpu_128}
+    \end{center}
+\end{table}
+\shorthandon{-}
+
+\section{7zip archivrůznou velikostí}
+
+\shorthandoff{-}
+\begin{table}[h]
+    \begin{center}  
+        \newcolumntype{R}{>{\raggedleft\arraybackslash}X}%
+        \begin{tabularx}{\textwidth}{|l|l|R|R|R|R|R|R|}
+            \cline{2-8}
+            \multicolumn{1}{c|}{} & Velikost souboru & 1kB & 512kB & 1MB & 10MB & 100MB & 500MB \\\hline
+            \multirow{2}{*}{CPU} & Čas & 1m 33s & 1m 33s & 1m 34s & 3m 23s & 1m 35s & 1m 38s \\ 
+                                 & Rychlost& 198 & 198 & 198 & 126 & 198 & 192 \\ 
+            \hline
+            \multirow{2}{*}{GPU} & Čas & 1s & 1s & 15s & 6m 2s & > 10m & > 10m \\ 
+                                 & Rychlost& - & - & 855018 & 899430 & 899430 & 899430\\ 
+            \hline
+        \end{tabularx}
+        \caption{Srovnání času a rychlosti obnovy hesel archivů 7zip v závislosti na velikosti
+        souboru v něm uloženém při běhu na 6 vláknech na CPU pro heslo o délce 3 znaky.}
+        \label{tab:zip_cpu_128}
+    \end{center}
+\end{table}
+\shorthandon{-}
+
+
+\section{7zip srovnáníkonkurencí}
+\shorthandoff{-}
+\begin{table}[h]
+    \begin{center}  
+        \newcolumntype{R}{>{\raggedleft\arraybackslash}X}%
+        \begin{tabularx}{\textwidth}{|l|l|R|R|R|R|}
+            \cline{2-6}
+            \multicolumn{1}{c|}{} & Délka hesla & 3 & 4 & 5 & 6 \\
+            \hline
+            \multirow{2}{*}{Wrathion} & Čas & 1m 33s & > 10m & > 10m & > 10m \\ 
+                                      & Rychlost& 198 & 198 & 198 & 198 \\ 
+            \hline
+            \multirow{2}{*}{Hashcat} & Čas & ? & ? & ? & ? \\ 
+                                     & Rychlost& ? & ? & ? & ? \\ 
+            \hline
+            \multirow{2}{*}{John the Ripper} & Čas & 1m 58s & > 10m & > 10m & > 10m \\ 
+                                             & Rychlost& 159 & 148 & 148 & 148 \\ 
+            \hline
+        \end{tabularx}
+        \caption{Srovnání času a rychlosti obnovy různě dlouhých hesel archivů 7zip pomocí různých
+        nástrojů při běhu na CPU na 6 vláknech.}
+        \label{tab:zip_cpu_128}
+    \end{center}
+\end{table}
+\shorthandon{-}
+
+\shorthandoff{-}
+\begin{table}[h]
+    \begin{center}  
+        \newcolumntype{R}{>{\raggedleft\arraybackslash}X}%
+        \begin{tabularx}{\textwidth}{|l|l|R|R|R|R|}
+            \cline{2-6}
+            \multicolumn{1}{c|}{} & Délka hesla & 3 & 4 & 5 & 6 \\
+            \hline
+            \multirow{2}{*}{Wrathion} & Čas & ? & ? & ? & ? \\ 
+                                      & Rychlost& ? & ? & ? & ?\\ 
+            \hline
+            \multirow{2}{*}{oclHashcat} & Čas & 43s & 1m 7s & 4m 57s & > 10m \\ 
+                                     & Rychlost& 288 & 5146 & 10071 & 9320 \\ 
+            \hline
+            \multirow{2}{*}{John the Ripper} & Čas & 10s & 1m 19s & > 10m & > 10m \\ 
+                                             & Rychlost& 1600 & 2000 & 2500 & 2500 \\ 
+            \hline
+        \end{tabularx}
+        \caption{Srovnání času a rychlosti obnovy různě dlouhých hesel archivů 7zip pomocí různých
+        nástrojů při běhu na GPU.}
+        \label{tab:zip_cpu_128}
+    \end{center}
+\end{table}
+\shorthandon{-}
+
+\shorthandoff{-}
+\begin{table}[h]
+    \begin{center}  
+        \newcolumntype{R}{>{\raggedleft\arraybackslash}X}%
+        \begin{tabularx}{\textwidth}{|l|l|R|R|R|R|}
+            \cline{2-6}
+            \multicolumn{1}{c|}{} & Délka hesla & 3 & 4 & 5 & 6 \\\hline
+            \multirow{2}{*}{Wrathion} & Čas & ? & ? & ? & ? \\ 
+                                      & Rychlost& ? & ? & ? & ? \\ 
+            \hline
+            \multirow{2}{*}{oclHashcat} & Čas & 44s & 1m 7s & 2m 9s & > 10m \\ 
+                                        & Rychlost& 287 & 5144 & 30363 & 26807\\ 
+            \hline
+        \end{tabularx}
+        \caption{Srovnání času a rychlosti obnovy různě dlouhých hesel archivů 7zip pomocí různých
+        nástrojů při běhu na 3 GPU.}
+        \label{tab:zip_cpu_128}
+    \end{center}
+\end{table}
+\shorthandon{-}
+
+
 \section{Škálovatelnost modulů}
-\subsection{Srovnaní s konkurencí}
-\subsection{Srovnaní s konkurencí}
 Cil: Zjistit rychlost crackovani 7zip archivu se sifrovanou hlavickou pro ruzne dlouha hesla.
 Cil: Zjistit rychlost crackovani 7zip archivu bez sifrovane hlavicky pro ruzne dlouha hesla.
 Cil: Zjistit rychlost crackovani ZIP archivu bez sifrovane hlavicky pro ruzne dlouha hesla.
