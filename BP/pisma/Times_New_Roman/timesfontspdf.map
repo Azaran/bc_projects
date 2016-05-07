@@ -1,0 +1,4 @@
+rectimes TimesNewRomanPSMT " T1Encoding ReEncodeFont " <T1-WGL4.enc
+rectimesi TimesNewRomanPS-ItalicMT " T1Encoding ReEncodeFont " <T1-WGL4.enc
+rectimesbd TimesNewRomanPS-BoldMT " T1Encoding ReEncodeFont " <T1-WGL4.enc
+rectimesbi TimesNewRomanPS-BoldItalicMT " T1Encoding ReEncodeFont " <T1-WGL4.enc

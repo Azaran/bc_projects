@@ -1,0 +1,10 @@
+recOpenSans-Bold OpenSans-Bold " T1Encoding ReEncodeFont " <T1-WGL4.enc
+recOpenSans-BoldItalic OpenSans-BoldItalic " T1Encoding ReEncodeFont " <T1-WGL4.enc
+recOpenSans-ExtraBold OpenSans-Extrabold " T1Encoding ReEncodeFont " <T1-WGL4.enc
+recOpenSans-ExtraBoldItalic OpenSans-ExtraboldItalic " T1Encoding ReEncodeFont " <T1-WGL4.enc
+recOpenSans-Italic OpenSans-Italic " T1Encoding ReEncodeFont " <T1-WGL4.enc
+recOpenSans-Light OpenSans-Light " T1Encoding ReEncodeFont " <T1-WGL4.enc
+recOpenSans-LightItalic OpenSansLight-Italic " T1Encoding ReEncodeFont " <T1-WGL4.enc
+recOpenSans-Regular OpenSans " T1Encoding ReEncodeFont " <T1-WGL4.enc
+recOpenSans-Semibold OpenSans-Semibold " T1Encoding ReEncodeFont " <T1-WGL4.enc
+recOpenSans-SemiboldItalic OpenSans-SemiboldItalic " T1Encoding ReEncodeFont " <T1-WGL4.enc

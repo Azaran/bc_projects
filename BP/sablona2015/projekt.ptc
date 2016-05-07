@@ -1,0 +1,70 @@
+\select@language {czech}
+\contentsline {chapter}{\numberline {1}\IeC {\'U}vod}{3}{chapter.1}
+\contentsline {chapter}{\numberline {2}Metody pro \IeC {\v s}ifrov\IeC {\'a}n\IeC {\'\i } a~he\IeC {\v s}ov\IeC {\'a}n\IeC {\'\i }}{4}{chapter.2}
+\contentsline {section}{\numberline {2.1}\IeC {\v S}ifrov\IeC {\'a}n\IeC {\'\i }}{4}{section.2.1}
+\contentsline {subsection}{\numberline {2.1.1}Triple Data Encryption Algorithm (TDEA, 3DES)}{4}{subsection.2.1.1}
+\contentsline {subsection}{\numberline {2.1.2}Advanced Encryption Standard (AES)}{5}{subsection.2.1.2}
+\contentsline {section}{\numberline {2.2}He\IeC {\v s}ov\IeC {\'a}n\IeC {\'\i }}{6}{section.2.2}
+\contentsline {subsection}{\numberline {2.2.1}SHA-1}{6}{subsection.2.2.1}
+\contentsline {subsection}{\numberline {2.2.2}SHA-256}{6}{subsection.2.2.2}
+\contentsline {chapter}{\numberline {3}Paraleln\IeC {\'\i } v\IeC {\'y}po\IeC {\v c}ty na GPU pomoc\IeC {\'\i } OpenCL}{7}{chapter.3}
+\contentsline {section}{\numberline {3.1}OpenCL}{7}{section.3.1}
+\contentsline {subsection}{\numberline {3.1.1}Architektura OpenCL}{8}{subsection.3.1.1}
+\contentsline {subsubsection}{Model platformy}{8}{section*.2}
+\contentsline {subsubsection}{Model proveden\IeC {\'\i }}{9}{section*.3}
+\contentsline {subsubsection}{Model pam\IeC {\v e}ti}{9}{section*.4}
+\contentsline {subsubsection}{Programovac\IeC {\'\i } model}{10}{section*.5}
+\contentsline {chapter}{\numberline {4}N\IeC {\'a}stroj Wrathion}{11}{chapter.4}
+\contentsline {section}{\numberline {4.1}Hlavn\IeC {\'\i } \IeC {\v c}\IeC {\'a}sti Wrathionu}{11}{section.4.1}
+\contentsline {subsection}{\numberline {4.1.1}Gener\IeC {\'a}tory hesel}{12}{subsection.4.1.1}
+\contentsline {subsection}{\numberline {4.1.2}Crackery}{12}{subsection.4.1.2}
+\contentsline {subsubsection}{CPU cracker}{12}{section*.6}
+\contentsline {subsubsection}{GPU cracker}{12}{section*.7}
+\contentsline {subsection}{\numberline {4.1.3}Moduly}{13}{subsection.4.1.3}
+\contentsline {subsubsection}{Modul ZIP}{13}{section*.8}
+\contentsline {subsubsection}{Modul DOC}{13}{section*.9}
+\contentsline {subsubsection}{Modul PDF}{13}{section*.10}
+\contentsline {chapter}{\numberline {5}Anal\IeC {\'y}za form\IeC {\'a}t\IeC {\r u} .ZIP a~.7z}{15}{chapter.5}
+\contentsline {section}{\numberline {5.1}Form\IeC {\'a}t .ZIP}{15}{section.5.1}
+\contentsline {subsection}{\numberline {5.1.1}Struktura souboru}{15}{subsection.5.1.1}
+\contentsline {subsubsection}{\IeC {\v R}\IeC {\'\i }d\IeC {\'\i }c\IeC {\'\i } struktury definuj\IeC {\'\i }c\IeC {\'\i } \IeC {\v s}ifrov\IeC {\'a}n\IeC {\'\i }}{17}{section*.11}
+\contentsline {section}{\numberline {5.2}Form\IeC {\'a}t .7z}{17}{section.5.2}
+\contentsline {subsection}{\numberline {5.2.1}Struktura souboru}{18}{subsection.5.2.1}
+\contentsline {section}{\numberline {5.3}Srovn\IeC {\'a}n\IeC {\'\i }}{19}{section.5.3}
+\contentsline {chapter}{\numberline {6}N\IeC {\'a}vrh modul\IeC {\r u}}{20}{chapter.6}
+\contentsline {section}{\numberline {6.1}Modul ZIP}{20}{section.6.1}
+\contentsline {subsection}{\numberline {6.1.1}Zji\IeC {\v s}t\IeC {\v e}n\IeC {\'\i } informac\IeC {\'\i } z~archivu}{20}{subsection.6.1.1}
+\contentsline {section}{\numberline {6.2}Modul SevenZ}{21}{section.6.2}
+\contentsline {subsection}{\numberline {6.2.1}Zji\IeC {\v s}t\IeC {\v e}n\IeC {\'\i } informac\IeC {\'\i } z~archivu}{22}{subsection.6.2.1}
+\contentsline {chapter}{\numberline {7}Implementace}{23}{chapter.7}
+\contentsline {section}{\numberline {7.1}Implementace modulu ZIP}{23}{section.7.1}
+\contentsline {subsection}{\numberline {7.1.1}ZIPFormat}{23}{subsection.7.1.1}
+\contentsline {subsection}{\numberline {7.1.2}ZIPStAESCrackerCPU}{23}{subsection.7.1.2}
+\contentsline {subsection}{\numberline {7.1.3}ZIPStAESCrackerGPU}{24}{subsection.7.1.3}
+\contentsline {subsubsection}{zip\_staes\_kernel}{24}{section*.12}
+\contentsline {subsection}{\numberline {7.1.4}ZIPTDESCrackerCPU}{24}{subsection.7.1.4}
+\contentsline {section}{\numberline {7.2}Implementace modulu SevenZ}{24}{section.7.2}
+\contentsline {subsection}{\numberline {7.2.1}SevenZFormat}{24}{subsection.7.2.1}
+\contentsline {subsection}{\numberline {7.2.2}SevenZCrackerCPU}{25}{subsection.7.2.2}
+\contentsline {subsection}{\numberline {7.2.3}SevenZCrackerGPU}{25}{subsection.7.2.3}
+\contentsline {subsubsection}{sevenz\_aes\_kernel}{25}{section*.13}
+\contentsline {chapter}{\numberline {8}M\IeC {\v e}\IeC {\v r}en\IeC {\'\i } a srovn\IeC {\'a}n\IeC {\'\i }}{26}{chapter.8}
+\contentsline {section}{\numberline {8.1}7zip archiv se \IeC {\v s}ifrovanou hlavi\IeC {\v c}kou}{26}{section.8.1}
+\contentsline {subsection}{\numberline {8.1.1}Srovnan\IeC {\'\i } s konkurenc\IeC {\'\i }}{26}{subsection.8.1.1}
+\contentsline {section}{\numberline {8.2}7zip archiv bez \IeC {\v s}ifrovan\IeC {\'e} hlavi\IeC {\v c}ky}{26}{section.8.2}
+\contentsline {subsection}{\numberline {8.2.1}Srovnan\IeC {\'\i } s konkurenc\IeC {\'\i }}{26}{subsection.8.2.1}
+\contentsline {section}{\numberline {8.3}ZIP archiv se \IeC {\v s}ifrovanou hlavi\IeC {\v c}kou}{26}{section.8.3}
+\contentsline {subsection}{\numberline {8.3.1}Srovnan\IeC {\'\i } s konkurenc\IeC {\'\i }}{26}{subsection.8.3.1}
+\contentsline {section}{\numberline {8.4}ZIP archiv bez \IeC {\v s}ifrovan\IeC {\'e} hlavi\IeC {\v c}ky}{26}{section.8.4}
+\contentsline {subsection}{\numberline {8.4.1}Srovnan\IeC {\'\i } s konkurenc\IeC {\'\i }}{26}{subsection.8.4.1}
+\contentsline {section}{\numberline {8.5}7zip archiv s r\IeC {\r u}znou velikost\IeC {\'\i }}{26}{section.8.5}
+\contentsline {subsection}{\numberline {8.5.1}Srovnan\IeC {\'\i } s konkurenc\IeC {\'\i }}{26}{subsection.8.5.1}
+\contentsline {section}{\numberline {8.6}\IeC {\v S}k\IeC {\'a}lovatelnost modul\IeC {\r u}}{26}{section.8.6}
+\contentsline {subsection}{\numberline {8.6.1}Srovnan\IeC {\'\i } s konkurenc\IeC {\'\i }}{26}{subsection.8.6.1}
+\contentsline {subsection}{\numberline {8.6.2}Srovnan\IeC {\'\i } s konkurenc\IeC {\'\i }}{26}{subsection.8.6.2}
+\contentsline {chapter}{\numberline {9}Z\IeC {\'a}v\IeC {\v e}r}{27}{chapter.9}
+\contentsline {chapter}{Literatura}{28}{chapter*.14}
+\contentsline {chapter}{P\IeC {\v r}\IeC {\'\i }lohy}{29}{section*.15}
+\contentsline {section}{Seznam p\IeC {\v r}\IeC {\'\i }loh}{30}{section*.16}
+\ttl@starttoc {chapters@1}
+\contentsfinish 

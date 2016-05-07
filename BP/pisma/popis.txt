@@ -1,0 +1,3 @@
+V tomto adresáři jsou písma z JVS VUT a navíc Times New Roman, který je v JVS zakázaný. 
+Písma jsou zde převedena do formátu pro LaTeX, nicméně konfigurace není doladěná a může způsobit problémy.
+Soubory jsou zde pouze pro experimentální účely pro ladění nového JVS VUT - nedoporučuje se využívat.

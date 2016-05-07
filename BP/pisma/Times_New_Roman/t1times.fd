@@ -1,0 +1,14 @@
+% from .ttf converted by xkaras31 AT stud.fit.vutbr.cz
+
+\ProvidesFile{t1times.fd}[Times]
+
+\DeclareFontFamily{T1}{times}{}
+
+% Times
+\DeclareFontShape{T1}{times}{m}{n}{<->rectimes}{}
+\DeclareFontShape{T1}{times}{m}{it}{<->rectimesi}{}
+
+\DeclareFontShape{T1}{times}{b}{n}{<->rectimesbd}{}
+\DeclareFontShape{T1}{times}{b}{it}{<->rectimesbi}{}
+
+\endinput

@@ -1,0 +1,13 @@
+% from .ttf converted by xkaras31 AT stud.fit.vutbr.cz
+
+\ProvidesFile{t1VafleVUT.fd}[VafleVUT]
+
+\DeclareFontFamily{T1}{VafleVUT}{}
+
+% VafleVUT
+\DeclareFontShape{T1}{VafleVUT}{m}{n}{<->recVafle_VUT_Regular}{}
+\DeclareFontShape{T1}{VafleVUT}{b}{n}{<->recVafle_VUT_Bold}{}
+\DeclareFontShape{T1}{VafleVUT}{l}{n}{<->recVafle_VUT_Light}{}
+
+
+\endinput

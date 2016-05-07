@@ -1,0 +1,39 @@
+% from .ttf converted by xkaras31 AT stud.fit.vutbr.cz
+
+\ProvidesFile{t1arial.fd}[Arial]
+
+\DeclareFontFamily{T1}{arial}{}
+\DeclareFontFamily{T1}{arialn}{}
+\DeclareFontFamily{T1}{ariblk}{}
+
+% Arial
+\DeclareFontShape{T1}{arial}{b}{n}{<->recarialbd}{}
+\DeclareFontShape{T1}{arial}{b}{sl}{<->recarialbdo}{}
+\DeclareFontShape{T1}{arial}{b}{it}{<->recarialbi}{}
+
+\DeclareFontShape{T1}{arial}{m}{n}{<->recarial}{}
+\DeclareFontShape{T1}{arial}{m}{sl}{<->recarialo}{}
+\DeclareFontShape{T1}{arial}{m}{it}{<->recariali}{}
+
+\DeclareFontShape{T1}{arial}{bx}{n}{<->ssub * arial/b/n}{}
+\DeclareFontShape{T1}{arial}{bx}{sl}{<->ssub * arial/b/sl}{}
+\DeclareFontShape{T1}{arial}{bx}{it}{<->ssub * arial/b/it}{}
+
+% ArialN
+\DeclareFontShape{T1}{arialn}{b}{n}{<->recarialnbd}{}
+\DeclareFontShape{T1}{arialn}{b}{sl}{<->recarialnbdo}{}
+\DeclareFontShape{T1}{arialn}{b}{it}{<->recarialnbi}{}
+
+\DeclareFontShape{T1}{arialn}{m}{n}{<->recarialn}{}
+\DeclareFontShape{T1}{arialn}{m}{sl}{<->recarialno}{}
+\DeclareFontShape{T1}{arialn}{m}{it}{<->recarialni}{}
+
+\DeclareFontShape{T1}{arialn}{bx}{n}{<->ssub * arialn/b/n}{}
+\DeclareFontShape{T1}{arialn}{bx}{sl}{<->ssub * arialn/b/sl}{}
+\DeclareFontShape{T1}{arialn}{bx}{it}{<->ssub * arialn/b/it}{}
+
+% ArialBlack
+
+\DeclareFontShape{T1}{ariblk}{m}{n}{<->recariblk}{}
+
+\endinput

@@ -1,0 +1,19 @@
+% from .ttf converted by xkaras31 AT stud.fit.vutbr.cz
+
+\ProvidesFile{t1OpenSans.fd}[OpenSans]
+
+\DeclareFontFamily{T1}{OpenSans}{}
+
+% OpenSans
+\DeclareFontShape{T1}{OpenSans}{b}{n}{<->recOpenSans-Bold}{}
+\DeclareFontShape{T1}{OpenSans}{b}{it}{<->recOpenSans-BoldItalic}{}
+\DeclareFontShape{T1}{OpenSans}{eb}{n}{<->recOpenSans-ExtraBold}{}
+\DeclareFontShape{T1}{OpenSans}{eb}{it}{<->recOpenSans-ExtraBoldItalic}{}
+\DeclareFontShape{T1}{OpenSans}{m}{it}{<->recOpenSans-Italic}{}
+\DeclareFontShape{T1}{OpenSans}{l}{n}{<->recOpenSans-Light}{}
+\DeclareFontShape{T1}{OpenSans}{l}{it}{<->recOpenSans-LightItalic}{}
+\DeclareFontShape{T1}{OpenSans}{m}{n}{<->recOpenSans-Regular}{}
+\DeclareFontShape{T1}{OpenSans}{sb}{n}{<->recOpenSans-Semibold}{}
+\DeclareFontShape{T1}{OpenSans}{sb}{it}{<->recOpenSans-SemiboldItalic}{}
+
+\endinput

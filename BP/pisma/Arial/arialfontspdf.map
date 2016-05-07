@@ -1,0 +1,13 @@
+recarial ArialMT " T1Encoding ReEncodeFont " <T1-WGL4.enc
+recariali Arial-ItalicMT " T1Encoding ReEncodeFont " <T1-WGL4.enc
+recarialbd Arial-BoldMT " T1Encoding ReEncodeFont " <T1-WGL4.enc
+recarialbi Arial-BoldItalicMT " T1Encoding ReEncodeFont " <T1-WGL4.enc
+recarialo ArialMT " .167 SlantFont T1Encoding ReEncodeFont " <T1-WGL4.enc
+recarialbdo Arial-BoldMT " .167 SlantFont T1Encoding ReEncodeFont " <T1-WGL4.enc
+recarialn ArialNarrow " T1Encoding ReEncodeFont " <T1-WGL4.enc
+recarialni ArialNarrow-Italic " T1Encoding ReEncodeFont " <T1-WGL4.enc
+recarialnbd ArialNarrow-Bold " T1Encoding ReEncodeFont " <T1-WGL4.enc
+recarialnbi ArialNarrow-BoldItalic " T1Encoding ReEncodeFont " <T1-WGL4.enc
+recarialno ArialNarrow " .167 SlantFont T1Encoding ReEncodeFont " <T1-WGL4.enc
+recarialnbdo ArialNarrow-Bold " .167 SlantFont T1Encoding ReEncodeFont " <T1-WGL4.enc
+recariblk Arial-Black " T1Encoding ReEncodeFont " <T1-WGL4.enc
