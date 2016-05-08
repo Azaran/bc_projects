@@ -557,7 +557,7 @@ modulární strukturou. Ta umožňuje skládání libovolných kompresních, kon
 metod.
 
  Mezi podporované kompresní metody se řadí LZMA, LZMA2, PPMD, BCJ, BCJ2, BZip2 a
-Deflate. Jako výchozí metoda je brána LZMA. Hlavní výhody této metody jsou~\cite{7z:2015}:
+Deflate. Jako výchozí metoda je brána LZMA~\cite{7z:2015}. Hlavní výhody této metody jsou:
 \begin{itemize}
     \item vysoký kompresní koeficient,
     \item proměnná velikost slovníku,
@@ -756,10 +756,10 @@ na které poběží kernel. Řešení tohoto problému je popsáno v sekci \ref{
     \Input{Data získaná z~hlaviček}
     \Output{Poslední vygenerované heslo}
     \Repeat{$ CRC != spocitejCRC32 (data) $}{
-	heslo = generujHeslo ()\;
-	klic = derivuj\_heslo(heslo, iteraci)
-	desif\_data = desifruj\_data(klic, IV, sif\_data)
-	data = dekomprimuj(desif\_data, lzma\_data)
+	heslo = generujHeslo()\;
+	klic = derivuj\_heslo(heslo, iteraci)\;
+	desif\_data = desifruj\_data(klic, IV, sif\_data)\;
+	data = dekomprimuj(desif\_data, lzma\_data)\;
     }
     \caption{Princip vytvoření hesla pro dešifrování pomocí 7z}\label{alg:7z_desifr}
 \end{algorithm}
@@ -792,12 +792,14 @@ Jedná se o třídu s implementací pro ověření hesla metodou AES čistě na 
 pro ověření hesla $checkPassword()$ a funkce $derive()$, $derive\_key()$ a $sha1()$ pro vytvoření
 šifrovacích klíčů.
 
- Třída využívá implementace šifrovací funkce AES použité v nástroji UnRAR, kde je
-implementována jako třída Rijndael pod licencí Public Domain. Datové typy použíté v převzaté
-třídy byly pozměny tak, aby odpovídaly typů používaným v našem nástroji.
- 
- Obě derivační funkce vytvářejí blok, který odpovídá funkci $CryptDeriveKey()$ z MS
-CryptoAPI~\cite{CryptoAPI}. Funkce $sha1()$ je převzata z dříve implemetovaných částí modulu ZIP.
+Třída využívá implementace šifrovací funkce AES použité v nástroji
+UnRAR\footnote{\url{http://www.rarlab.com/rar\_add.htm}}, kde je implementována jako třída Rijndael
+pod licencí Public Domain. Datové typy použíté v převzaté třídy byly pozměny tak, aby odpovídaly
+typů používaným v našem nástroji.
+
+Obě derivační funkce vytvářejí blok, který odpovídá funkci $CryptDeriveKey()$ z MS
+CryptoAPI\footnote{\url{https://msdn.microsoft.com/en-us/library/windows/desktop/aa379916(v=vs.85).aspx
+}}. Funkce $sha1()$ je převzata z dříve implemetovaných částí modulu ZIP.
 
  Funkce $checkPassword()$ implementuje algoritmus \ref{alg:zip_ver} jenž slouží k ověření hesla
 získaného z generátoru. Algoritmus je odvozen algoritmu uvedeného v APPNOTE.txt začínajícího na
@@ -932,12 +934,11 @@ OS: Ubuntu 14.04 x64
             \multirow{2}{*}{CPU} & Čas & 1s & 1s & 15s & 6m 2s & > 10m & > 10m & > 10m \\ 
                                  & Rychlost& - & - & 855018 & 899430 & 899430 & 899430 & 899430\\ 
             \hline
-            \multirow{2}{*}{GPU} & Čas & 1s & 1s & 15s & 6m 2s & > 10m & > 10m & > 10m \\ 
-                                 & Rychlost& - & - & 855018 & 899430 & 899430 & 899430 & 899430\\ 
+            \multirow{2}{*}{GPU} & Čas & 1s & 1s & 4s & 1m 13s & > 10m & > 10m & > 10m \\ 
+                                 & Rychlost& - & - & 4050470 & 44120039 & 4410039 & 4410039 & 4410039\\ 
             \hline
         \end{tabularx}
-        \caption{Srovnání času a rychlosti obnovy různě dlouhých hesel archivů ZIP se šiforváním
-            AES-256 při běhu na 6 vláknech na CPU.}
+        \caption{Archivy ZIP se šiforváním AES-192 při běhu na 6 vláknech na CPU versus na jedné GPU.}
         \label{tab:zip_cpu_256}
     \end{center}
 \end{table}
@@ -946,7 +947,7 @@ OS: Ubuntu 14.04 x64
             
 
 
-\section{ZIPrůznou bitovou délkou klíče}
+\section{ZIP s různou bitovou délkou klíče}
 \shorthandoff{-}
 \begin{table}[h]
     \begin{center}  
@@ -957,12 +958,11 @@ OS: Ubuntu 14.04 x64
             \multirow{2}{*}{CPU} & Čas & 1s & 1s & 13s & 5m 24s & > 10m & > 10m & > 10m \\ 
                                  & Rychlost& - & - & 1010808 & 1005492 & 1005492 & 1005492 & 1005492 \\ 
             \hline
-            \multirow{2}{*}{GPU} & Čas & 1s & 1s & 15s & 6m 2s & > 10m & > 10m & > 10m \\ 
-                                 & Rychlost& \- & \- & 855018 & 899430 & 899430 & 899430 & 899430\\ 
+            \multirow{2}{*}{GPU} & Čas & 1s & 1s & 4s & 1m 13s & > 10m & > 10m & > 10m \\ 
+                                 & Rychlost& \- & \- & 4112426 & 4446565 & 4446565 & 4446565 & 4446565\\ 
             \hline
         \end{tabularx}
-        \caption{Srovnání času a rychlosti obnovy různě dlouhých hesel archivů ZIP se šiforváním
-            AES-192 při běhu na 6 vláknech na CPU.}
+        \caption{Archivy ZIP se šiforváním AES-192 při běhu na 6 vláknech na CPU versus na jedné GPU.}
         \label{tab:zip_cpu_192}
     \end{center}
 \end{table}
@@ -978,12 +978,11 @@ OS: Ubuntu 14.04 x64
             \multirow{2}{*}{CPU} & Čas & 1s & 1s & 12s & 4m 53s & > 10m & > 10m & > 10m \\ 
                                  & Rychlost& - & - & 1084236 & 1109832 & 1109832 & 1109832 & 1109832 \\ 
             \hline
-            \multirow{2}{*}{GPU} & Čas & 1s & 1s & 15s & 6m 2s & > 10m & > 10m & > 10m \\ 
-                                 & Rychlost& - & - & 855018 & 899430 & 899430 & 899430 & 899430\\ 
+            \multirow{2}{*}{GPU} & Čas & 1s & 1s & 3s & 1m 6s & > 10m & > 10m & > 10m \\ 
+                                 & Rychlost& - & - & 4290537 & 4935903 & 4935903 & 4935903 & 4935903\\ 
             \hline
         \end{tabularx}
-        \caption{Srovnání času a rychlosti obnovy různě dlouhých hesel archivů ZIP se šiforváním
-            AES-128 při běhu na 6 vláknech na CPU.}
+        \caption{Archivy ZIP se šiforváním AES-128. Na CPU na šesti vláknech a na jedné GPU. }
         \label{tab:zip_cpu_128}
     \end{center}
 \end{table}
@@ -1000,8 +999,8 @@ OS: Ubuntu 14.04 x64
             \multirow{2}{*}{CPU} & Čas & 1m 33s & > 10m & > 10m & > 10m \\ 
                                  & Rychlost& 198 & 198 & 198 & 198 \\ 
             \hline
-            \multirow{2}{*}{GPU} & Čas & 1s & 1s & 15s & 6m 2s \\ 
-                                 & Rychlost& - & - & 855018 & 899430 \\ 
+            \multirow{2}{*}{GPU} & Čas & ? & ? & ? & ? \\ 
+                                 & Rychlost& ? & ? & ? & ? \\ 
             \hline
         \end{tabularx}
         \caption{Srovnání času a rychlosti obnovy různě dlouhých hesel archivů 7zip se šifrovanou
@@ -1023,8 +1022,8 @@ OS: Ubuntu 14.04 x64
             \multirow{2}{*}{CPU} & Čas & 1m 33s & > 10m & > 10m & > 10m \\ 
                                  & Rychlost& 192 & 196 & 198 & 198 \\ 
             \hline
-            \multirow{2}{*}{GPU} & Čas & 1s & 1s & 15s & 6m 2s  \\ 
-                                 & Rychlost& - & - & 855018 & 899430 \\ 
+            \multirow{2}{*}{GPU} & Čas &  &  &  &  \\ 
+                                 & Rychlost&  &  &  &  \\ 
             \hline
         \end{tabularx}
         \caption{Srovnání času a rychlosti obnovy různě dlouhých hesel archivů 7zip bez šifrované
@@ -1034,7 +1033,7 @@ OS: Ubuntu 14.04 x64
 \end{table}
 \shorthandon{-}
 
-\section{7zip archivrůznou velikostí}
+\section{7zip archivy o různé velikosti}
 
 \shorthandoff{-}
 \begin{table}[h]
@@ -1046,8 +1045,8 @@ OS: Ubuntu 14.04 x64
             \multirow{2}{*}{CPU} & Čas & 1m 33s & 1m 33s & 1m 34s & 3m 23s & 1m 35s & 1m 38s \\ 
                                  & Rychlost& 198 & 198 & 198 & 126 & 198 & 192 \\ 
             \hline
-            \multirow{2}{*}{GPU} & Čas & 1s & 1s & 15s & 6m 2s & > 10m & > 10m \\ 
-                                 & Rychlost& - & - & 855018 & 899430 & 899430 & 899430\\ 
+            \multirow{2}{*}{GPU} & Čas &  &  &  &  &  &  \\ 
+                                 & Rychlost&  &  &  &  &  & \\ 
             \hline
         \end{tabularx}
         \caption{Srovnání času a rychlosti obnovy hesel archivů 7zip v závislosti na velikosti
@@ -1130,14 +1129,9 @@ OS: Ubuntu 14.04 x64
 \end{table}
 \shorthandon{-}
 
-
 \section{Škálovatelnost modulů}
-Cil: Zjistit rychlost crackovani 7zip archivu se sifrovanou hlavickou pro ruzne dlouha hesla.
-Cil: Zjistit rychlost crackovani 7zip archivu bez sifrovane hlavicky pro ruzne dlouha hesla.
-Cil: Zjistit rychlost crackovani ZIP archivu bez sifrovane hlavicky pro ruzne dlouha hesla.
-Cil: Porovnat rychlost crackovani 7zip archivu bez sifrovane hlavicky pro ruzne velke soubory.
-Cil: Porovnat rychlost crackovani ZIP a 7zip archivu pri pouziti vice grafickych karet.
-Cil: Porovnat me moduly a kernely s konkrurenci.
+Graf ukazujici kolikrac se zvysi rychlost louskani pri pouziti GPU misto CPU a kolikrat pri pouziti
+vice GPU
 
 \chapter{Závěr}
 Obsáhnout všechny možnosti a~nastavení analyzovaných formátů je značně náročný proces, který
