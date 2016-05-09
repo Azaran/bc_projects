@@ -26,7 +26,10 @@ archivů. V~kapitole \ref{ch:opencl} si přiblížeme technologii OpenCL, která
 akceleraci pomocí grafické karty v~nástroji {\it Wrathion}. Ten je popsán v~kapitole
 \ref{ch:wrathion}. V~kapitole \ref{ch:formaty} jsou zanalyzovány formáty .ZIP a~.7z. Na základě
 poznatků z~analýz jsou v~kapitole \ref{ch:moduly} vytvořeny návrhy rožšiřujících modulů {\it
-Wrathionu}. 
+Wrathionu}. V kapitole \ref{ch:implementace} se seznámíme s implementovanými třídami, OpenCL
+kernely a další implementační detaily. V závěřečné kapitole \ref{ch:mereni_a_srovnani} nalezneme
+informace o výkonu nových modulů, jejich srovnání s konkurencí a demostraci proč používáme GPU
+akceleraci k obnově hesel.
 \chapter{Metody pro šifrování a~hešování}
 \label{ch:sifrovani}
 Chceme--li se bavit o~šifrování a~hešování musíme si nejprve definovat pojem \uv{kryptografie}.
@@ -704,7 +707,7 @@ případech půjde o~totožný Algoritmus~\ref{alg:zip_ver}.
     \Input{Data získaná z~hlavičky pro dešifrování (IV, Erd, Dlen, Data)}
     \Output{Poslední vygenerované heslo}
     \Repeat{$ CRC != spocitejCRC32 (Data, Dlen-4) $}{
-	heslo = generujHeslo ()\;
+	heslo = generujHeslo()\;
 	odvozene\_heslo = odvodHeslo (SHA1(heslo))\;
 	rd = desifruj (Erd, odvozene\_heslo, IV)\tcc*{Random hodnota pro šifrování}
 	odvozene\_heslo = odvodHeslo (SHA1(rd + IV))\;
@@ -902,118 +905,131 @@ vměstnání několika instancí takovýchto dat je tedy naprosto nereálné.
 
 \chapter{Měření a srovnání}
 \label{ch:mereni_a_srovnani}
-Pro měření jsem vytvořil sada archivů patřičných formátů. Soubory uložené do archivů obsahují
-náhodně vygenerovaná data. Archivy pro měření výkonu rozšířeních modulu ZIP jsem vytvořil nástrojem
-PKWARE SecureZIP. K vytvoření archivů formátu .7z jsem použil nástroj 7-zip.
+Pro měření jsem vytvořil sady archivů patřičných formátů. Archivy obsahují soubory s náhodně
+vygenerovanými daty. K vytvoření archivů pro měření výkonu rozšířeních modulu ZIP jsem použil
+nástroj PKWARE SecureZIP. K vytvoření archivů formátu .7z jsem použil nástroj 7-zip.
 
-Za znakovou abecedu jsem si zvolil všechna malá písmena ze znakové sady ASCII, tedy 26 znaků. Hesla
-byla volena tak, aby se jednalo o nejhorší možný případ pro danou znakovou abecedu z pohledu
+Za znakovou abecedu jsem si zvolil všechna malá písmena ze znakové sady ASCII, tedy 26 znaků.
+Hesla byla volena tak, aby se jednalo o nejhorší možný případ pro danou znakovou abecedu z pohledu
 jednoduchého brute-force generátoru. To znamená, že při délce hesla 3 je podoba hesla "zzz".
 
-Naměřené hodnoty jsem převzal z informací poskytnutých jednotlivými nástroji a nijak jsem
-neověřoval jak přesně je nástroje získávají. Všechny časy byly zaokrouhleny na celé sekundy. Pro
-jednotlivá měření jsem zvolil maximální dobu pokoušení se o prolomení hesla na 10 minut. Pokud se
-heslo do té doby nepovedlo získat správné heslo tak byla do tabulky zanesena hodnota "> 10m".
-V případě rychlosti byla do tabulek zanesena průměrná naměřená rychlost testovaných hesel za jednu
-sekundu.
+Naměřené hodnoty jsem převzal z informací poskytnutých jednotlivými nástroji. Nijak jsem
+neověřoval jakým způsobem nástroje tyto informace získávají. Všechny časy byly zaokrouhleny na
+celé sekundy. Pro jednotlivá měření jsem zvolil maximální dobu pokoušení se o prolomení hesla na
+10 minut. Pokud se heslo do té doby nepovedlo získat správné heslo tak byla do tabulky zanesena
+hodnota "> 10m". Časy pro Wrathion zahrnují i čas potřebný pro inicializaci dat na GPU a zavední
+kernelu. V případě rychlosti byla do tabulek zanesena průměrná naměřená rychlost testovaných
+hesel za jednu sekundu.
+
+Pro všechna měření na CPU bylo použito 6 výpočetních vláken namísto 12, která níže uvedený
+procesor poskytuje. Nižší počet vláken byl zvolen z důvodu bezpečnějšího a méně problémového
+průběhu měření, protože během měření dochází k vysokému zatížení procesoru. Stroj se pak může v
+takovém případě sekat a měření může být zkresleno procesem starajícím se o synchronizaci nebo
+případně dalšími aplikacemi a službami operačního systému běžících na pozadí.
 
 \section{Testovací sestava}
-CPU: Intel Core i7 5970 @ ?.??GHz\\
+CPU: Intel Core i7-5930K @ 3.50GHz\\
 RAM: 32GB\\
 GPU: 4x AMD Radeon R9 Fury X (Catalyst Omega 15.7, AMD APP SDK v3.0 )\\
 OS: Ubuntu 14.04 x64
+\section{ZIP archivy}
+V rámci tohoto měření jsem se zaměřil na archivy se šifrovanými daty souborů pomocí funkce AES
+pro různě dlouhé klíčem. Účelem těchto měření bylo zjistit jak rychlé rozšíření modulu ZIP je a
+jak dlouhý časový úsek je třeba očekávat pro úspěšné nalezení hesla o dané znakové délce. 
 
-\section{ZIP archiv bez šifrované hlavičky}
+Tabulka~\ref{tab:zip_cpu_gpu_256} ukazuje rozdíly v rychlostech při použití různé bitové délky
+klíče pro šifrování. Značný rozdíl v rychlostech je zapřičiněn návrhem šifrovací funkce AES. Ta
+pro různě dlouhé klíče provádí různý počet iterací nad klíčem což ovlivňuje rychlost dešifrování
+dat. 
+
 \shorthandoff{-}
-\begin{table}[h]
+\begin{table}[H]
     \begin{center}  
         \newcolumntype{R}{>{\raggedleft\arraybackslash}X}%
-        \begin{tabularx}{\textwidth}{|l|l|R|R|R|R|R|R|R|}
-            \cline{2-9}
-            \multicolumn{1}{c|}{} & Délka hesla & 3 & 4 & 5 & 6 & 7 & 8 & 9 \\\hline
-            \multirow{2}{*}{CPU} & Čas & 1s & 1s & 15s & 6m 2s & > 10m & > 10m & > 10m \\ 
-                                 & Rychlost& - & - & 855018 & 899430 & 899430 & 899430 & 899430\\ 
+        \begin{tabularx}{\textwidth}{|l|l|R|R|R|R|R|R|}
             \hline
-            \multirow{2}{*}{GPU} & Čas & 1s & 1s & 4s & 1m 13s & > 10m & > 10m & > 10m \\ 
-                                 & Rychlost& - & - & 4050470 & 44120039 & 4410039 & 4410039 & 4410039\\ 
+            128-bit & Délka hesla & 3 & 4 & 5 & 6 & 7 & 8 \\\hline
+            \multirow{2}{*}{CPU} & Čas & 1s & 1s & 12s & 4m 53s & > 10m & > 10m\\ 
+                                 & Rychlost& - & - & 1084236 & 1109832 & 1109832 & 1109832 \\ 
+            \hline
+            \multirow{2}{*}{GPU} & Čas & 1s & 1s & 3s & 1m 6s & > 10m & > 10m \\ 
+                                 & Rychlost& - & - & 4290537 & 4935903 & 4935903 & 4935903 \\ 
+            \hline
+            \hline
+            192-bit & Délka hesla & 3 & 4 & 5 & 6 & 7 & 8 \\\hline
+            \multirow{2}{*}{CPU} & Čas & 1s & 1s & 13s & 5m 24s & > 10m & > 10m \\ 
+                                 & Rychlost& - & - & 1010808 & 1005492 & 1005492 & 1005492 \\ 
+            \hline
+            \multirow{2}{*}{GPU} & Čas & 1s & 1s & 4s & 1m 13s & > 10m & > 10m  \\ 
+                                 & Rychlost& - & - & 4112426 & 4446565 & 4446565 & 4446565 \\ 
+            \hline
+            \hline
+	    256-bit & Délka hesla & 3 & 4 & 5 & 6 & 7 & 8 \\\hline
+            \multirow{2}{*}{CPU} & Čas & 1s & 1s & 15s & 6m 2s & > 10m & > 10m \\ 
+                                 & Rychlost& - & - & 855018 & 899430 & 899430 & 899430 \\ 
+            \hline
+            \multirow{2}{*}{GPU} & Čas & 1s & 1s & 4s & 1m 13s & > 10m & > 10m \\ 
+                                 & Rychlost& - & - & 4050470 & 44120039 & 4410039 & 4410039 \\ 
             \hline
         \end{tabularx}
-        \caption{Archivy ZIP se šiforváním AES-192 při běhu na 6 vláknech na CPU versus na jedné GPU.}
-        \label{tab:zip_cpu_256}
+	    \caption{Obnova hesla archivů ZIP s šifrováním AES.}
+        \label{tab:zip_cpu_gpu_256}
     \end{center}
 \end{table}
 \shorthandon{-}
 
-            
+Rychlosti chybějící v tabulce se nástroji nepovedlo změřit. To bylo zapřičiněno vysokou rychlostí
+nově implementovaného rozšíření. Heslo bylo nalezeno tak rychle, že nepovedlo provést ani jednu
+synchronizaci. Nástroj tedy díky svému návrhu nebyl schopen určit jaké rychlosti jsme dosáhli.
 
+Srovnání s dalšími nástrojii bohužel nebylo možné provést. Ani jeden z nástrojů z vyhlášených
+nástrojů (Hashcat~/~oclHasshcat, John the Ripper, Elcomsoft Advanced Archive Password Recovery)
+totiž tento typ šifrování archivů ZIP, o který byl Wrathion v rámci této práce rozšířen,
+nepodporuje.
 
-\section{ZIP s různou bitovou délkou klíče}
-\shorthandoff{-}
-\begin{table}[h]
-    \begin{center}  
-        \newcolumntype{R}{>{\raggedleft\arraybackslash}X}%
-        \begin{tabularx}{\textwidth}{|l|l|R|R|R|R|R|R|R|}
-            \cline{2-9}
-            \multicolumn{1}{c|}{} & Délka hesla & 3 & 4 & 5 & 6 & 7 & 8 & 9 \\\hline
-            \multirow{2}{*}{CPU} & Čas & 1s & 1s & 13s & 5m 24s & > 10m & > 10m & > 10m \\ 
-                                 & Rychlost& - & - & 1010808 & 1005492 & 1005492 & 1005492 & 1005492 \\ 
-            \hline
-            \multirow{2}{*}{GPU} & Čas & 1s & 1s & 4s & 1m 13s & > 10m & > 10m & > 10m \\ 
-                                 & Rychlost& \- & \- & 4112426 & 4446565 & 4446565 & 4446565 & 4446565\\ 
-            \hline
-        \end{tabularx}
-        \caption{Archivy ZIP se šiforváním AES-192 při běhu na 6 vláknech na CPU versus na jedné GPU.}
-        \label{tab:zip_cpu_192}
-    \end{center}
-\end{table}
-\shorthandon{-}
+Srovnáním rychlostí dosažených při využití akceleraci GPU a zhodnocení škálovatelnosti kernelů je zasvědcena sekce~\ref{sec:skalovatelnost}. 
 
-\shorthandoff{-}
-\begin{table}[h]
-    \begin{center}  
-        \newcolumntype{R}{>{\raggedleft\arraybackslash}X}%
-        \begin{tabularx}{\textwidth}{|l|l|R|R|R|R|R|R|R|}
-            \cline{2-9}
-            \multicolumn{1}{c|}{} & Délka hesla & 3 & 4 & 5 & 6 & 7 & 8 & 9 \\\hline
-            \multirow{2}{*}{CPU} & Čas & 1s & 1s & 12s & 4m 53s & > 10m & > 10m & > 10m \\ 
-                                 & Rychlost& - & - & 1084236 & 1109832 & 1109832 & 1109832 & 1109832 \\ 
-            \hline
-            \multirow{2}{*}{GPU} & Čas & 1s & 1s & 3s & 1m 6s & > 10m & > 10m & > 10m \\ 
-                                 & Rychlost& - & - & 4290537 & 4935903 & 4935903 & 4935903 & 4935903\\ 
-            \hline
-        \end{tabularx}
-        \caption{Archivy ZIP se šiforváním AES-128. Na CPU na šesti vláknech a na jedné GPU. }
-        \label{tab:zip_cpu_128}
-    \end{center}
-\end{table}
-\shorthandon{-}
+\section{7zip archivy}
+Měření pro 7zip je velmi podobné tomu pro ZIP. Hlavními rozdíly je potřebná sada souborů, které
+je třeba použít. U archivů 7zip musíme brát v potaz i fakt, že pro ověření hesla se provádí
+dekomprimace dat a počet vyzkoušených hesel za jednu sekundu se tedy může s rostoucí velikostí
+zmenšovat viz. Tabulka~\ref{tab:7z_cpu_gpu_sizes}. S tím částečně souvisí i nutnost provádět
+měření pro soubory se šifrovanou hlavičkou viz. Tabulka~\ref{tab:7z_cpu_gpu_hdr}. Pro všechna
+měření tohoto formátu jsem zvolil Global Work Size (GWS) na GPU na 32378 což byla jedna z
+nejvyšších hodnot, při které kernel ještě fungoval. Naměřené výsledky se zdají být touto hodnotou
+omezeny leč bohužel při použitých hodnotách byl nástroj nestabilní.
+
+U archivů se šifrovanou hlavičkou můžeme dosáhnout toho, že nebudeme muset provádět dekompresi
+dat. Respektive, že data před šifrováním nebyla nebyla nijak komprimována. Do archivů byl uložen
+jeden soubor o velikosti 1kB. V tomto případě hlavička komprimovaná nebude, protože archiv
+obsahuje pouze jeden soubor. Toho u dat souboru dosáhnout nelze. Ty jsou komprimováná vždy.
+
+Samotná hlavička také dosahuje značně menší velikosti než samotná data což urychluje výpočet CRC
+hodnoty, kterou používáme k ověření správnosti použitého hesla.
+
+Rychlosti GPU uvedené v následujících tabulkách jsem dopočítával ručně na základě času a
+velikosti stavového prostoru hesel, který bylo potřeba projít. Činil jsem tak, protože nástroj
+v pravidelných intervalech nevracel validní data.
 
 \shorthandoff{-}
-\section{7zip archiv se šifrovanou hlavičkou}
-\begin{table}[h]
+\begin{table}[H]
     \begin{center}  
         \newcolumntype{R}{>{\raggedleft\arraybackslash}X}%
         \begin{tabularx}{\textwidth}{|l|l|R|R|R|R|}
             \cline{2-6}
             \multicolumn{1}{c|}{} & Délka hesla & 3 & 4 & 5 & 6 \\\hline
             \multirow{2}{*}{CPU} & Čas & 1m 33s & > 10m & > 10m & > 10m \\ 
-                                 & Rychlost& 198 & 198 & 198 & 198 \\ 
+                                 & Rychlost & 198 & 198 & 198 & 198 \\ 
             \hline
-            \multirow{2}{*}{GPU} & Čas & ? & ? & ? & ? \\ 
-                                 & Rychlost& ? & ? & ? & ? \\ 
+            \multirow{2}{*}{GPU} & Čas & 25s & 2m 52s & > 10m & > 10m \\ 
+                                 & Rychlost & 686 & 2657 & 2704 & 2704 \\ 
             \hline
         \end{tabularx}
-        \caption{Srovnání času a rychlosti obnovy různě dlouhých hesel archivů 7zip se šifrovanou
-            hlavičkou při běhu na 6 vláknech na CPU.}
-        \label{tab:zip_cpu_128}
+	    \caption{Obnova hesla archivů 7zip se šifrovanou hlavičkou.}
+        \label{tab:7z_cpu_gpu_hdr}
     \end{center}
 \end{table}
-\shorthandon{-}
-
-
-\section{7zip archiv bez šifrované hlavičky}
-\shorthandoff{-}
-\begin{table}[h]
+\begin{table}[H]
     \begin{center}  
         \newcolumntype{R}{>{\raggedleft\arraybackslash}X}%
         \begin{tabularx}{\textwidth}{|l|l|R|R|R|R|}
@@ -1022,77 +1038,75 @@ OS: Ubuntu 14.04 x64
             \multirow{2}{*}{CPU} & Čas & 1m 33s & > 10m & > 10m & > 10m \\ 
                                  & Rychlost& 192 & 196 & 198 & 198 \\ 
             \hline
-            \multirow{2}{*}{GPU} & Čas &  &  &  &  \\ 
-                                 & Rychlost&  &  &  &  \\ 
+            \multirow{2}{*}{GPU} & Čas & 25s & 2m 52s & > 10m & > 10m \\ 
+                                 & Rychlost & 686 & 2657 & 2704 & 2704 \\ 
             \hline
         \end{tabularx}
-        \caption{Srovnání času a rychlosti obnovy různě dlouhých hesel archivů 7zip bez šifrované
-            hlavičky při běhu na 6 vláknech na CPU.}
-        \label{tab:zip_cpu_128}
+	    \caption{Obnova hesla archivů 7zip bez šifrované hlavičky.}
+        \label{tab:7z_cpu_gpu}
     \end{center}
 \end{table}
 \shorthandon{-}
 
-\section{7zip archivy o různé velikosti}
-
+\subsection{Pro různou velikost uloženého souboru}
+Na základě předchozího měření bylo heslo zvoleno tak, abychom se v dříve stanoveném limitu
+10minut jeden pokus o obnovení hesla dostalik k výsledku. Proto soubory, na kterých bylo
+provedeno měření jsou šifrovány klíčem odvozeným z tří znakového hesla.
 \shorthandoff{-}
-\begin{table}[h]
+\begin{table}[H]
     \begin{center}  
         \newcolumntype{R}{>{\raggedleft\arraybackslash}X}%
         \begin{tabularx}{\textwidth}{|l|l|R|R|R|R|R|R|}
             \cline{2-8}
-            \multicolumn{1}{c|}{} & Velikost souboru & 1kB & 512kB & 1MB & 10MB & 100MB & 500MB \\\hline
+            \multicolumn{1}{c|}{} & Velikost souboru & 1kB & 512kB & 1MB & 10MB & 100MB & 500MB \\
+	    \hline
             \multirow{2}{*}{CPU} & Čas & 1m 33s & 1m 33s & 1m 34s & 3m 23s & 1m 35s & 1m 38s \\ 
                                  & Rychlost& 198 & 198 & 198 & 126 & 198 & 192 \\ 
             \hline
-            \multirow{2}{*}{GPU} & Čas &  &  &  &  &  &  \\ 
-                                 & Rychlost&  &  &  &  &  & \\ 
-            \hline
         \end{tabularx}
-        \caption{Srovnání času a rychlosti obnovy hesel archivů 7zip v závislosti na velikosti
-        souboru v něm uloženém při běhu na 6 vláknech na CPU pro heslo o délce 3 znaky.}
-        \label{tab:zip_cpu_128}
+	    \caption{Obnova hesla archivů 7zip pro různě velké archivy.}
+        \label{tab:7z_cpu_gpu_sizes}
     \end{center}
 \end{table}
 \shorthandon{-}
 
+Z výsledků můžeme vidět, že dekomprese má minimální vliv na výkon obnovy hesel. Hodnotu naměřenou
+pro soubor o velikosti 10M považuji za anomálii při měření. Nevidím totiž důvod proč by obnova
+hesla u tohoto souboru měla být o tolik pomalejší i oproti větším souborům.
 
-\section{7zip srovnáníkonkurencí}
+\subsection{Srovnání s konkurencí}
+V tomto případě narozdíl od ZIPu je možné najít jiné nástroje, které tento formát podporují. Ne
+všechny však podporují všechny řežimy, které podporuje Wrathion. 
+
+Dalším problémem jsou generátory, které nástroje používají. Žádný z nich totiž nepoužívá
+\uv{hloupý} brute-force generátor jako původní verze Wrathionu. Jak oclHashcat tak John the
+Ripper mají pouze nějakou imitaci tohoto typu generátoru. Ve skutečnosti však používají generátor
+založený na Markovských procesech. Ty nejdou lineárně znak po znaku jako brute-force, ale
+používají jakési tabulky s definovanými pravděpodobnostmi výskytů jednotlivých znaků a případně
+posloupností znaků. Z toho vyplývá, že časy uvedené v následujících jsou pro tyto nástroje pouze
+orientační narozdíl od časů u Wrathionu, jenž reprezentují maximální čas potřebný k projítí
+celého stavového prostoru do dané délky hesla. U osatních nástrojů bylo nutné, abych ručně
+nastavil maximální délku hesla. Tím jsem dosáhl funkcionality co možná nejpodobnější brute\-force
+generátoru.
 \shorthandoff{-}
-\begin{table}[h]
+\begin{table}[H]
     \begin{center}  
         \newcolumntype{R}{>{\raggedleft\arraybackslash}X}%
         \begin{tabularx}{\textwidth}{|l|l|R|R|R|R|}
-            \cline{2-6}
-            \multicolumn{1}{c|}{} & Délka hesla & 3 & 4 & 5 & 6 \\
+            \hline
+            CPU & Délka hesla & 3 & 4 & 5 & 6 \\
             \hline
             \multirow{2}{*}{Wrathion} & Čas & 1m 33s & > 10m & > 10m & > 10m \\ 
                                       & Rychlost& 198 & 198 & 198 & 198 \\ 
             \hline
-            \multirow{2}{*}{Hashcat} & Čas & ? & ? & ? & ? \\ 
-                                     & Rychlost& ? & ? & ? & ? \\ 
-            \hline
             \multirow{2}{*}{John the Ripper} & Čas & 1m 58s & > 10m & > 10m & > 10m \\ 
                                              & Rychlost& 159 & 148 & 148 & 148 \\ 
             \hline
-        \end{tabularx}
-        \caption{Srovnání času a rychlosti obnovy různě dlouhých hesel archivů 7zip pomocí různých
-        nástrojů při běhu na CPU na 6 vláknech.}
-        \label{tab:zip_cpu_128}
-    \end{center}
-\end{table}
-\shorthandon{-}
-
-\shorthandoff{-}
-\begin{table}[h]
-    \begin{center}  
-        \newcolumntype{R}{>{\raggedleft\arraybackslash}X}%
-        \begin{tabularx}{\textwidth}{|l|l|R|R|R|R|}
-            \cline{2-6}
-            \multicolumn{1}{c|}{} & Délka hesla & 3 & 4 & 5 & 6 \\
             \hline
-            \multirow{2}{*}{Wrathion} & Čas & ? & ? & ? & ? \\ 
-                                      & Rychlost& ? & ? & ? & ?\\ 
+            1xGPU & Délka hesla & 3 & 4 & 5 & 6 \\
+            \hline
+            \multirow{2}{*}{Wrathion} & Čas & 25s & 2m 52s & > 10m & > 10m \\ 
+                                 & Rychlost & 686 & 2657 & 2704 & 2704 \\ 
             \hline
             \multirow{2}{*}{oclHashcat} & Čas & 43s & 1m 7s & 4m 57s & > 10m \\ 
                                      & Rychlost& 288 & 5146 & 10071 & 9320 \\ 
@@ -1100,21 +1114,9 @@ OS: Ubuntu 14.04 x64
             \multirow{2}{*}{John the Ripper} & Čas & 10s & 1m 19s & > 10m & > 10m \\ 
                                              & Rychlost& 1600 & 2000 & 2500 & 2500 \\ 
             \hline
-        \end{tabularx}
-        \caption{Srovnání času a rychlosti obnovy různě dlouhých hesel archivů 7zip pomocí různých
-        nástrojů při běhu na GPU.}
-        \label{tab:zip_cpu_128}
-    \end{center}
-\end{table}
-\shorthandon{-}
-
-\shorthandoff{-}
-\begin{table}[h]
-    \begin{center}  
-        \newcolumntype{R}{>{\raggedleft\arraybackslash}X}%
-        \begin{tabularx}{\textwidth}{|l|l|R|R|R|R|}
-            \cline{2-6}
-            \multicolumn{1}{c|}{} & Délka hesla & 3 & 4 & 5 & 6 \\\hline
+            \hline
+            3xGPU & Délka hesla & 3 & 4 & 5 & 6 \\
+	    \hline
             \multirow{2}{*}{Wrathion} & Čas & ? & ? & ? & ? \\ 
                                       & Rychlost& ? & ? & ? & ? \\ 
             \hline
@@ -1124,19 +1126,67 @@ OS: Ubuntu 14.04 x64
         \end{tabularx}
         \caption{Srovnání času a rychlosti obnovy různě dlouhých hesel archivů 7zip pomocí různých
         nástrojů při běhu na 3 GPU.}
-        \label{tab:zip_cpu_128}
+        \label{tab:7z_comp_3gpu}
     \end{center}
 \end{table}
 \shorthandon{-}
+Jak můžeme vidět ve srovnání CPU implementací tak Wrathion je o 33\% rychlejší než John the
+Ripper. CPU verze Hashcatu bohužel 7zip nepodporuje a Elcomsoft také ne.
 
-\section{Škálovatelnost modulů}
-Graf ukazujici kolikrac se zvysi rychlost louskani pri pouziti GPU misto CPU a kolikrat pri pouziti
+Při použití GPU akcelerace se nám již objevuje další nástroj oclHashcat, jehož chování je
+podivné. Při kratších heslech totiž nedosahuje takového výkonu, jak lze z tabulky vyčíst, jako
+heslech delších. Avšak vezmeme-li maximální průměrnou hodnotu tak značně převyšuje svým výkonem
+nástroje John the Ripper i náš Wrathion. Není mi však známo jakou GWS používá a tudíž jestli
+kdyby běžel na stejné jako John the Ripper a Wrathion jestli by výsledky nebyly více vyrovnané
+(oba 32378). Každopádně jako pozitivum lze brát, že Wrathion neskončil poslední a alespoň jeden
+nástroj převyšuje.
+
+V posledním možné případě, kterým je akcelerace obnovy hesel na více GPU, máme zase pouze dva
+nástroje. John the Ripper nemá v dostupné verzi podporu pro běh na více GPU zaráz, proto byl
+vynechán. 
+
+Velmi zajímavá věc u oclHashcatu je, že pro krátká hesla má opět nížší výkon než pro delší. Za
+zajímavé také shledávám jeho využití jednotlivých GPU. Podle poskytnutých informací totiž pro
+krátká hesla, mimo nižší rychlost, používá také jednu GPU ikdyž jsem mu explicitně určil ať
+použije tři GPU.
+
+TODO: dopsat srovnani 3 GPU az budou vysledky.
+\section{Škálovatelnost a vliv akcelerace výpočtů na GPU}
+\label{sec:skalovatelnost}
+Graf ukazujici kolikrat se zvysi rychlost louskani pri pouziti GPU misto CPU a kolikrat pri pouziti
 vice GPU
+Akcelerace na GPU nám přináší značné navýšení výkonu pro obnovu hesel. Je to způsobeno více
+výpočetními jednotkami na GPU oproti CPU. Vliv akcelerace na nárůst výkonu není konstantní a liší
+se formát od formátu.
+\begin{center}
+    \begin{figure}[ht]
+	\scalebox{0.55}{
+	    \includegraphics{fig/cpu_gpu_vs_3gpu}
+	}
+	\caption{Zrychlení obnovy hesel při použití GPU na místo CPU.}
+	\label{memory}
+    \end{figure}
+\end{center}
+
+Očekával jsem, že přidání dalších GPU zvýší celkový výkon alespoň o 80\% což se pro modul ZIP
+povedlo překonat. Z hodnot v grafu jsem odvodil zrychlení 170\% v okamžiku kdy jsem přidal další
+2 grafiky.
+
+TODO: Doplnit do grafu zrychleni 7zipu
+\begin{center}
+    \begin{figure}[ht]
+	\scalebox{0.55}{
+	    \includegraphics{fig/gpu_vs_3gpu}
+	}
+	\caption{Zrychlení obnovy hesel při přidání dalších GPU.}
+	\label{memory}
+    \end{figure}
+\end{center}
 
 \chapter{Závěr}
 Obsáhnout všechny možnosti a~nastavení analyzovaných formátů je značně náročný proces, který
-ve většině případů ani nestojí za námahu. Důvodem je nízký počet dostupných nástrojů schopných tyto
-hodnoty nastavit, což platí hlavně pro formát ZIP.
+ve většině případů ani nestojí za námahu. Důvodem je nízký počet dostupných nástrojů schopných
+tyto hodnoty nastavit, což platí hlavně pro formát ZIP.
 
  Struktury jednotlivých formátů byly popsány tak, aby bylo možné chybějící nebo nejasné informace
 dohledat ve specifikacích formátu a~nebylo nutné složitě hledat, o~jaké hodnoty se jedná. Zde
@@ -1144,26 +1194,35 @@ je nutno podotknout, že, jak již bylo zmíněno, struktura 7z souboru je hodn�
 Bohužel dokumentace tohoto formátu je značně nedostačující a~je tedy nutné strávit hodně času
 studiem struktury, zdrojových kódů a~fóra vývojáře pro získání dalších a~detailnějších informací.
 
- Návrh rozšíření modulu pro ZIP by měl z~většiny odpovídat tomu, jak bude rozšíření vypadat po jeho
-implementaci. Také na základě průzkumu v~tomto odvětví by rozšířený modul měl být napřed před
-konkurencí. Některé známé nástroje totiž mají podporu pouze pro WinZip AES a~PKWARE šifrování
-(John the Ripper) nebo momentálně neposkytují funkcionalitu k~formátu .ZIP (oclHashcat).  
+ Výsledky měřeních prokázaly konkurence-schopnost nově přídaných funkcionalit. Z důvodu
+neodstatečných zkušeností s paralelními aplikacemi a OpenCL nebyly udělány žádné větší
+optimalizace kernelů a tedy zde zůstává prostor pro zvýšení výkonu jednotlivých kernelů. 
 
- U~modulu 7z se jedná spíš o~teoretický nástin, jak by mohl modul vypadat a~jak by
-mohly jednotlivé části algoritmu fungovat. Některé důležité informace totiž nejsou nikde detailně
-popsány. Hledání informací ve zdrojových kódech 7zip-u je díky absenci komentářů a~vysoké
-abstrakci kódu značně náročné a~zdlouhavé. Návrh modulu bude tedy potřeba pravděpodobně
-modifikovat na základě informací zjištěných během implementace jednotlivých částí modulu.
+ Měření také ukazují jak silná jednotlivá zabezpečení jsou. Srovnání bezpečnosti šifrování
+WinZip AES a nově přidaného AES nám říká proč bylo třeba vytvořit a používat WinZip AES. Přidaný
+AES totiž používá funkce pro generování šifrovacího, jenž nevyžadují žádné iterace hešovacích
+funkcí. Tím se toto zabezpečení stává velmi náchylným k útokům hrubou silou.
 
- Během implementace bude zapotřebí vytvořit dvě verze obou modulů. Jednu verzi běžící pouze na
-CPU a~druhou, která bude podporovat paralelní zpracování na GPU. V~návaznosti na implementaci
-bude potřeba provést měření rychlosti a~srovnání s~dalšími nástroji. Podle výsledků srovnání
-jde odhadnout, jak moc optimální náš modul je a~zda je potřeba jej upravit a~vyladit nebo
-zda je v~rámci možností optimalizován.
+V abstraktu k zabezpečení ZIP pomocí AES je zabezpečení formátu 7zip. Kombinace AES256 a velkého
+počtu iterací hešovací funkce SHA256 při generování šifrovacího klíče lze, při použití bezpečného
+hesla, prohlásit za neprolomitelné pokud nemáme k dispozici vysoké množství zařízeních, na která
+bychom mohli úlohu obnovy hesla rozdistribuovat.
 
 
-Doplnit: Wrathion by sel rozsirit o moznost zasilat z GPU i hashe do CPU pro false positive hesla
-u 7z. Cimz by se 7z Crackovani urychlilo. Taky by bylo dobry provade kontrolu false positive hesel
-ve vice vlaknech aby se to urychlilo.
+
+\section{Rozšíření}
+Během práce na nástroji jsem objevil pár chybějících funkcionalit, které by velké míře pomohly
+zvýšit výkon modulu 7z.
+\begin{enumerate}
+   \item Rozšíření Wrathionu o možnost zasílání klíčů pro dešifrování z GPU na CPU. Momentální
+       stav je takový, že se klíče generují dvakrát a díky značnému počtu iterací hešovací funkce
+       se tímto ztrácí hodně času než se na CPU vygeneruje klíč znovu.
+    \item Další pomůckou pro modul 7z by bylo přídání využítí více vláken při ověřování hesel na
+	CPU. Při současném návrhu modulu GPU slouží pouze jako filtr a CPU ji brzdí, protože musí
+	provádět dešifrování a dekompresi dat, aby byl schopen ověřit heslo. GPU je ale schopna
+	zaráz označit více hesel jako potenciálně správnýchi. Distribuování ověřování do
+	více výpočetních vláken by zrychlilo procházení označených hesel a tím urychlilo
+	přirazení nových hesesl k testování.
+\end{enumerate}
 
 %=========================================================================
