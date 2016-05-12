@@ -376,7 +376,7 @@ Nástroj slouží ke obnovování hesel pomocí brute-force útoků na tato hesl
 \subsection{Generátory hesel}
 První částí Wrathionu jsou generátory hesel pro útoky. Jedná se o~esenciální
 funkcionalitu. Bez generátoru hesel není možné útoky provádět. V~nástroji jsou momentálně
-implementovány tyto typy generátorů:
+implementovány tyto typy generátorů~\cite{Hranicky}:
 \begin{itemize}
     \item {\it Brute-force} -- postupně generuje všechny možné permutace ze zadaných znaků.
     \item {\it Unicode} -- jedná se o~upravený brute-force generátor. V~tomto případě je nastavena
@@ -438,7 +438,7 @@ prodlevu výpočtů.
 
 \subsection{Moduly}
 Nástroj je navržen s~velkým důrazem na modularitu. V~současné době obsahuje pouze tři moduly.
-Další moduly pro Wrathion jsou ve fázi vývoje.
+Další moduly pro Wrathion jsou ve fázi vývoje~\cite{Hranicky}.
 
 \subsubsection{Modul ZIP}
 ZIP modul v~původním návrhu obsahuje pouze šifrování obnovování hesel z~archivů šifrovaných
@@ -659,8 +659,8 @@ nové metody zapsané do příznaků souboru. Existují ovšem nástroje jako Se
 zašifrovat obsah archivů pomocí šifrovací metody AES, kterou současný modul, i~přes podporu zjištění
 hesla pro při použití šifrování AES, nepodporuje.
 
- Další šifrovací metodou, kterou nabízí nástroj SecureZIP je 3DES, kterou momentální verze
-nepodporuje vůbec a~je tedy nutné tuto funkcionalitu doplnit.
+% Další šifrovací metodou, kterou nabízí nástroj SecureZIP je 3DES, kterou momentální verze
+%nepodporuje vůbec a~je tedy nutné tuto funkcionalitu doplnit.
 
 \subsection{Zjištění informací z~archivu}
 Z archivu musíme získat informace nutné pro rozhodnutí, zda se jedná o~ZIP soubor, zda je soubor
@@ -733,19 +733,17 @@ Archiv formátu .7z v~sobě, stejně tak jako .ZIP archiv, nese informace nutné
 dešifrování souboru. V~tomto případě je však o~něco složitější je získat. Struktura 7z archivu
 je hodně komplexní a~proměnlivá. Struktura hlaviček do značné míry připomíná databázi. Pro
 detailní porozumění struktuře řídících dat formátu je třeba nahlědnout do souboru
-7zFormat.txt~\cite{Pavlov:2010}. Potřebné informace lze získat následujícím značně zjednodušeným
+7zFormat.txt~\cite{Pavlov:2010}. Potřebné informace lze získat následujícím 
 teoretickým postupem:
 \begin{enumerate}
-    \item Ověříme signaturu -- jedná se o~prvních 6 bajtů souboru, které musí odpovídat hodnotě
-v~sekci \ref{ssec:7z_struct}. 
+    \item Ověříme signaturu -- prvních 6 bajtů souboru se musí rovnat hodnotě ze~sekce \ref{ssec:7z_struct}. 
     \item Přejdeme na pozici 6 bajtů za signaturou, kde	prvních 8 bajtů obsahuje pozici hlavičky.
 	Na dalších 8 bajtech je délka hlavičky.
     \item Přejdeme na začátek hlavičky.
-    \item Přejdeme na záznam se signaturou 0x06, ze kterého získáme pozici dat k~níž přičteme 32.
-    \item Přejdeme na záznam se signaturou 0x09, ze kterého získáme délku proudu dat.
+    \item Přejdeme na záznam se signaturou 0x06 nesoucí pozici dat k~níž přičteme 32.
+    \item Přejdeme na záznam se signaturou 0x09 nesoucí délku proudu dat.
     \item Přejdeme na záznam se signaturou 0x0B, ve kteté hledáme hodnoty [0x06, 0xF1, 0x07, 0x01]
-	a [0x03, 0x01, 0x01] značící 7zAES a LZMA.
-    \item Získáme z~nich data -- inicializační vektor, počet iterací použití SHA256 (implicitně
+	a [0x03, 0x01, 0x01] značící 7zAES a LZMA. Zde hledáme inicializační vektor, počet iterací použití SHA256 (implicitně
 	19) pro 7zAES a inicializační data slovníků pro LZMA.
     \item Přejdeme na záznam se signaturou 0x0A, ze kterého získáme CRC dat souboru.
 \end{enumerate}
@@ -757,14 +755,14 @@ soubory o~velké velikosti, které by se nemusely vejít do paměti GPU. Musíme
 v~potaz, že potřebujeme mít v~paměti prostor o~velikosti souboru pro každou výpočetní jednotku GPU,
 na které poběží kernel. Řešení tohoto problému je popsáno v~sekci \ref{ssec:7zcrackercpu}.
 
-\begin{algorithm}[ht]
+\begin{algorithm}[!h]
     \SetStartEndCondition{ (}{)}{)}\SetAlgoBlockMarkers{}{}%
     \SetKwFor{For}{for}{\string:}{}%
     \SetKwInOut{Input}{vstup}\SetKwInOut{Output}{výstup}
     \SetKwRepeat{Repeat}{repeat}{until}%
     \AlgoDisplayBlockMarkers\SetAlgoNoLine%
     \DontPrintSemicolon
-    \Input{Data získaná z~hlaviček}
+    \Input{Data získaná z~hlaviček (IV, iteraci, lzma\_data)}
     \Output{Poslední vygenerované heslo}
     \Repeat{$ CRC \neq spocitejCRC32 (data) $}{
 	heslo = generujHeslo()\;
@@ -833,16 +831,16 @@ Kernel je na napsán v~jazyce OpenCL C jeho funkcionalita odpovídá funkce $che
 třídy $ZIPStAESCrackerCPU$. Implementačně je zde jeden znatelný rozdíl. Dynamické vytváření Sbox
 tabulek pro AES je nahrazeno konstantními tabulkami.
  
-\subsection{ZIPTDESCrackerCPU}
-Jedná se o~třídu obsahující pokus o~implementaci metody 3DES pro CPU. Jedná se o~třídu velmi
-podobnou třídě $ZIPStAESCrackerCPU$. Jediným rozdílem je funkcí pro 3DES z~knihovny OpenSSL
-namísto funkcí pro AES.
-
- Tuto třídu se mi bohužel nepovedlo zprovoznit. Příčinu problému s~funkčností vidím v~přidávání
-paritních bitů ke klíči a inicializačnímu vektoru, jenž je knihovnou vyžadováno. Dalším
-problémem s~laděním tohoto problému je, že se mi nepovedlo nalést ani žádný Open Source
-archivační program, který by uměl takovýto soubor dešifrovat. To značně komplikuje proces ladění,
-když není možné porovnávat rozdíly v~hodnotách v~jednotlivých krocích.
+    %\subsection{ZIPTDESCrackerCPU}
+%Jedná se o~třídu obsahující pokus o~implementaci metody 3DES pro CPU. Jedná se o~třídu velmi
+%podobnou třídě $ZIPStAESCrackerCPU$. Jediným rozdílem je funkcí pro 3DES z~knihovny OpenSSL
+%namísto funkcí pro AES.
+%
+% Tuto třídu se mi bohužel nepovedlo zprovoznit. Příčinu problému s~funkčností vidím v~přidávání
+%paritních bitů ke klíči a inicializačnímu vektoru, jenž je knihovnou vyžadováno. Dalším
+%problémem s~laděním tohoto problému je, že se mi nepovedlo nalést ani žádný Open Source
+%archivační program, který by uměl takovýto soubor dešifrovat. To značně komplikuje proces ladění,
+%když není možné porovnávat rozdíly v~hodnotách v~jednotlivých krocích.
 
 \section{Implementace modulu SevenZ}
 V~tomto případě bylo třeba vytvořit úplně nový modul. K~tomu bylo třeba vytvořit soubory {\textit
@@ -1005,8 +1003,8 @@ Srovnáním rychlostí dosažených při využití akceleraci GPU a zhodnocení 
 Měření pro 7zip je velmi podobné tomu pro ZIP. Hlavními rozdíly je potřebná sada souborů, které
 je třeba použít. U~archivů 7zip musíme brát v~potaz i fakt, že pro ověření hesla se provádí
 dekomprimace dat a počet vyzkoušených hesel za jednu sekundu se tedy může s~rostoucí velikostí
-zmenšovat viz. Tabulka~\ref{tab:7z_cpu_gpu_sizes}. S~tím částečně souvisí i nutnost provádět
-měření pro soubory se šifrovanou hlavičkou viz. Tabulka~\ref{tab:7z_cpu_gpu_hdr}. Pro všechna
+zmenšovat (viz. Tabulka~\ref{tab:7z_cpu_gpu_sizes}). S~tím částečně souvisí i nutnost provádět
+měření pro soubory se šifrovanou hlavičkou (viz. Tabulka~\ref{tab:7z_cpu_gpu_hdr}). Pro všechna
 měření tohoto formátu jsem zvolil Global Work Size (GWS) na GPU na 32378 což byla jedna
 z~nejvyšších hodnot, při které kernel ještě fungoval. Naměřené výsledky se zdají být touto hodnotou
 omezeny leč bohužel při použitých hodnotách byl nástroj nestabilní.
@@ -1160,37 +1158,34 @@ Velmi zajímavá věc u~oclHashcatu je, že pro krátká hesla má opět nížš
 zajímavé také shledávám jeho využití jednotlivých GPU. Podle poskytnutých informací totiž pro
 krátká hesla, mimo nižší rychlost, používá také jednu GPU ikdyž jsem mu explicitně určil ať
 použije tři GPU.
-
-TODO: dopsat srovnani 3 GPU az budou vysledky.
 \section{Zrychlení a vliv akcelerace výpočtů na GPU}
 \label{sec:zrychlenit}
 Akcelerace na GPU nám přináší značné navýšení výkonu pro obnovu hesel. Je to způsobeno více
 výpočetními jednotkami na GPU oproti CPU. Vliv akcelerace na nárůst výkonu není konstantní a liší
 se formát od formátu.
-\begin{center}
-    \begin{figure}[ht]
+\begin{figure}[ht]
+    \begin{center}
 	\scalebox{0.55}{
 	    \includegraphics{fig/cpu_gpu_vs_3gpu}
 	}
 	\caption{Zrychlení obnovy hesel při použití GPU na místo CPU.}
 	\label{memory}
-    \end{figure}
-\end{center}
+    \end{center}
+\end{figure}
 
 Očekával jsem, že přidání dalších GPU zvýší celkový výkon alespoň o~80\% což se pro modul ZIP
 povedlo překonat. Z~hodnot v~grafu jsem odvodil zrychlení 170\% v~okamžiku kdy jsem přidal další
 2 grafiky.
 
-TODO: Doplnit do grafu zrychleni 7zipu
-\begin{center}
-    \begin{figure}[ht]
+\begin{figure}[ht]
+    \begin{center}
 	\scalebox{0.55}{
 	    \includegraphics{fig/gpu_vs_3gpu}
 	}
 	\caption{Zrychlení obnovy hesel při přidání dalších GPU.}
 	\label{memory}
-    \end{figure}
-\end{center}
+    \end{center}
+\end{figure}
 
 \chapter{Závěr}
 Obsáhnout všechny možnosti a~nastavení analyzovaných formátů je značně náročný proces, který
