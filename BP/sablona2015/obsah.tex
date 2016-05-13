@@ -2,13 +2,13 @@
 \chapter{Úvod}
 Zajištění důvěrnosti informací je v~dnešní době často se vyskytujícím tématem na poli informačních
 technologií. Ať už se bavíme o~zabezpečení dat při přenosu po síti nebo o~zabezpečení lokálně
-uložených dat. Často potřebujeme sdílet informace, ale chceme zajistit, že je budou schopny přečíst
-pouze osoby, které jsou k~tomu pověřené.
+uložených dat. Často potřebujeme sdílet informace, ale chceme zajistit, že je budou schopny
+přečíst pouze osoby, které jsou k~tomu pověřené.
 
  Výše uvedeného lze dosáhnout šifrováním informací. V~dnešní době existuje nespočet možností, jak
 informace šifrovat. Kvalitu zabezpečení dat značně ovlivňuje výběr použitého šifrovacího
 algoritmu a~dostatečně silného hesla. Pokud použijeme slabou šifru a~silné heslo, šance, že se
-k~našim datům dostane neoprávněná osoba se obvykle výrazně sniží, než když to uděláme naopak.
+k~našim datům dostane neoprávněná osoba se obvykle výrazně sníží, než když to uděláme naopak.
 
  Často chceme sdílet nebo zabezpečit více než jeden soubor s~informacemi. Obecně se pro
 spojení více souborů různého typu do jednoho celku používají archivy. Jedněmi z~nejrozšířenějších
@@ -22,13 +22,13 @@ principy a~struktury standardu a~frameworku OpenCL. Tyto informace jsou použity
 implementaci rozšiřujících modulů.
 
  V~kapitole \ref{ch:sifrovani} s~podíváme na šifrovací a~hešovací metody používané formáty
-archivů. V~kapitole \ref{ch:opencl} si přiblížeme technologii OpenCL, která je použita pro
+archivů. V~kapitole \ref{ch:opencl} si přiblížíme technologii OpenCL, která je použita pro
 akceleraci pomocí grafické karty v~nástroji {\it Wrathion}. Ten je popsán v~kapitole
 \ref{ch:wrathion}. V~kapitole \ref{ch:formaty} jsou zanalyzovány formáty .ZIP a~.7z. Na základě
-poznatků z~analýz jsou v~kapitole \ref{ch:moduly} vytvořeny návrhy rožšiřujících modulů {\it
+poznatků z~analýz jsou v~kapitole \ref{ch:moduly} vytvořeny návrhy rozšiřujících modulů {\it
 Wrathionu}. V~kapitole \ref{ch:implementace} se seznámíme s~implementovanými třídami, OpenCL
-kernely a další implementační detaily. V~závěřečné kapitole \ref{ch:mereni_a_srovnani} nalezneme
-informace o~výkonu nových modulů, jejich srovnání s~konkurencí a demostraci proč používáme GPU
+kernely a další implementační detaily. V~závěrečné kapitole \ref{ch:mereni_a_srovnani} nalezneme
+informace o~výkonu nových modulů, jejich srovnání s~konkurencí a demonstraci, proč používáme GPU
 akceleraci k~obnově hesel.
 
 \chapter{Metody pro šifrování a~hešování}
@@ -44,12 +44,12 @@ typy:
 \begin{itemize}
     \item Symetrické šifry -- pro šifrování i~dešifrování jsou použity stejné klíče (hesla).
         Nejznámější metodou je DES, která byla vytvořena v~roce 1975 společností IBM. Posléze na to
-        byla standardizována. V~součastnosti se již skoro nepoužívá, dala ovšem základ dalším
+        byla standardizována. V~současnosti se již skoro nepoužívá, dala ovšem základ dalším
         používaným šifrovacím metodám. Mezi další známé symetrické šifry patří např.: 3DES, AES, RC4
         a~jiné.
     \item Asymetrické šifry -- v~tomto případě je pro šifrování a~dešifrování použit jiný klíč.
         Tento mechanismus našel své uplatnění hlavně v~elektronických podpisech. Ty používají tzv.
-        veřejný klíč a~klíč soukromý. Pokud chcemezamaskovat informace použijeme veřejný klíč pro
+        veřejný klíč a~klíč soukromý. Pokud chceme zamaskovat informace použijeme veřejný klíč pro
         šifrování a~soukromý pro dešifrování. Druhá kombinace klíčů slouží k~ověření dat a~k~šifrování.
 \end{itemize}
 
@@ -86,7 +86,7 @@ klíče~\cite{NIST:2012}.
 
 \subsection{Advanced Encryption Standard (AES)}
 Tento standard byl vytvořen kvůli nedostatkům šifrovací metody Triple DES v~síle šifrování a
-v~rychlosti šiforvání dat. Původní název této šifrovací metody je Rijndael. Metoda Rijndael byla
+v~rychlosti šifrování dat. Původní název této šifrovací metody je Rijndael. Metoda Rijndael byla
 vybrána institutem National Institute of Standards and Technology jako nejlépe vyhovující metoda ze
 všech přihlášených. Standard byl publikován v~roce 2001~\cite{NIST:2001}.
 
@@ -98,7 +98,7 @@ skládající se ze čtyř řádků, z nichž každý obsahuje čtyři bajty. To
 nazýváno {\it State}.
 
 Na začátku šifrování se nakopírují data ze vstupu do pole {\it State} a~nastaví se počet kol pro
-generování klíče. Poté je, tato hodnoty použita k provedení daného počtu otercí při generování AES
+generování klíče. Poté je, tato hodnoty použita k provedení daného počtu iterací při generování AES
 šifrovacího klíče. Počet opakování funkce je 10-krát pro 128b klíč, 12-krát pro 192b klíč a~14-krát
 pro 256b klíč. Funkce se skládá ze čtyř bajtově-orientovaných transformací:
     \begin{enumerate}
@@ -111,17 +111,17 @@ pro 256b klíč. Funkce se skládá ze čtyř bajtově-orientovaných transforma
     \item přidání klíče pro kolo ({\it Round Key}) k~poli {\it State} -- klíče pro kolo jsou
 	přidávány pomocí bitové operace XOR provedené nad sloupci pole.
 \end{enumerate}
-Pro dešifrování je použita inverzní funkce, a~protože se jedná symetrickou šifru, je pro dešifrování
+Pro dešifrování je použita inverzní funkce, a~protože se jedná o symetrickou šifru, je pro dešifrování
 použito stejné heslo jako pro šifrování.
 
 \section{Hešování}
 Hešování se používá k~jednosměrnému zabezpečení dat nelze je tedy zpětně dešifrovat. V~tomto případě
 se nepoužívají klíče pro zabezpečení dat. Jde o~kombinaci logických funkcí, bitových rotací, posunů
-a~záměny posloupnosti bitů. Úkolem těchto metod je na vstupu přijmout zprávu o~jakékoliv veliskosti
+a~záměny posloupnosti bitů. Úkolem těchto metod je na vstupu přijmout zprávu o~jakékoliv velikosti
 a~na výstup produkovat zprávu o~pevné délce. Výsledek takovéto funkce je nazýván heš (hash) nebo
 také otisk. 
 
- V~případě optimální hešovací funkce nelze pro dvě různé vstupní zprávy obrdžet identické zprávy
+ V~případě optimální hešovací funkce nelze pro dvě různé vstupní zprávy obdržet identické zprávy
 výstupní. Toho lze využít pro bezpečné uložení informací, které není nutné někdy v~budoucnosti
 převést do původního stavu. Těchto vlastností se využívá například při ukládání hesel nebo
 ověřování, zda nedošlo při přenosu k~modifikaci dat. Do této skupiny patří funkce: MD4, MD5, SHA-1,
@@ -206,8 +206,8 @@ Dnešním trendem ve vývoji architektur pro výpočetní zařízení je umožn�
 úloh. Paralelizace typicky vede ke~znatelnému zvýšení výkonu u~zařízeních ji využívajících. Dnes již
 považujeme za běžné, že jsou na trhu dostupné vícejádrové procesory (CPU), které podporují paralelní
 zpracování. Jedním z~hlavních představitelů toho trendu jsou grafické výpočetní jednotky (GPU). Lze
-považovat za vysoce paralelní procesory určené pro specifické operace, např.: zpracování vekrorů a
-matix. Existence těchto typů zařízení ústí v~potřebu mít prostředky, jak s~těmito zařízeními
+považovat za vysoce paralelní procesory určené pro specifické operace, např.: zpracování vektorů a
+matic. Existence těchto typů zařízení ústí v~potřebu mít prostředky, jak s~těmito zařízeními
 komunikovat a~programovat je.
 
  U~paralelních aplikací je naší největší prioritou efektivnost využití zdrojů. Důvodem je
@@ -237,7 +237,7 @@ Jedná se o~otevřený nezpoplatněný standard sloužící ke~zjednodušení a~
 paralelních aplikací. OpenCL využívá rozhraní, které pracuje na velmi nízké úrovni, tedy skoro na
 úrovni samotných fyzických součástek, čímž dosahuje vysoké efektivity. Nad tímto rozhraním následně
 vytváří vrstvu pro výpočty, jenž obsahuje pracovní prostředky nezávislé na platformě. Hlavní síla
-OpenCL je zkombinování paralelních výpočtů aplikace na GPU se zřetězeným rendrováním grafických
+OpenCL je zkombinování paralelních výpočtů aplikace na GPU se zřetězeným renderováním grafických
 prvků~\cite{Khronos:2015}.
 Standard:
 \begin{itemize}
@@ -278,7 +278,7 @@ příklad standardní počítač tak hostitel je CPU a~zařízení je GPU, pří
 \end{figure}
 \subsubsection{Model provádění}
 Jak již bylo zmíněno aplikace se dělí na dvě části: OpenCL kernel a hostitelskou aplikaci.
-Hostitelskí aplikace provádí inicializaci a řízení chodu kernelu, zatímco kernel provádí samotný
+Hostitelská aplikace provádí inicializaci a řízení chodu kernelu, zatímco kernel provádí samotný
 výpočet. Výpočty jsou prováděny na pracovních položkách ({\it work-item}) jenž můžeme sdružovat do
 pracovních skupin ({\it work-group}).
 
@@ -401,7 +401,7 @@ kdo provádí porovnávání hesel:
 \subsubsection{CPU cracker}
 Zde se standardně spustí již předkompilovaný cracker napsaný v~C++ (viz. Obrázek \ref{CPU}). Není
 zde žádný větší problém s~generováním ani následným ověřováním hesel, ovšem výpočetní síla
-u~paralelizovatelných algoritmů není CPU ani zdaleka tak vysoká jako na GPU. Proto, pokud je to
+u~paralelizovatelných algoritmů není na CPU ani zdaleka tak vysoká jako na GPU. Proto, pokud je to
 možné, volíme druhou variantu crackeru.
 \begin{figure}[ht]
     \begin{center}
@@ -486,7 +486,7 @@ a PPMd~\cite{PKWARE:2014}.
 \end{itemize}
 V současnosti žádný z~volně dostupných, ani komerčních nástrojů neumožňuje vytvoření archivů se
 šifrováním DES, RC2 a~RC4. Z~toho tedy plyne, že pravděpodobnost výskytu archivů šifrovaných těmito
-metodami je minimální a proto se jimi tato práce nebude dále zabývat.
+metodami je minimální, a proto se jimi tato práce nebude dále zabývat.
 
 \subsection{Struktura souboru}
 \label{ssec:zip_struct}
@@ -522,7 +522,7 @@ s~tím, že za data byla přidána sekce {\it Data description} o~velikosti 12 b
 \end{itemize}
 Od verze formátu 6.2 jsou před hlavičkou centrálního adresáře další položky, a~to hlavička
 pro dešifrování archivu a~záznam o~extra datech archivu. Tyto položky byly přidány
-v~souvisloti s novou funkcí pro šifrování obsahu hlaviček centrálního adresáře.
+v~souvislosti s novou funkcí pro šifrování obsahu hlaviček centrálního adresáře.
 
 \subsubsection{Řídící struktury definující šifrování}
  Dosud byla popisována pouze základní struktura archivu. Nás ale především zajímají struktury
@@ -544,7 +544,7 @@ Informace o~metodě šifrování, délce klíče atd., jsou z~důvodů vyšší 
 Položku {\it Extra Fields} poznáme podle signatury [0x00, 0x17]. Další položky obsahují informace
 o~použitém šifrovacím algoritmu, délce klíče pro šifrování a~pole příznaků {\it Flags} definující,
 zda je archiv šifrovaný, jaká je použita kompresní metoda, co je vyžadováno pro dešifrování. Tedy
-zda je možná provést dešifrování pouze pomocí hesla nebo certifikátu a nebo je-li možné použít
+zda je možná provést dešifrování pouze pomocí hesla nebo certifikátu anebo je-li možné použít
 oboje. Další možnosti závisí na použitém certifikátu.
 
  Záznam pro dešifrování obsahuje inicializační vektor (IV), identifikátor algoritmu pro
@@ -612,15 +612,15 @@ Neprázdný soubor tohoto formátu má čtyři části, které v~něm musí být
     \label{7zstruct}
 \end{figure}
 Pro účely této práce nás především zajímá hlavička {\it 7zHeader} a~v~ní obsahy položek nesoucích
-informace o~proudech dat (0x03 nebo 0x04). V~nich konkrétně položka informace o~kóderech (0x07),
+informace o~proudech dat (0x03 nebo 0x04). V~nich konkrétně položka informace o~kodérech (0x07),
 ve které se musíme propracovat k~poli bajtů {\it CodecInfo}. Hodnoty tohoto pole musíme otestovat
 a zjistit, zda se shodují s~identifikátorem standardní šifrovací metody AES-256 + SHA-256
-[0x06, 0xF1, 0x07, 0x01]~\cite{Pavlov:2015}. Zde je třeba také nálezt data o~použité kompresi.
+[0x06, 0xF1, 0x07, 0x01]~\cite{Pavlov:2015}. Zde je třeba také nalézt data o~použité kompresi.
 Kompresní metoda LZMA má identifikátor [0x03, 0x01, 0x01]. Další důležitou položkou pro ověření
 hesla je CRC šifrovaného souboru.
 
 Tento typ archivu bohužel neobsahuje žádnou jinou metodu ověření hesla než pomocí spočítání a
-porovnání CRC hodnot. K~tomu je nutné nejprvek celý soubor dešifrovat a dekomprimovat, což přidává
+porovnání CRC hodnot. K~tomu je nutné nejprve celý soubor dešifrovat a dekomprimovat, což přidává
 na náročnosti celého ověřovacího procesu.
 
 \section{Srovnání}
@@ -697,7 +697,7 @@ Jakmile takto získáme všechna potřebná data, přesuneme se k~hledání pou�
 bude možné realizovat za využití CPU nebo GPU. Pro obě tato zařízení je nutné vytvořit samostatný
 kód. Kód pro CPU čistě v~jazyce C++ s~možností využití některých již implementovaných funkcí a
 generátorů obsažených v~nástroji Wrathion. Pro GPU je třeba vytvořit kód v~C++, který poběží na
-CPU a~bude inicializavat GPU a~rozdělovat práci pracovním jednotkám na ní umístěných a~poté kernel
+CPU, bude inicializovat GPU a~rozdělovat práci pracovním jednotkám na ní umístěných a~poté kernel
 v~OpenCL pro implementování kernelu, který poběží na pracovních jednotkách. Avšak v~obou
 případech půjde o~totožný Algoritmus~\ref{alg:zip_ver}.
 
@@ -732,7 +732,7 @@ odvozování hesel a~jiné používané formátem .7z.
 Archiv formátu .7z v~sobě, stejně tak jako .ZIP archiv, nese informace nutné pro umožnění
 dešifrování souboru. V~tomto případě je však o~něco složitější je získat. Struktura 7z archivu
 je hodně komplexní a~proměnlivá. Struktura hlaviček do značné míry připomíná databázi. Pro
-detailní porozumění struktuře řídících dat formátu je třeba nahlědnout do souboru
+detailní porozumění struktuře řídících dat formátu je třeba nahlédnout do souboru
 7zFormat.txt~\cite{Pavlov:2010}. Potřebné informace lze získat následujícím 
 teoretickým postupem:
 \begin{enumerate}
@@ -740,16 +740,16 @@ teoretickým postupem:
     \item Přejdeme na pozici 6 bajtů za signaturou, kde	prvních 8 bajtů obsahuje pozici hlavičky.
 	Na dalších 8 bajtech je délka hlavičky.
     \item Přejdeme na začátek hlavičky.
-    \item Přejdeme na záznam se signaturou 0x06 nesoucí pozici dat k~níž přičteme 32.
+    \item Přejdeme na záznam se signaturou 0x06 nesoucí pozici dat, k~níž přičteme 32.
     \item Přejdeme na záznam se signaturou 0x09 nesoucí délku proudu dat.
-    \item Přejdeme na záznam se signaturou 0x0B, ve kteté hledáme hodnoty [0x06, 0xF1, 0x07, 0x01]
+    \item Přejdeme na záznam se signaturou 0x0B, ve které hledáme hodnoty [0x06, 0xF1, 0x07, 0x01]
 	a [0x03, 0x01, 0x01] značící 7zAES a LZMA. Zde hledáme inicializační vektor, počet iterací použití SHA256 (implicitně
 	19) pro 7zAES a inicializační data slovníků pro LZMA.
     \item Přejdeme na záznam se signaturou 0x0A, ze kterého získáme CRC dat souboru.
 \end{enumerate}
 
 \subsection{Obnova hesel}
-Jakmile tato data získáme můžeme se přesunout k~hledání hesla. Tento proces, popsáný
+Jakmile tato data získáme, můžeme se přesunout k~hledání hesla. Tento proces, popsány
 Algoritmem~\ref{alg:7z_desifr}, lze plně realizovat pouze na CPU. Formát 7z totiž může obsahovat
 soubory o~velké velikosti, které by se nemusely vejít do paměti GPU. Musíme zde vzít totiž
 v~potaz, že potřebujeme mít v~paměti prostor o~velikosti souboru pro každou výpočetní jednotku GPU,
@@ -780,10 +780,10 @@ na které poběží kernel. Řešení tohoto problému je popsáno v~sekci \ref{
 Tato kapitola se věnuje popisu implementace přidané funkcionality modulu ZIP a nového modulu pro
 7z do nástroje Wrathion. Jsou v~ní také zmíněny použité knihovny implementující dešifrovací a
 dekomprimační metody společně s jejich verzemi. Kapitola je rozdělena do dvou částí, každá
-reprezentující jeden z~formátů jimiž se tato práce zabývá.
+reprezentující jeden z~formátů, jimiž se tato práce zabývá.
 
 \section{Implementace modulu ZIP}
-Jak již bylo zmíněno, tento modul bylo třeba pouze doplnit o~dalši funkcionality týkajicích se 
+Jak již bylo zmíněno, tento modul bylo třeba pouze doplnit o~další funkcionality týkající se 
 především podpory metod šifrování. Konktrétně se jednalo o~metody šifrování souborů AES a DES a také
 o~metodu umožňující šifrování {\textit Central Directory} záznamu. Tyto metody jsou definované ve
 standardu formátu ZIP vydaném firmou PKWARE v~rámci APPNOTE.txt a používány
@@ -792,7 +792,7 @@ v~nástrojích z~rodiny SecureZIP od PKWARE.
 \subsection{ZIPFormat}
 Tato třída slouží ke čtení potřebných informací z~archívu na vstupu. Získává tedy imformace o~tom
 jaká šifrovací metoda byla použita na základě čehož pak hledá další pro nás důležitá data ve
-struktuře souboru. Data jsou ukladána do struktury $ZIPInitData$, která je použita pro
+struktuře souboru. Data jsou ukládána do struktury $ZIPInitData$, která je použita pro
 inicializaci nových instancí tříd crackerů. 
 
  Třída byla upravena tak, aby byla schopna detekovat výše zmíněné metody a uložit data potřebná pro
@@ -805,12 +805,12 @@ pro ověření hesla $checkPassword()$ a funkce $derive()$, $derive\_key()$ a $s
 
 Třída využívá implementace šifrovací funkce AES použité v~nástroji
 UnRAR\footnote{\url{http://www.rarlab.com/rar\_add.htm}}, kde je implementována jako třída Rijndael
-pod licencí Public Domain. Datové typy použíté v~převzaté třídy byly pozměny tak, aby odpovídaly
+pod licencí Public Domain. Datové typy použité v~převzaté třídě byly pozměny tak, aby odpovídaly
 typů používaným v~našem nástroji.
 
 Obě derivační funkce vytvářejí blok, který odpovídá funkci $CryptDeriveKey()$ z~MS
 CryptoAPI\footnote{\url{https://msdn.microsoft.com/en-us/library/windows/desktop/aa379916(v=vs.85).aspx
-}}. Funkce $sha1()$ je převzata z~dříve implemetovaných částí modulu ZIP.
+}}. Funkce $sha1()$ je převzata z~dříve implementovaných částí modulu ZIP.
 
  Funkce $checkPassword()$ implementuje algoritmus \ref{alg:zip_ver} jenž slouží k~ověření hesla
 získaného z~generátoru. Algoritmus je odvozen algoritmu uvedeného v~APPNOTE.txt začínajícího na
@@ -819,7 +819,7 @@ získaného z~generátoru. Algoritmus je odvozen algoritmu uvedeného v~APPNOTE.
 \subsection{ZIPStAESCrackerGPU}
 Tato třída obsahuje implementaci pro ověření hesla metodou AES na GPU. Tato třída slouží pouze
 k~vytvoření, inicializování a předání paměťových objektů (zásobníků) OpenCL kernelu
-$zip\_staes\_kernel$. To je realizováno ve funkci $initData()$. 
+$zip\_staes\_kernel$. To je realizováno ve funkcí $initData()$. 
 
  K~ověření hesla je realizováno GPU kernelem. Na CPU se po zjištění nálezu provede pouze
 kontrola voláním funkce $verifyPassword()$. Tato funkce využívá objektu s~typem třídy
@@ -849,15 +849,15 @@ stejnojmenné třídy implementující funkce vyžadované pro správnou komunik
 
 \subsection{SevenZFormat}
 Podobně jako třída $ZIPFormat$ i tato slouží k~získání a zpracování informací uložených
-v~archivu. Pro uložení byla vytvořena struktura $SevenZInitData$ skádající se z~položek základních
+v~archivu. Pro uložení byla vytvořena struktura $SevenZInitData$ skládající se z~položek základních
 datových typů, ale také z~dalších vytvořených struktur. Mezi ně jmenovitě patří $SevenZCoder$,
 $SevenZFolder$ a $SevenZPackInfoHdr$, které reflektují položky obsažené ve struktuře hlavičky
-souboru. Tento přístup k~uložení dat byl zvolen na základě již zmíněného problému jímž je, že
+souboru. Tento přístup k~uložení dat byl zvolen na základě již zmíněného problému, jímž je, že
 struktura hlavičky u~formátu .7z je značně komplikovaná a proměnná. Čtení struktury ulehčují
 odpovídající funkce v~této třídě.
 
  Třída mimo jiné obsahuje funkci $SevenZUINT64()$ implementující dekodér 64 bitových
-bezznamýnkových čísel. Tohoto kódování velkých čísel je ve formátu .7z použito k~redukování
+bezznaménkových čísel. Tohoto kódování velkých čísel je ve formátu .7z použito k~redukování
 paměťového prostoru potřebného k~uložení takového čísla. Ve zkratce to funguje tak, že počet
 jedniček v~nepřerušené řadě začínající na nejvyšších pozicích v~prvním bajtu určuje kolik
 následujících bajtů se ještě váže k~tomuto číslu. Zbytek prvního bajtu za prvním výskytem nuly je
@@ -877,7 +877,7 @@ vytvářející klíč pro dešifrování byla také inspirována zdrojovými k�
  Ve funkci $checkPassword()$ je použita rychlostní optimalizace sloužící k~redukci času
 potřebného k~určení zda se může jedna o~správné heslo. Optimalizace funguje následujícím způsobem:
 \begin{enumerate}
-    \item Zjistíme jestli jsou data pro dešifrování velká alespoň 32 bajtů. Pokud jsou menší, tak
+    \item Zjistíme, jestli jsou data pro dešifrování velká alespoň 32 bajtů. Pokud jsou menší, tak
 	se optimalizace nepoužije.
     \item Vezmeme prvních 16 bajtů dat.
     \item Provedeme nad nimi operaci dešifrování.
@@ -892,12 +892,12 @@ s~funkcí pro ověření hesla získaného z~GPU. Ačkoliv to vypadá velmi podo
 rozdíl v~tom, kdy a jak dostaneme správné heslo. S~jistou nadsázkou se dá říct, že se jedná
 o~třídu provádějící obnovení hesla na CPU s~jistou formou heuristiky. 
 
-Formou heuristiky jsou kroky 1 - 4 optimalizace popsany v~předchozí podkapitole. Rozdíl oproti
+Formou heuristiky jsou kroky 1 - 4 optimalizace popsány v~předchozí podkapitole. Rozdíl oproti
 CPU implementaci je ten, že filtrování hesel obstarává GPU a nemusíme jej tedy provádět na CPU.
 Teoreticky je tímto způsobem filtrování možné snížit počet hesel zhruba 255-krát. To nastává
 v~případě, že šifrovaná data jsou i komprimovaná. V~případě, že se bavíme archivech .7z, které
-obsahují pouze jeden soubor a jejichž hlavička před šifrováním komprimovaná není, pak můžeme
-dosáhnout větší efektivity filtrování. Toho je dosaženo ověřeováním tří bajtů namísto jednoho.
+obsahují pouze jeden soubor, a jejichž hlavička před šifrováním komprimovaná není, pak můžeme
+dosáhnout větší efektivity filtrování. Toho je dosaženo ověřováním tří bajtů namísto jednoho.
 
 \subsubsection{sevenz\_aes\_kernel}
 Kernel obsahuje přepis tříd převzatých z~nástroje 7zip. Jediné modifikace těchto tříd představují
@@ -906,7 +906,7 @@ takový provádí pouze filtraci hesel pro CPU.
 
 Důvod, proč neprovádíme všechny kroky na GPU, je poměrně jednoduchý. S současné době se velikosti
 pamětí u GPU pohybují v rozpětí 1 - 4GB a pouze pár vybraných karet z nejvyšší výkonnostní kategorie
-disponuje většími paměťovýmí moduly. GPU tedy nemá dostatek paměti na to, aby mohla obsahovat
+disponuje většími paměťovými moduly. GPU tedy nemá dostatek paměti na to, aby mohla obsahovat
 několik instancí dat k~dešifrování, které by byly potřeba v případě, že chceme provádět celý proces na
 GPU a využít plně využít její výkonnostní potenciál. V~archivu mohou být obsaženy soubory
 o~velikosti několika gigabajtů a není tedy možné takto velký shluk dat do GPU paměti umístit. Pokusy
@@ -920,65 +920,69 @@ nástroj PKWARE SecureZIP. K~vytvoření archivů formátu .7z jsem použil nás
 
 Za znakovou abecedu jsem si zvolil všechna malá písmena ze znakové sady ASCII, tedy 26 znaků.
 Hesla byla volena tak, aby se jednalo o~nejhorší možný případ pro danou znakovou abecedu z~pohledu
-jednoduchého brute-force generátoru. To znamená, že při délce hesla 3 je podoba hesla "zzz".
+jednoduchého brute-force generátoru. To znamená, že při délce hesla 3 a abecedě a-z je podoba hesla "zzz".
 
 Naměřené hodnoty jsem převzal z~informací poskytnutých jednotlivými nástroji. Nijak jsem
 neověřoval jakým způsobem nástroje tyto informace získávají. Všechny časy byly zaokrouhleny na
 celé sekundy. Pro jednotlivá měření jsem zvolil maximální dobu pokoušení se o~prolomení hesla na
-10 minut. Pokud se heslo do té doby nepovedlo získat správné heslo tak byla do tabulky zanesena
-hodnota vypočtená z rychlosti a velikosti stavového prostoru hesel. Takováto hodnota je označna
-kurzícou. Časy pro Wrathion zahrnují i čas potřebný pro inicializaci dat na GPU a zavední
+10 minut. Pokud se heslo do té doby nepodařilo získat správné heslo tak byla do tabulky zanesena
+hodnota vypočtená z rychlosti a velikosti stavového prostoru hesel. Takováto hodnota je označena
+kurzívou. Časy pro Wrathion zahrnují i čas potřebný pro inicializaci dat na GPU a zavedení
 kernelu. V~případě rychlosti byla do tabulek zanesena průměrná naměřená rychlost testovaných
 hesel za jednu sekundu.
 
-Pro všechna měření na CPU bylo použito 6 výpočetních vláken namísto 12, která níže uvedený
-procesor poskytuje. Nižší počet vláken byl zvolen z~důvodu bezpečnějšího a méně problémového
-průběhu měření, protože během měření dochází k~vysokému zatížení procesoru. Stroj se pak může
-v~takovém případě sekat a měření může být zkresleno procesem starajícím se o~synchronizaci nebo
-případně dalšími aplikacemi a službami operačního systému běžících na pozadí.
+Pro všechna měření na CPU bylo použito 6 výpočetních vláken namísto 12, které níže uvedený
+procesor díky technologii Hyperthreading poskytuje. Nižší počet vláken byl zvolen z~důvodu
+bezpečnějšího a méně problémového průběhu měření, protože během měření dochází k~vysokému zatížení
+procesoru. Stroj by se při použití dostupných vláken mohl značně zpomalit a měření by mohlo být
+zkresleno. Procesor musí dát výpočetní čas i dalším procesům starajícím se o~synchronizaci řízení vláken
+nebo případně dalšími aplikacemi a službami operačního systému běžících na pozadí.  
 
 \section{Testovací sestava}
 CPU: Intel Core i7-5930K @ 3.50GHz\\
 RAM: 32GB\\
-GPU: 4x AMD Radeon R9 Fury X (Catalyst Omega 15.7, AMD APP SDK v3.0 )\\
+GPU: 4x AMD Radeon R9 Fury X (Catalyst Omega 15.7, AMD APP SDK v3.0)\\
 OS: Ubuntu 14.04 x64
 \section{ZIP archivy}
 V~rámci tohoto měření jsem se zaměřil na archivy se šifrovanými daty souborů pomocí funkce AES
-pro různě dlouhé klíčem. Účelem těchto měření bylo zjistit jak rychlé rozšíření modulu ZIP je a
+pro různě dlouhé klíče. Účelem těchto měření bylo zjistit jak rychlé rozšíření modulu ZIP je a
 jak dlouhý časový úsek je třeba očekávat pro úspěšné nalezení hesla o~dané znakové délce. 
 
 Tabulka~\ref{tab:zip_cpu_gpu_256} ukazuje rozdíly v~rychlostech při použití různé bitové délky
-šifrovacího klíče. Značný rozdíl v~rychlostech je zapřičiněn návrhem šifrovací funkce AES. Ta
+šifrovacího klíče. Značný rozdíl v~rychlostech je zapříčiněn návrhem šifrovací funkce AES. Ta
 pro různě dlouhé klíče provádí různý počet iterací nad klíčem což ovlivňuje rychlost dešifrování
 dat. 
-
 \shorthandoff{-}
+\newcolumntype{R}{>{\raggedleft\arraybackslash}X}%
+\newcolumntype{T}[1]{>{\raggedleft\arraybackslash}m{#1}}
 \begin{table}[H]
     \begin{center}  
-        \newcolumntype{R}{>{\raggedleft\arraybackslash}X}%
-        \begin{tabularx}{\textwidth}{|l|l|R|R|R|R|R|R|}
+	\begin{tabularx}{\textwidth}{|l|l|T{0.55cm}|T{0.55cm}|T{1.3cm}|T{1.5cm}|T{2cm}|R|}
             \hline
-            128-bit & Délka hesla & 3 & 4 & 5 & 6 & 7 & 8 \\\hline
-	    \multirow{2}{*}{CPU} & Čas & 1s & 1s & 12s & 4m 53s & {\textit 2h 5m 26s} & {\textit 2d 6h 21m 27s} \\ 
+            128-bit & Délka hesla & 3 & 4 & 5 & 6 & 7 & 8 \\
+	    \hline
+	    \multirow{2}{*}{CPU} & Čas & 1s & 1s & 12s & 4m 53s & {\it 2h 5m 26s} & {\it 2d 6h 21m 27s} \\ 
                                  & Rychlost& - & - & 1084236 & 1109832 & 1109832 & 1109832 \\ 
             \hline
-	    \multirow{2}{*}{GPU} & Čas & 1s & 1s & 3s & 1m 6s & {\textit 28m 12s} & {\textit 12d 13m 20s} \\ 
+	    \multirow{2}{*}{GPU} & Čas & 1s & 1s & 3s & 1m 6s & {\it 28m 12s} & {\it 12d 13m 20s} \\ 
                                  & Rychlost& - & - & 4290537 & 4935903 & 4935903 & 4935903 \\ 
             \hline
             \hline
-            192-bit & Délka hesla & 3 & 4 & 5 & 6 & 7 & 8 \\\hline
-	    \multirow{2}{*}{CPU} & Čas & 1s & 1s & 13s & 5m 24s & {\textit 2h 1m 27s} & {\textit 2d 11h 59m 54s}\\ 
+            192-bit & Délka hesla & 3 & 4 & 5 & 6 & 7 & 8 \\
+	    \hline
+	    \multirow{2}{*}{CPU} & Čas & 1s & 1s & 13s & 5m 24s & {\it 2h 1m 27s} & {\it 2d 11h 59m 54s}\\ 
                                  & Rychlost& - & - & 1010808 & 1005492 & 1005492 & 1005492 \\ 
             \hline
-	    \multirow{2}{*}{GPU} & Čas & 1s & 1s & 4s & 1m 13s & {\textit 31m 19s} & {\textit 13h 34m 2s}  \\ 
+	    \multirow{2}{*}{GPU} & Čas & 1s & 1s & 4s & 1m 13s & {\it 31m 19s} & {\it 13h 34m 2s}  \\ 
                                  & Rychlost& - & - & 4112426 & 4446565 & 4446565 & 4446565 \\ 
             \hline
             \hline
-	    256-bit & Délka hesla & 3 & 4 & 5 & 6 & 7 & 8 \\\hline
-	    \multirow{2}{*}{CPU} & Čas & 1s & 1s & 15s & 6m 2s & {\textit 2h 34m 47s} & {\textit 2d 19h 4m 24s} \\ 
+	    256-bit & Délka hesla & 3 & 4 & 5 & 6 & 7 & 8 \\
+	    \hline
+	    \multirow{2}{*}{CPU} & Čas & 1s & 1s & 15s & 6m 2s & {\it 2h 34m 47s} & {\it 2d 19h 4m 24s} \\ 
                                  & Rychlost& - & - & 855018 & 899430 & 899430 & 899430 \\ 
             \hline
-	    \multirow{2}{*}{GPU} & Čas & 1s & 1s & 4s & 1m 13s & {\textit 31m 34s} & {\textit 13h 40m 48s} \\ 
+	    \multirow{2}{*}{GPU} & Čas & 1s & 1s & 4s & 1m 13s & {\it 31m 34s} & {\it 13h 40m 48s} \\ 
                                  & Rychlost& - & - & 4050470 & 4410039 & 4410039 & 4410039 \\ 
             \hline
         \end{tabularx}
@@ -987,20 +991,19 @@ dat.
     \end{center}
 \end{table}
 \shorthandon{-}
-
-Rychlosti chybějící v~tabulce se nástroji nepovedlo změřit. To bylo zapřičiněno vysokou rychlostí
+\noindent Rychlosti chybějící v~tabulce se nástroji nepovedlo změřit. To bylo zapříčiněno vysokou rychlostí
 nově implementovaného rozšíření. Heslo bylo nalezeno tak rychle, že nepovedlo provést ani jednu
-synchronizaci. Nástroj tedy díky svému návrhu nebyl schopen určit jaké rychlosti jsme dosáhli.
+synchronizaci. Nástroj tedy díky svému návrhu nebyl schopen určit, jaké rychlosti jsme dosáhli.
 
 Srovnání s~dalšími nástrojii bohužel nebylo možné provést. Ani jeden z~nástrojů z~vyhlášených
 nástrojů (Hashcat~/~oclHasshcat, John the Ripper, Elcomsoft Advanced Archive Password Recovery)
 totiž tento typ šifrování archivů ZIP, o~který byl Wrathion v~rámci této práce rozšířen,
 nepodporuje.
 
-Srovnáním rychlostí dosažených při využití akceleraci GPU a zhodnocení škálovatelnosti kernelů je zasvědcena sekce~\ref{sec:zrychlenit}. 
+Srovnáním rychlostí dosažených při využití akceleraci GPU a zhodnocení škálovatelnosti kernelů je zasvěcena sekce~\ref{sec:zrychlenit}. 
 
 \section{7zip archivy}
-Měření pro 7zip je velmi podobné tomu pro ZIP. Hlavními rozdíly je potřebná sada souborů, které
+Měření pro 7zip je velmi podobné tomu pro ZIP. Jediným větším rozdílem je potřebná sada souborů, které
 je třeba použít. U~archivů 7zip musíme brát v~potaz i fakt, že pro ověření hesla se provádí
 dekomprimace dat a počet vyzkoušených hesel za jednu sekundu se tedy může s~rostoucí velikostí
 zmenšovat (viz. Tabulka~\ref{tab:7z_cpu_gpu_sizes}). S~tím částečně souvisí i nutnost provádět
@@ -1010,11 +1013,11 @@ z~nejvyšších hodnot, při které kernel ještě fungoval. Naměřené výsled
 omezeny leč bohužel při použitých hodnotách byl nástroj nestabilní.
 
 U~archivů se šifrovanou hlavičkou můžeme dosáhnout toho, že nebudeme muset provádět dekompresi
-dat. Respektive, že data před šifrováním nebyla nebyla nijak komprimována. Do archivů byl uložen
+dat. Respektive, že data před šifrováním nebyla nijak komprimována. Do archivů byl uložen
 jeden soubor o~velikosti 1kB. V~tomto případě hlavička komprimovaná nebude, protože archiv
-obsahuje pouze jeden soubor. Toho u~dat souboru dosáhnout nelze. Ty jsou komprimováná vždy.
+obsahuje pouze jeden soubor. Toho u~dat souboru dosáhnout nelze, neboť jsou komprimována vždy.
 
-Samotná hlavička také dosahuje značně menší velikosti než samotná data což urychluje výpočet CRC
+Samotná hlavička také dosahuje značně menší velikosti, než samotná data což urychluje výpočet CRC
 hodnoty, kterou používáme k~ověření správnosti použitého hesla.
 
 Rychlosti GPU uvedené v~následujících tabulkách jsem dopočítával ručně na základě času a
@@ -1024,14 +1027,13 @@ v~pravidelných intervalech nevracel validní data.
 \shorthandoff{-}
 \begin{table}[H]
     \begin{center}  
-        \newcolumntype{R}{>{\raggedleft\arraybackslash}X}%
-        \begin{tabularx}{\textwidth}{|l|l|R|R|R|R|}
+	\begin{tabularx}{\textwidth}{|l|l|T{2.2cm}|T{2.2cm}|R|R|}
             \cline{2-6}
             \multicolumn{1}{c|}{} & Délka hesla & 3 & 4 & 5 & 6 \\\hline
-	    \multirow{2}{*}{CPU} & Čas & 1m 33s & {\textit 40m} & {\textit 17h 20m 7s} & {\textit 18d 18h 43m 8s} \\ 
+	    \multirow{2}{*}{CPU} & Čas & 1m 33s & {\it 40m} & {\it 17h 20m 7s} & {\it 18d 18h 43m 8s} \\ 
                                  & Rychlost & 198 & 198 & 198 & 198 \\ 
             \hline
-	    \multirow{2}{*}{GPU} & Čas & 25s & {\textit 2m 52s} & {\textit 1h 16m 10s} & {\textit 1d 9h 14s} \\ 
+	    \multirow{2}{*}{GPU} & Čas & 25s & {\it 2m 52s} & {\it 1h 16m 10s} & {\it 1d 9h 14s} \\ 
                                  & Rychlost & 731 & 2658 & 2704 & 2704 \\ 
             \hline
         \end{tabularx}
@@ -1041,13 +1043,13 @@ v~pravidelných intervalech nevracel validní data.
 \end{table}
 \begin{table}[H]
     \begin{center}  
-        \newcolumntype{R}{>{\raggedleft\arraybackslash}X}%
-        \begin{tabularx}{\textwidth}{|l|l|R|R|R|R|}
+	\begin{tabularx}{\textwidth}{|l|l|T{2.2cm}|T{2.2cm}|R|R|}
             \cline{2-6}
-	    \multirow{2}{*}{CPU} & Čas & 1m 33s & {\textit 40m} & {\textit 17h 20m 7s} & {\textit 18d 18h 43m 8s} \\ 
+            \multicolumn{1}{c|}{} & Délka hesla & 3 & 4 & 5 & 6 \\\hline
+	    \multirow{2}{*}{CPU} & Čas & 1m 33s & {\it 40m} & {\it 17h 20m 7s} & {\it 18d 18h 43m 8s} \\ 
                                  & Rychlost& 192 & 196 & 198 & 198 \\ 
             \hline
-	    \multirow{2}{*}{GPU} & Čas & 25s & {\textit 2m 52s} & {\textit 1h 16m 10s} & {\textit 1d 9h 14s} \\ 
+	    \multirow{2}{*}{GPU} & Čas & 25s & {\it 2m 52s} & {\it 1h 16m 10s} & {\it 1d 9h 14s} \\ 
                                  & Rychlost & 731 & 2658 & 2704 & 2704 \\ 
             \hline
         \end{tabularx}
@@ -1064,7 +1066,6 @@ provedeno měření jsou šifrovány klíčem odvozeným ze~tří znakového hes
 \shorthandoff{-}
 \begin{table}[H]
     \begin{center}  
-        \newcolumntype{R}{>{\raggedleft\arraybackslash}X}%
         \begin{tabularx}{\textwidth}{|l|l|R|R|R|R|R|R|}
             \cline{2-8}
             \multicolumn{1}{c|}{} & Velikost souboru & 1kB & 512kB & 1MB & 10MB & 100MB & 500MB \\
@@ -1078,14 +1079,13 @@ provedeno měření jsou šifrovány klíčem odvozeným ze~tří znakového hes
     \end{center}
 \end{table}
 \shorthandon{-}
-
-Z~výsledků můžeme vidět, že dekomprese má minimální vliv na výkon obnovy hesel. Hodnotu naměřenou
-pro soubor o~velikosti 10M považuji za anomálii při měření. Nevidím totiž důvod proč by obnova
+\noindent Z~výsledků můžeme vidět, že dekomprese má minimální vliv na výkon obnovy hesel. Hodnotu naměřenou
+pro soubor o~velikosti 10M považuji za anomálii při měření. Nevidím totiž důvod, proč by obnova
 hesla u~tohoto souboru měla být o~tolik pomalejší i oproti větším souborům.
 
 \subsection{Srovnání s~konkurencí}
 V~tomto případě narozdíl od ZIPu je možné najít jiné nástroje, které tento formát podporují. Ne
-všechny však podporují všechny řežimy, které podporuje Wrathion. 
+všechny však podporují všechny režimy, které podporuje Wrathion. 
 
 Dalším problémem jsou generátory, které nástroje používají. Žádný z~nich totiž nepoužívá
 \uv{hloupý} brute-force generátor jako původní verze Wrathionu. Jak oclHashcat tak John the
@@ -1093,15 +1093,14 @@ Ripper mají pouze nějakou imitaci tohoto typu generátoru. Ve skutečnosti vš
 založený na Markovských procesech. Ty nejdou lineárně znak po znaku jako brute-force, ale
 používají jakési tabulky s~definovanými pravděpodobnostmi výskytů jednotlivých znaků a případně
 posloupností znaků. Z~toho vyplývá, že časy uvedené v~následujících jsou pro tyto nástroje pouze
-orientační narozdíl od časů u~Wrathionu, jenž reprezentují maximální čas potřebný k~projítí
-celého stavového prostoru do dané délky hesla. U~osatních nástrojů bylo nutné, abych ručně
+orientační na rozdíl od časů u~Wrathionu, jenž reprezentují maximální čas potřebný k~projití
+celého stavového prostoru do dané délky hesla. U~ostatních nástrojů bylo nutné, abych ručně
 nastavil maximální délku hesla. Tím jsem dosáhl funkcionality co možná nejpodobnější brute\-force
 generátoru.
 \shorthandoff{-}
 \begin{table}[H]
     \begin{center}  
-        \newcolumntype{R}{>{\raggedleft\arraybackslash}X}%
-        \begin{tabularx}{\textwidth}{|l|l|R|R|R|R|}
+	\begin{tabularx}{\textwidth}{|l|l|T{1.4cm}|T{1.4cm}|R|R|}
             \hline
             CPU & Délka hesla & 3 & 4 & 5 & 6 \\
             \hline
@@ -1139,24 +1138,24 @@ generátoru.
     \end{center}
 \end{table}
 \shorthandon{-}
-Jak můžeme vidět ve srovnání CPU implementací tak Wrathion je o~33\% rychlejší než John the
+\noindent Jak můžeme vidět ve srovnání CPU implementací tak Wrathion je o~33\% rychlejší než John the
 Ripper. CPU verze Hashcatu bohužel 7zip nepodporuje a Elcomsoft také ne.
 
 Při použití GPU akcelerace se nám již objevuje další nástroj oclHashcat, jehož chování je
-podivné. Při kratších heslech totiž nedosahuje takového výkonu, jak lze z~tabulky vyčíst, jako
-heslech delších. Avšak vezmeme-li maximální průměrnou hodnotu tak značně převyšuje svým výkonem
+podivné. Při kratších heslech totiž nedosahuje takového výkonu, jak lze z~tabulky vyčíst, jako u 
+hesel delších. Avšak vezmeme-li maximální průměrnou hodnotu tak značně převyšuje svým výkonem
 nástroje John the Ripper i náš Wrathion. Není mi však známo jakou GWS používá a tudíž jestli
 kdyby běžel na stejné jako John the Ripper a Wrathion jestli by výsledky nebyly více vyrovnané
 (oba 32378). Každopádně jako pozitivum lze brát, že Wrathion neskončil poslední a alespoň jeden
 nástroj převyšuje.
 
-V~posledním možné případě, kterým je akcelerace obnovy hesel na více GPU, máme zase pouze dva
+V~posledním možném případě, kterým je akcelerace obnovy hesel na více GPU, máme zase pouze dva
 nástroje. John the Ripper nemá v~dostupné verzi podporu pro běh na více GPU zaráz, proto byl
 vynechán. 
 
-Velmi zajímavá věc u~oclHashcatu je, že pro krátká hesla má opět nížší výkon než pro delší. Za
+Velmi zajímavá věc u~oclHashcatu je, že pro krátká hesla má opět nižší výkon než pro delší. Za
 zajímavé také shledávám jeho využití jednotlivých GPU. Podle poskytnutých informací totiž pro
-krátká hesla, mimo nižší rychlost, používá také jednu GPU ikdyž jsem mu explicitně určil ať
+krátká hesla, mimo nižší rychlost, používá také jednu GPU i když jsem mu explicitně určil ať
 použije tři GPU.
 \section{Zrychlení a vliv akcelerace výpočtů na GPU}
 \label{sec:zrychlenit}
@@ -1174,7 +1173,7 @@ se formát od formátu.
 \end{figure}
 
 Očekával jsem, že přidání dalších GPU zvýší celkový výkon alespoň o~80\% což se pro modul ZIP
-povedlo překonat. Z~hodnot v~grafu jsem odvodil zrychlení 170\% v~okamžiku kdy jsem přidal další
+povedlo překonat. Z~hodnot v~grafu jsem odvodil zrychlení 170\% v~okamžiku, kdy jsem přidal další
 2 grafiky.
 
 \begin{figure}[ht]
@@ -1188,46 +1187,42 @@ povedlo překonat. Z~hodnot v~grafu jsem odvodil zrychlení 170\% v~okamžiku kd
 \end{figure}
 
 \chapter{Závěr}
-Obsáhnout všechny možnosti a~nastavení analyzovaných formátů je značně náročný proces, který
-ve většině případů ani nestojí za námahu. Důvodem je nízký počet dostupných nástrojů schopných
-tyto hodnoty nastavit, což platí hlavně pro formát ZIP.
+Obsáhnout všechny možnosti a~nastavení analyzovaných formátů je prakticky nemožné z důvodu nízkého
+počtu nástrojů schopných tyto hodnoty nastavit, což platí zejména pro formát ZIP.
 
  Struktury jednotlivých formátů byly popsány tak, aby bylo možné chybějící nebo nejasné informace
-dohledat ve specifikacích formátu a~nebylo nutné složitě hledat, o~jaké hodnoty se jedná. Zde
-je nutno podotknout, že, jak již bylo zmíněno, struktura 7z souboru je hodně komplexní a~proměnná a
-bohužel dokumentace tohoto formátu je značně nedostačující. Je tedy nutné strávit hodně času
-studiem struktury, zdrojových kódů a~fóra vývojáře pro získání dalších a~detailnějších informací.
+dohledat v jejich specifikacích formátu. Jak již bylo zmíněno, struktura 7z souboru je poměrně
+komplexní a~proměnná, přičemž bohužel dokumentace tohoto formátu je značně nedostačující. Je tedy
+nutné strávit dostatek času studiem struktury formátu, zdrojových kódů a~fóra vývojáře pro získání dalších a~detailnějších informací.
 
- Výsledky měřeních prokázaly konkurence-schopnost nově přídaných funkcionalit. Z~důvodu
-neodstatečných zkušeností s~paralelními aplikacemi a OpenCL nebyly udělány žádné větší
-optimalizace kernelů a tedy zde zůstává prostor pro zvýšení výkonu jednotlivých kernelů. 
+ Výsledky měřeních prokázaly konkurence-schopnost nově přidaných funkcionalit. Z~důvodu
+nedostatečných zkušeností s~paralelními aplikacemi a OpenCL nebyly provedeny větší
+optimalizace kernelů a zůstává zde tedy prostor pro zvýšení výkonu jednotlivých kernelů. 
 
- Měření také ukazují jak silná jednotlivá zabezpečení jsou. Srovnání bezpečnosti šifrování
-WinZip AES a metody AES o jejíž podporu byl Wration rozšířen, nám říká co bylo pravděpodobně hlavní
+ Měření také ukazují, jak silná jednotlivá zabezpečení jsou. Srovnání bezpečnosti šifrování
+WinZip AES a metody AES, o jejíž podporu byl Wration rozšířen, nám říká, co bylo pravděpodobně hlavní
 důvodem za vytvořením metody WinZip AES. Přidaný AES totiž používá funkce pro generování
 šifrovacího klíče, jenž nevyžadují žádné iterace hešovacích funkcí. Tím se toto zabezpečení stává
 velmi náchylným k~útokům hrubou silou.
 
 Protějškem k~zabezpečení ZIP pomocí AES je zabezpečení formátu 7zip. Kombinace AES256 a velkého
 počtu iterací hešovací funkce SHA256 při generování šifrovacího klíče vede k zabezpečení dat, které
-dobře odolává útokům hrubou silo. Pokud použijeme heslo, které se řídí dopoučeními pro vytváření
+dobře odolává útokům hrubou silou. Pokud použijeme heslo, které se řídí doporučeními pro vytváření
 bezpečného hesla, pak lze prohlásit tato metoda zabezpečení, za předpokladu, že nemáme k dispozici
-vysoce výkonný super počítač, za v podstatě neprolomitelnou v reálném čas.
+vysoce výkonný superpočítač, za v podstatě neprolomitelnou v reálném čase.
 
-
-\section{Rozšíření}
-Během práce na nástroji jsem objevil následující funkcionality, které by velké míře pomohly
-zvýšit výkon modulu 7z a v nástroji Wrathion v tento okamžik chybí.
+Během práce na nástroji jsem objevil následující možnosti, které by v budoucnu mohly potenciálně
+zvýšit výkon modulu 7z v nástroji Wrathion:
 \begin{enumerate}
    \item Rozšíření Wrathionu o~možnost zasílání klíčů pro dešifrování z~GPU na CPU. Momentální
        stav je takový, že se klíče generují dvakrát a díky značnému počtu iterací hešovací funkce
-       se tímto ztrácí hodně času než se na CPU vygeneruje klíč znovu.
-    \item Další pomůckou pro modul 7z by bylo přídání využítí více vláken při ověřování hesel na
+       se tímto ztrácí hodně času, než se na CPU vygeneruje klíč znovu.
+    \item Další pomůckou pro modul 7z by bylo přidáno využítí více vláken při ověřování hesel na
 	CPU. Při současném návrhu modulu GPU slouží pouze jako filtr a CPU ji brzdí, protože musí
 	provádět dešifrování a dekompresi dat, aby byl schopen ověřit heslo. GPU je ale schopna
-	zaráz označit více hesel jako potenciálně správnýchi. Distribuování ověřování do
+	zaráz označit více hesel jako potenciálně správných. Distribuování ověřování do
 	více výpočetních vláken by zrychlilo procházení označených hesel a tím urychlilo
-	přirazení nových hesesl k~testování.
+	přirazení nových hesel k~testování.
 \end{enumerate}
 
 %=========================================================================
