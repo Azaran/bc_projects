@@ -9,9 +9,9 @@
 %============================================================================
 % Šablonu upravil: Ing. Jaroslav Dytrych, idytrych@fit.vutbr.cz
 %============================================================================
-\documentclass[]{fitthesis} % bez zadání - pro začátek práce, aby nebyl problém s překladem
+%\documentclass[]{fitthesis} % bez zadání - pro začátek práce, aby nebyl problém s překladem
 %\documentclass[zadani]{fitthesis} % odevzdani do wisu - odkazy jsou barevné
-%\documentclass[zadani,print]{fitthesis} % pro tisk - odkazy jsou černé
+\documentclass[zadani,print]{fitthesis} % pro tisk - odkazy jsou černé
 %\documentclass[english,print]{fitthesis} % pro tisk - odkazy jsou černé
 % * Je-li prace psana v anglickem jazyce, je zapotrebi u tridy pouzit 
 %   parametr english nasledovne:
@@ -44,6 +44,7 @@
 \theoremstyle{definition}
 \newtheorem{defn}{Definice}[section]
 
+%\overfullrule=3mm
 \input{pisma.tex}
 
 % vypne funkci nové šablony, která automaticky nahrazuje uvozovky,
@@ -120,19 +121,19 @@
 }
 
 %Abstrakt (cesky, slovensky ci anglicky)
-\abstract[cs]{Cílem této práce bylo rozšířit nástroj Wrathion o dosud nepodporované metody šifrování formát .ZIP a
-přidat podporu formátu .7z. Práce obsahuje popis použitých technologií a detailní analýzu
-zabezpečení těchto formátů, stejně tak jako popis návrhů a implementace rozšiřujících modulů.
-Funkcionalita by experimentálně vyzkoušena na reálných zařízení. Výsledky měření zahrnují měření
-doby obnovy hesel, výkonu a zrychlení. Součástí práce je také srovnání s jinými existujícími
-nástroji.}
+\abstract[cs]{Cílem této práce bylo rozšířit nástroj Wrathion o dosud nepodporované metody
+    šifrování formátu .ZIP a přidat podporu formátu .7z. Práce obsahuje popis použitých
+    technologií a detailní analýzu zabezpečení těchto formátů, stejně tak jako popis návrhů a
+    implementace rozšiřujících modulů. Funkcionalita byla experimentálně ověřena na reálných
+    zařízení. Výsledky měření zahrnují měření doby obnovy hesel, výkonu a zrychlení. Součástí
+práce je také srovnání s jinými existujícími nástroji.}
 \abstract[en]{The main goal of this thesis was to expand tool Wrathion by adding yet unsupported
-encryption methods of format .ZIP and by adding support of format .7z. This thesis contains
-description of used technologies and detailed analysis of mentioned formats, as well as description
-of module designs and implementations. All functionalities were tested on real devices. The
-measurement results contain information about time needed for password recovery, performance and
-acceleration of the password recovery. Thesis also covers comparison with other know tools with
-similar functionalities.}
+encryption methods of .ZIP format and by adding support for .7z format. This thesis contains the
+description of used technologies, detailed analysis of formats denoted above, as well as
+the description of module designs and implementations. All functionalities were tested on real
+devices. The measurement results contain information about time needed for password recovery,
+performance and acceleration of the password recovery. The thesis also covers comparison with other
+known tools.}
 
 %Klicova slova (cesky, slovensky ci anglicky)
 \keywords[cs]{ZIP, 7z, obnova hesel, archiv, GPU, OpenCL, šifrování}
