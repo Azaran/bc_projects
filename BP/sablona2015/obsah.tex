@@ -100,9 +100,9 @@ nazýváno {\it State}.
 
 Na začátku šifrování se nakopírují data ze vstupu do pole {\it State} a~nastaví se počet kol pro
 generování klíče. Poté je, tato hodnota použita k~provedení daného počtu iterací při generování AES
-šifrovacího klíče. Počet opakování funkce je 10--krát pro 128b klíč, \linebreak12--krát pro 192b
-klíč a~14--krát
-pro 256b klíč. Funkce se skládá ze čtyř bajtově--orientovaných transformací:
+šifrovacího klíče. Počet opakování funkce je 10--krát pro 128--bitový klíč, \linebreak12--krát
+pro 192--bitový klíč a~14--krát pro 256--bitový klíč. Funkce se skládá ze čtyř
+bajtově--orientovaných transformací:
     \begin{enumerate}
     \item nahrazení bajtů pomocí nahrazovací tabulky -- nelineární nahrazení bajtů, které funguje
         nezávisle pro každý byte pole {\it State},
@@ -199,7 +199,7 @@ původních čtyř. Tím se prodlužuje čas potřebný k~získání výsledku.
 %        \Return{$concat(H^{(N)}_0, H^{(N)}_1, H^{(N)}_2, H^{(N)}_3, H^{(N)}_4)$}
 %    }
 %
-%    \caption{Princip funkce SHA1} \label{alg:SHA}
+%    \caption{Princip funkce SHA--1} \label{alg:SHA}
 %\end{algorithm}
 
 \chapter{Paralelní výpočty na GPU pomocí OpenCL}
@@ -275,7 +275,7 @@ příklad standardní počítač tak hostitel je CPU a~zařízení je GPU, pří
 	    \includegraphics{fig/opencl_platform_model_cl}
 	}
     \end{center}
-    \caption{Model OpenCL platformy \cite{Khronos:2015}}
+    \caption{Model OpenCL platformy. \cite{Khronos:2015}}
     \label{platform}
 \end{figure}
 \subsubsection{Model provádění}
@@ -322,6 +322,7 @@ Model dělíme na čtyři části:
 	více jednotkami naráz a~zaručuje, že je dodrženo pořadí operací s~pamětí a~že jsou data po
 	celou dobu validní. Taktéž definuje synchronizaci nad těmito oblastmi.
 \end{itemize}
+\pagebreak
 Pro nás je nejdůležitější pochopit, jak je paměť strukturována a~jak na sebe navazují
 jednotlivé oblasti. To je nejlépe patrné z~obrázku \ref{memory}. Paměť je rozdělena do následujících
 částí:
@@ -340,11 +341,11 @@ jednotlivé oblasti. To je nejlépe patrné z~obrázku \ref{memory}. Paměť je 
 \end{itemize}
 \begin{figure}[ht]
     \begin{center}
-	\scalebox{0.286}{
+	\scalebox{0.26}{
 	    \includegraphics{fig/opencl_memory_structure_cl}
 	}
     \end{center}
-    \caption{Struktura paměti OpenCL \cite{Khronos:2015}}
+    \caption{Struktura paměti OpenCL. \cite{Khronos:2015}}
     \label{memory}
 \end{figure}
 \subsubsection{Programovací model}
@@ -372,7 +373,7 @@ Nástroj slouží ke obnovování hesel pomocí brute--force útoků na tato hes
 	    \includegraphics{fig/wrathion_structure_cl}
 	}
     \end{center}
-    \caption{Schéma struktury nástroje {\it Wrathion} \cite{Hranicky}}
+    \caption{Schéma struktury nástroje {\it Wrathion}. \cite{Hranicky}}
     \label{memory}
 \end{figure}
 \subsection{Generátory hesel}
@@ -411,7 +412,7 @@ možné, volíme druhou variantu crackeru.
 	    \includegraphics{fig/proces}
 	}
     \end{center}
-    \caption{Proces generování a~ověřování hesel na CPU \cite{Schmied}.}
+    \caption{Proces generování a~ověřování hesel na CPU. \cite{Schmied}}
     \label{CPU}
 \end{figure}
 
@@ -494,7 +495,7 @@ Obrázek~\ref{zipstruct}).
 	    \includegraphics{fig/zip_structure_cl}
 	}
     \end{center}
-    \caption{Struktura .ZIP souboru \cite{PKWARE:2014}}
+    \caption{Struktura .ZIP souboru. \cite{PKWARE:2014}}
     \label{zipstruct}
 \end{figure}
 
@@ -603,7 +604,7 @@ Neprázdný soubor tohoto formátu má čtyři části, které v~něm musí být
 	    \includegraphics{fig/7z_structure_cl}
 	}
     \end{center}
-    \caption{Struktura .7z souboru \cite{Pavlov:2015}}
+    \caption{Struktura .7z souboru. \cite{Pavlov:2015}}
     \label{7zstruct}
 \end{figure}
 Pro účely této práce nás především zajímá hlavička {\it 7zHeader} a~v~ní obsahy položek nesoucích
@@ -738,7 +739,7 @@ teoretickým postupem:
     \item Přejdeme na záznam se signaturou 0x06 nesoucí pozici dat, k~níž přičteme 32.
     \item Přejdeme na záznam se signaturou 0x09 nesoucí délku proudu dat.
     \item Přejdeme na záznam se signaturou 0x0B, ve které hledáme hodnoty [0x06, 0xF1, 0x07, 0x01]
-	a [0x03, 0x01, 0x01] značící 7zAES a~LZMA. Zde hledáme inicializační vektor, počet iterací použití SHA256 (implicitně
+	a [0x03, 0x01, 0x01] značící 7zAES a~LZMA. Zde hledáme inicializační vektor, počet iterací použití SHA2--56 (implicitně
 	19) pro 7zAES a~inicializační data slovníků pro LZMA.
     \item Přejdeme na záznam se signaturou 0x0A, ze kterého získáme CRC dat souboru.
 \end{enumerate}
@@ -851,7 +852,7 @@ souboru. Tento přístup k~uložení dat byl zvolen na základě již zmíněné
 struktura hlavičky u~formátu .7z je značně komplikovaná a~proměnná. Čtení struktury ulehčují
 odpovídající funkce v~této třídě.
 
- Třída mimo jiné obsahuje funkci $SevenZUINT64()$ implementující dekodér 64 bitových
+ Třída mimo jiné obsahuje funkci $SevenZUINT64()$ implementující dekodér 64--bitových
 bezznaménkových čísel. Tohoto kódování velkých čísel je ve formátu .7z použito k~redukování
 paměťového prostoru potřebného k~uložení takového čísla. Ve zkratce to funguje tak, že počet
 jedniček v~nepřerušené řadě začínající na nejvyšších pozicích v~prvním bajtu určuje kolik
@@ -897,7 +898,7 @@ dosáhnout větší efektivity filtrování. Toho je dosaženo ověřováním t�
 
 \subsubsection{sevenz\_aes\_kernel}
 Kernel obsahuje přepis tříd převzatých z~nástroje 7--zip. Jediné modifikace těchto tříd představují
-nahrazení funkcí pro generování AES a~SHA256 tabulek za konstantní tabulky. Kernel jako
+nahrazení funkcí pro generování AES a~SHA--256 tabulek za konstantní tabulky. Kernel jako
 takový provádí pouze filtraci hesel pro CPU. 
 
 Důvod, proč neprovádíme všechny kroky na GPU, je poměrně jednoduchý. S~současné době se velikosti
@@ -1208,7 +1209,7 @@ generování šifrovacího klíče, jež nevyžadují žádné iterace hešovac�
 zabezpečení stává velmi náchylné k~útokům hrubou silou.
 
 Protějškem k~zabezpečení ZIP pomocí AES je zabezpečení formátu 7--zip. Kombinace AES256 a~velkého
-počtu iterací hešovací funkce SHA256 při generování šifrovacího klíče vede k~zabezpečení dat,
+počtu iterací hešovací funkce SHA--256 při generování šifrovacího klíče vede k~zabezpečení dat,
 které dobře odolává útokům hrubou silou. Pokud použijeme heslo, které se řídí doporučeními pro
 vytváření bezpečného hesla, pak lze prohlásit tuto metodu zabezpečení, za předpokladu, že nemáme
 k~dispozici vysoce výkonný superpočítač, za v~podstatě neprolomitelnou v~reálném čase.
