@@ -1,6 +1,3 @@
-Stáhněte si instalaci VMWARE Playeru a připravený image (VMWare, Image - 800MB)
-Nainstalujte si VMWARE player a z archívu rozbalte image s linuxem. V případě že chcete vyzkoušet vlastní distribuci, můžete si stáhnout pouze zdroják sctp klient/serveru (je nutná podpora v jádře)
-Ve VMware playeru spusťte připravený image s linuxem
 Spusťte terminál. V domovském adresáři uživatele student přejděte do adresáře sctp.
 Otevřete zdrojové kódy SCTP klienta a serveru, podívejte se na rozdíly mezi TCP.
 Příkazem make vše přeložte.

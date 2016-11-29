@@ -38,50 +38,76 @@ int main()
   initmsg.sinit_max_attempts = 4;
   ret = setsockopt( connSock, IPPROTO_SCTP, SCTP_INITMSG,
                      &initmsg, sizeof(initmsg) );
+  printf("Setsockopt: %d\n", ret);
 
+  int reuse = 1;
+  if (setsockopt(connSock, SOL_SOCKET, SO_REUSEADDR, (const char*)&reuse, sizeof(reuse)) < 0)
+      perror("setsockopt(SO_REUSEADDR) failed");
+
+#ifdef SO_REUSEPORT
+  if (setsockopt(connSock, SOL_SOCKET, SO_REUSEPORT, (const char*)&reuse, sizeof(reuse)) < 0) 
+      perror("setsockopt(SO_REUSEPORT) failed");
+#endif
   /* Specify the peer endpoint to which we'll connect */
   bzero( (void *)&servaddr, sizeof(servaddr) );
   servaddr.sin_family = AF_INET;
   servaddr.sin_port = htons(MY_PORT_NUM);
   servaddr.sin_addr.s_addr = inet_addr( "127.0.0.1" );
 
-  /* Connect to the server */
-  ret = connect( connSock, (struct sockaddr *)&servaddr, sizeof(servaddr) );
 
   /* Enable receipt of SCTP Snd/Rcv Data via sctp_recvmsg */
   memset( (void *)&events, 0, sizeof(events) );
   events.sctp_data_io_event = 1;
   ret = setsockopt( connSock, SOL_SCTP, SCTP_EVENTS,
                      (const void *)&events, sizeof(events) );
+  printf("Setsockopt2: %d\n", ret);
+
+  /* Connect to the server */
+  ret = connect( connSock, (struct sockaddr *)&servaddr, sizeof(servaddr) );
+  printf("Connect: %d\n", ret);
 
   /* Read and emit the status of the Socket (optional step) */
   in = sizeof(status);
   ret = getsockopt( connSock, SOL_SCTP, SCTP_STATUS,
                      (void *)&status, (socklen_t *)&in );
+  printf("Getsockopt: %d\n", ret);
 
   printf("assoc id  = %d\n", status.sstat_assoc_id );
   printf("state     = %d\n", status.sstat_state );
   printf("instrms   = %d\n", status.sstat_instrms );
   printf("outstrms  = %d\n", status.sstat_outstrms );
 
-  /* Expect two messages from the peer */
+  in = sctp_recvmsg( connSock, (void *)buffer, sizeof(buffer),
+			(struct sockaddr *)NULL, 0, &sndrcvinfo, &flags );
+  if (in > 0){
+      buffer[in] = 0;
+  }
 
-  for (i = 0 ; i < 2 ; i++) {
+  /* Expect two messages from the peer */
+  for (i = 0 ; i < 2+10*2 ; i++) {
 
     in = sctp_recvmsg( connSock, (void *)buffer, sizeof(buffer),
                         (struct sockaddr *)NULL, 0, &sndrcvinfo, &flags );
 
     if (in > 0) {
       buffer[in] = 0;
+      printf("sndrcvinfo.sinfo_stream: %d\n", sndrcvinfo.sinfo_stream);
       if (sndrcvinfo.sinfo_stream == LOCALTIME_STREAM) {
         printf("(Local) %s\n", buffer);
       } else if (sndrcvinfo.sinfo_stream == GMT_STREAM) {
         printf("(GMT  ) %s\n", buffer);
+      } else if (sndrcvinfo.sinfo_stream == 2) {
+	printf("file_size1: %s", buffer);
+      } else if (sndrcvinfo.sinfo_stream == 3) { 
+	printf("file_size2: %s", buffer);
       }
-    }
+  }
+    else 
+	perror("sctp_recvmsg: ");
+    bzero(buffer, MAX_BUFFER);
 
   }
-
+  
   /* Close our socket and exit */
   close(connSock);
 
