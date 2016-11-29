@@ -18,6 +18,9 @@
 #include <arpa/inet.h>
 #include "common.h"
 
+
+// TODO: Recieve data from the server and store them into new folder and file.
+
 int main()
 {
   int connSock, in, i, ret, flags;
@@ -84,24 +87,20 @@ int main()
   }
 
   /* Expect two messages from the peer */
-  for (i = 0 ; i < 2+10*2 ; i++) {
+  for (i = 0 ; i < 2; i++) {
 
     in = sctp_recvmsg( connSock, (void *)buffer, sizeof(buffer),
                         (struct sockaddr *)NULL, 0, &sndrcvinfo, &flags );
 
     if (in > 0) {
       buffer[in] = 0;
-      printf("sndrcvinfo.sinfo_stream: %d\n", sndrcvinfo.sinfo_stream);
-      if (sndrcvinfo.sinfo_stream == LOCALTIME_STREAM) {
-        printf("(Local) %s\n", buffer);
-      } else if (sndrcvinfo.sinfo_stream == GMT_STREAM) {
-        printf("(GMT  ) %s\n", buffer);
-      } else if (sndrcvinfo.sinfo_stream == 2) {
-	printf("file_size1: %s", buffer);
-      } else if (sndrcvinfo.sinfo_stream == 3) { 
-	printf("file_size2: %s", buffer);
+      if (sndrcvinfo.sinfo_stream == 2) {
+	printf("file_size1: %d\n", atoi(buffer));
       }
-  }
+      else if (sndrcvinfo.sinfo_stream == 3) {
+	printf("file_size2: %d\n", atoi(buffer));
+      }
+    }
     else 
 	perror("sctp_recvmsg: ");
     bzero(buffer, MAX_BUFFER);
