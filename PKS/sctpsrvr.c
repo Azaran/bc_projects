@@ -48,7 +48,6 @@ int main()
   FILE *f1, *f2;
 
   signal(SIGINT, sig_handler);
-  signal(SIGPIPE, SIG_IGN);
   perror("signal: ");
   /* Create SCTP TCP-Style Socket */
   listenSock = socket( AF_INET, SOCK_STREAM, IPPROTO_SCTP );
@@ -103,8 +102,8 @@ int main()
   printf("File size: %d bytes\n", f2_size); 
   f1_times = f1_size / CHUNK_LENGTH; 
   f1_rest = f1_size % CHUNK_LENGTH;
-  f1_times = f1_size / CHUNK_LENGTH; 
-  f1_rest = f1_size % CHUNK_LENGTH;
+  f2_times = f2_size / CHUNK_LENGTH; 
+  f2_rest = f2_size % CHUNK_LENGTH;
 
   
   /* Server loop... */
@@ -118,12 +117,12 @@ int main()
 
     /* New client socket has connected */
     /* Send file length */
-    snprintf( buffer, MAX_BUFFER, "%d\n", f1_size);
+    snprintf( buffer, MAX_BUFFER, "%d\n%s\n", f1_size, FILE1);
     if ((ret = sctp_sendmsg( connSock, (void *)buffer, (size_t)strlen(buffer),
 	    NULL, 0, 0, 0, 2, 0, 0 )) < 0)
       perror("sctp_sendmsg: ");
 
-    snprintf( buffer, MAX_BUFFER, "%d\n", f2_size);
+    snprintf( buffer, MAX_BUFFER, "%d\n%s\n", f2_size, FILE2);
     if ((ret = sctp_sendmsg( connSock, (void *)buffer, (size_t)strlen(buffer),
 	    NULL, 0, 0, 0, 3, 0, 0 )) < 0)
       perror("sctp_sendmsg: ");
@@ -148,6 +147,7 @@ int main()
 	  perror("sctp_sendmsg: ");
       }
     }
+
     /* Close the client connection */
     close( connSock );
 

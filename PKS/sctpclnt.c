@@ -13,23 +13,27 @@
 #include <unistd.h>
 #include <sys/socket.h>
 #include <sys/types.h>
+#include <sys/stat.h>
 #include <netinet/in.h>
 #include <netinet/sctp.h>
 #include <arpa/inet.h>
 #include "common.h"
 
+#define FILES 2
+#define PATH_TO_FOLDER "transfered/"
 
 // TODO: Recieve data from the server and store them into new folder and file.
 
 int main()
 {
-  int connSock, in, i, ret, flags;
+  int connSock, in, ret, flags, f_size[FILES];
   struct sockaddr_in servaddr;
   struct sctp_status status;
   struct sctp_sndrcvinfo sndrcvinfo;
   struct sctp_event_subscribe events;
   struct sctp_initmsg initmsg;
   char buffer[MAX_BUFFER+1];
+  char *f_name[2];
 
   /* Create an SCTP TCP-Style Socket */
   connSock = socket( AF_INET, SOCK_STREAM, IPPROTO_SCTP );
@@ -79,27 +83,59 @@ int main()
   printf("state     = %d\n", status.sstat_state );
   printf("instrms   = %d\n", status.sstat_instrms );
   printf("outstrms  = %d\n", status.sstat_outstrms );
+  
+  struct stat st;
+  if (stat("transfered", &st) == -1) {
+    mkdir("transfered", 0775);
+  }
 
-  in = sctp_recvmsg( connSock, (void *)buffer, sizeof(buffer),
-			(struct sockaddr *)NULL, 0, &sndrcvinfo, &flags );
-  if (in > 0){
+  for (int i = 0; i < FILES; i++) {
+
+    in = sctp_recvmsg( connSock, (void *)buffer, sizeof(buffer),
+	(struct sockaddr *)NULL, 0, &sndrcvinfo, &flags );
+    
+    if (in > 0){
       buffer[in] = 0;
+      int k = 0;
+      for (;buffer[k] != '\n'; k++);
+      char length[k];   
+
+      for (int j = 0; j < k; j++)
+	length[j] = buffer[j];
+      length[k] = 0;
+      f_size[i] = atoi(length);
+      
+      f_name[i] = (char*)malloc((strlen(PATH_TO_FOLDER)+in-(k+1))*sizeof(char));
+      int j, len = strlen(PATH_TO_FOLDER);
+      for (j = 0; j < (int) strlen(PATH_TO_FOLDER); j++)
+      strcpy(f_name[i], PATH_TO_FOLDER);
+      for (j = k+1; buffer[j] != '\n'; j++)
+	f_name[i][len+j-(k+1)] = buffer[j];
+      f_name[i][len+in-k-1] = 0;
+
+      // printf("in: %d, k: %d, in-k: %d, j: %d\n", in, k, in-(k+1), j);
+
+      printf("File [%d] size: %d, name: %s %d\n", i, f_size[i], f_name[i], (int)strlen(f_name[i]));
+    }
   }
 
   /* Expect two messages from the peer */
-  for (i = 0 ; i < 2; i++) {
+  FILE *f[FILES];
 
+  for (int i = 0; i < FILES; i++)
+    f[i] = fopen(f_name[i], "w");
+
+  int count = f_size[0] / CHUNK_LENGTH + f_size[1] / CHUNK_LENGTH;
+  int rest = (f_size[0] % CHUNK_LENGTH > 0 ? 1 : 0) + (f_size[1] % CHUNK_LENGTH > 0 ? 1 : 0);
+
+  for (int i = 0; i < count + rest; i++) {
     in = sctp_recvmsg( connSock, (void *)buffer, sizeof(buffer),
                         (struct sockaddr *)NULL, 0, &sndrcvinfo, &flags );
 
     if (in > 0) {
       buffer[in] = 0;
-      if (sndrcvinfo.sinfo_stream == 2) {
-	printf("file_size1: %d\n", atoi(buffer));
-      }
-      else if (sndrcvinfo.sinfo_stream == 3) {
-	printf("file_size2: %d\n", atoi(buffer));
-      }
+      fwrite(buffer, in, sizeof(char), 
+	  f[(sndrcvinfo.sinfo_stream == F1_STREAM ? F1_STREAM : F2_STREAM)]);
     }
     else 
 	perror("sctp_recvmsg: ");
