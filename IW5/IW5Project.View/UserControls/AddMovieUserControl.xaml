@@ -1,0 +1,57 @@
+﻿<UserControl x:Class="IW5Project.View.UserControls.AddMovieUserControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             DataContext="{StaticResource MoviesViewModel}"
+             d:DataContext="{StaticResource MoviesViewModel}"
+             xmlns:local="clr-namespace:IW5Project.View.UserControls"
+             mc:Ignorable="d" 
+             Width="300"
+             Background="White"
+              d:DesignWidth="300">
+    <StackPanel>
+        <TextBlock x:Name="MainTitleLabel" Text="Add new movie"/>
+        <TextBlock x:Name="MovieTitleLabel" Text="Movie Title:" />
+        <TextBox Width="200" HorizontalAlignment="Right" Text="{Binding NewItem.Name, Mode=TwoWay}"/>
+        <TextBlock x:Name="MovieLengthLabel" Text="Movie Length: " />
+        <DockPanel VerticalAlignment="Center" Margin="10">
+            <TextBlock Text="mins" TextAlignment="Right" DockPanel.Dock="Right" />
+            <TextBox Text="{Binding Value, ElementName=MovieLengthSlider, UpdateSourceTrigger=PropertyChanged}" 
+                     DockPanel.Dock="Right" TextAlignment="Right" Width="40" BorderThickness="0"/>
+            <Slider SelectionStart="100" Maximum="255" TickPlacement="BottomRight" TickFrequency="1"
+                    IsSnapToTickEnabled="True" x:Name="MovieLengthSlider" Value="{Binding NewItem.Length, Mode=TwoWay}" />
+        </DockPanel>
+        <Separator/>
+            <TextBlock x:Name="MovieGenreLabel" Text="Genre:" />
+        <TextBox Width="200" HorizontalAlignment="Right" Text="{Binding NewItem.Genre, Mode=TwoWay}"/>
+        <TextBlock x:Name="MovideCzechNameLabel" Text="Czech name:" />
+        <TextBox Width="200" HorizontalAlignment="Right" Text="{Binding NewItem.OrigName, Mode=TwoWay}"/>
+        <TextBlock x:Name="MovieCountryLabel" Text="Origin country:" />
+        <TextBox Width="200" HorizontalAlignment="Right" Text="{Binding NewItem.Country, Mode=TwoWay}"/>
+        <TextBlock x:Name="MovieDescriptionLabel" Text="Description: " />
+        <TextBox Width="200" Height="100" HorizontalAlignment="Right" Text="{Binding NewItem.Description}"  TextWrapping="Wrap" AcceptsReturn="True"/>
+        <Button x:Name="InsertPoster"
+                Content="Insert poster to movie"
+                Command="{Binding InsertPoster}"/>
+        <TextBlock Width="200" Height="100" HorizontalAlignment="Right" Text="{Binding PosterStatus}"/>
+
+
+
+        <Image Width="300">
+            <Image.Source>
+                <BitmapImage DecodePixelWidth="300" UriSource="{Binding ImagePath}" />
+            </Image.Source>
+        </Image>
+<!--
+        <Button x:Name="ManageActors"
+                Content="Manage Actors"
+                Command="{Binding ManageActors}"
+                />
+        <Button x:Name="ManageDirector"
+                Content="Manage Directors"
+                Command="{Binding ManageDirectors}"
+                />
+        -->
+    </StackPanel>
+</UserControl>

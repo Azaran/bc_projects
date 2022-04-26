@@ -1,0 +1,122 @@
+﻿<Window x:Class="IW5Project.View.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:userControls="clr-namespace:IW5Project.View.UserControls"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="550" Width="700"
+        DataContext="{StaticResource MainViewModel}"
+        d:DataContext="{StaticResource MainViewModel}"
+       >
+    <Window.Resources>
+        <DataTemplate x:Key="MoviesListItemTemplate">
+            <TextBlock Text="{Binding Name}" />
+        </DataTemplate>
+        <DataTemplate x:Key="PersonsListItemTemplate">
+            <TextBlock Text="{Binding Name}" />
+        </DataTemplate>
+    </Window.Resources>
+    <Grid 
+        >
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition />
+            <ColumnDefinition />
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <Button Grid.Column="0" Grid.Row="0" x:Name="AddMovieButton"
+                Content="Add new / save movie"
+                DataContext="{StaticResource MoviesViewModel}"
+                Command="{Binding AddNewMovie}" 
+                      />
+        <Button Grid.Column="1" Grid.Row="0" x:Name="AddPersonButton"
+                Content="Add new / save person"
+                DataContext="{StaticResource PersonsViewModel}"
+                Command="{Binding AddNewPerson}"
+                       />
+        <userControls:AddMovieUserControl
+                                DataContext="{StaticResource MoviesViewModel}" 
+                                Grid.Row="1" Grid.Column="0"  
+                                Visibility="{Binding NewItem, Converter={StaticResource NullToVisibilityConverter}}"
+                                Grid.ZIndex="2" Padding="10px"
+            />
+
+
+        <userControls:AddPersonUserControl
+                                DataContext="{StaticResource PersonsViewModel}"
+                                Grid.Row="1" Grid.Column="1"  
+                                Visibility="{Binding NewItem, Converter={StaticResource NullToVisibilityConverter}}"
+                                Grid.ZIndex="2" Padding="10px"
+                                />
+        <ListBox x:Name="MoviesListBox"  
+                 Grid.Row="1" Grid.Column="0" 
+                 SelectionMode="Single"  
+                 DataContext="{StaticResource MoviesViewModel}"
+                 ItemsSource="{Binding Items}"  
+                 ItemTemplate="{StaticResource MoviesListItemTemplate}" 
+                 />
+        <ListBox x:Name="PersonsListBox" 
+                 Grid.Row="1" Grid.Column="1" 
+                 SelectionMode="Single"  
+                 DataContext="{StaticResource PersonsViewModel}"
+                 ItemsSource="{Binding Items}"
+                 ItemTemplate="{StaticResource PersonsListItemTemplate}" 
+                 />
+        <Button x:Name="EditMovieButton"
+                Grid.Column="0" Grid.Row="2" 
+                Content="Edit selected movie"
+                DataContext="{StaticResource MoviesViewModel}"
+                Command="{Binding EditCommand}"
+                CommandParameter="{Binding ElementName=MoviesListBox, Path=SelectedItem}"
+                />
+        <Button x:Name="EditPersonButton"
+                Grid.Column="1" Grid.Row="2" 
+                Content="Edit selected person"
+                DataContext="{StaticResource PersonsViewModel}"
+                Command="{Binding EditCommand}" 
+                CommandParameter="{Binding ElementName=PersonsListBox, Path=SelectedItem}"
+                />
+        <Button x:Name="RemoveMovieButton"
+                Grid.Column="0" Grid.Row="3" 
+                Content="Remove selected movie"
+                DataContext="{StaticResource MoviesViewModel}"
+                Command="{Binding RemoveCommand}"
+                CommandParameter="{Binding ElementName=MoviesListBox, Path=SelectedItem}"
+                />
+        <Button x:Name="RemovePersonButton"
+                Grid.Column="1" Grid.Row="3" 
+                Content="Remove selected person"
+                DataContext="{StaticResource PersonsViewModel}"
+                Command="{Binding RemoveCommand}" 
+                CommandParameter="{Binding ElementName=PersonsListBox, Path=SelectedItem}"
+                />
+        <StatusBar Grid.Row="4" Grid.Column="0"
+                   VerticalAlignment="Center"
+                   HorizontalAlignment="Center"
+            >
+            <StatusBarItem
+                    DataContext="{StaticResource MoviesViewModel}"
+                >
+                 <TextBlock Text="{Binding Status}"/>
+            </StatusBarItem>
+        </StatusBar>
+
+        <StatusBar Grid.Row="4" Grid.Column="1"
+                   VerticalAlignment="Center"
+                   HorizontalAlignment="Center"
+            >
+            <StatusBarItem
+                    DataContext="{StaticResource PersonsViewModel}"
+                >
+                 <TextBlock Text="{Binding Status}"/>
+            </StatusBarItem>
+        </StatusBar>
+    </Grid>
+</Window>
+                                   
